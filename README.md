@@ -16,3 +16,6 @@ First test PBMC data was source from [Stuart el al., Cell, 2019](https://www.sci
 
 ## Pipeline
 ![](draw.io/pipeline.png)
+
+## Seurate cluster
+![](img/tsne.png)
