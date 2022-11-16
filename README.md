@@ -14,8 +14,9 @@ First test PBMC data was source from [Stuart el al., Cell, 2019](https://www.sci
 ## Data summary of 10k cells
 ![](img/PBMC-10k-scRNAseq.png)
 
+## Seurate cluster
+![](img/tsne.png)
+
 ## Pipeline
 ![](draw.io/pipeline.png)
 
-## Seurate cluster
-![](img/tsne.png)
