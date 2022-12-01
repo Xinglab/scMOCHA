@@ -1,0 +1,9 @@
+#!/bin/sh
+#SBATCH --signal=USR2
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=20
+#SBATCH --mem=80G
+#SBATCH --time=720:00:00
+#SBATCH --output=/home/liuc9/github/scRNAseq-MitoVariant/data/test/mquad.job.%j
+
+bash /home/liuc9/github/scRNAseq-MitoVariant/test/03-mquad.sh

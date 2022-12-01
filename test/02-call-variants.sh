@@ -10,11 +10,11 @@ param=$#
 /home/liuc9/tools/cellsnp-lite-1.2.2/bin/bin/cellsnp-lite \
   -s /home/liuc9/github/scRNAseq-MitoVariant/data/pbmc_10k_v3_possorted_genome_bam.bam \
   -b /home/liuc9/github/scRNAseq-MitoVariant/data/pbmc_10k_v3_filtered_feature_bc_matrix/barcodes.tsv.gz \
-  -O cellsnp \
-  --chrom=MT \
+  -O /home/liuc9/github/scRNAseq-MitoVariant/data/test/cellsnp \
+  --chrom chrMT \
   --UMItag Auto \
-  --minMAF 0 \
-  --minCOUNT 0 \
+  --minMAF 0.1 \
+  --minCOUNT 20 \
   --genotype \
   --gzip \
-  -p 10
+  -p 20
