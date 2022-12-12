@@ -583,8 +583,8 @@ ggsave(
 # Marker genes ------------------------------------------------------------
 library(Seurat)
 # DefaultAssay(sct_cluster) <- "integrated"
+DefaultAssay(sct_cluster) <- "RNA"
 sct_cluster <- PrepSCTFindMarkers(object = sct_cluster)
-
 
 all.markers <- FindAllMarkers(
   object = sct_cluster,
@@ -620,12 +620,15 @@ ggsave(
   height = 9
 )
 
+sct_cluster <- readr::read_rds(
+"data/rda/pbmc_sct_cluster_annotated.rds.gz"
+)
 p_ppbp <- FeaturePlot(
   object = sct_cluster,
-  features = "PPBP",
+  features = "TCL1A",
   cols = c("lightgrey", "#CD0000"),
   order = TRUE,
-  reduction = "tsne",
+  reduction = "umap",
   max.cutoff = 2,
 )
 ggsave(
@@ -638,10 +641,10 @@ ggsave(
 )
 p_fp <- FeaturePlot(
   object = sct_cluster,
-  features = "PF4",
+  features = "IGHM",
   cols = c("lightgrey", "#CD0000"),
   order = TRUE,
-  reduction = "tsne",
+  reduction = "umap",
   max.cutoff = 2,
 )
 ggsave(
@@ -662,3 +665,4 @@ future::plan(future::sequential)
 save.image(
   file = "data/rda/01-load-10x-scRNA-seq.rda"
 )
+load(file = "data/rda/01-load-10x-scRNA-seq.rda")
