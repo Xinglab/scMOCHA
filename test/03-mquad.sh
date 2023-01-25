@@ -6,6 +6,6 @@
 
 # Number of input parameters
 param=$#
-INPUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/test/cellsnp
-OUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/test/mquad
+INPUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/cellsnp
+OUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/mquad
 ~/tools/anaconda3/bin/mquad -c $INPUT_DIR -o $OUT_DIR -p 20 --minDP 5
