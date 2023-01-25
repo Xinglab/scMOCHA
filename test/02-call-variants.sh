@@ -20,13 +20,13 @@ param=$#
 #   -p 20
 
 /home/liuc9/tools/cellsnp-lite-1.2.2/bin/bin/cellsnp-lite \
-  -s /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_possorted_genome_bam.bam \
-  -b /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_filtered_feature_bc_matrix/barcodes.tsv.gz \
-  -O /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/cellsnp.mt \
-  --chrom chrMT \
+  -s /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/MT.bam \
+  -b /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/barcodes.tsv.gz \
+  -O /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/cellsnp \
+  --chrom MT \
   --UMItag Auto \
   --minMAF 0 \
-  --minCOUNT 20 \
+  --minCOUNT 0 \
   --genotype \
   --gzip \
   -p 20
