@@ -7,13 +7,25 @@
 # Number of input parameters
 param=$#
 
+# /home/liuc9/tools/cellsnp-lite-1.2.2/bin/bin/cellsnp-lite \
+#   -s /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_possorted_genome_bam.bam \
+#   -b /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_filtered_feature_bc_matrix/barcodes.tsv.gz \
+#   -O /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/cellsnp \
+#   --chrom chrMT \
+#   --UMItag Auto \
+#   --minMAF 0.1 \
+#   --minCOUNT 20 \
+#   --genotype \
+#   --gzip \
+#   -p 20
+
 /home/liuc9/tools/cellsnp-lite-1.2.2/bin/bin/cellsnp-lite \
-  -s /home/liuc9/github/scRNAseq-MitoVariant/data/pbmc_10k_v3_possorted_genome_bam.bam \
-  -b /home/liuc9/github/scRNAseq-MitoVariant/data/pbmc_10k_v3_filtered_feature_bc_matrix/barcodes.tsv.gz \
-  -O /home/liuc9/github/scRNAseq-MitoVariant/data/test/cellsnp \
+  -s /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_possorted_genome_bam.bam \
+  -b /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_filtered_feature_bc_matrix/barcodes.tsv.gz \
+  -O /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/cellsnp.mt \
   --chrom chrMT \
   --UMItag Auto \
-  --minMAF 0.1 \
+  --minMAF 0 \
   --minCOUNT 20 \
   --genotype \
   --gzip \
