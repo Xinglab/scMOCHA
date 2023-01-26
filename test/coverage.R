@@ -134,6 +134,42 @@ ggsave(
   height = 9
 )
 
+
+
+# ggcoverage --------------------------------------------------------------
+
+library(ggcoverage)
+
+meta.file <- system.file("extdata", "RNA-seq", "meta_info.csv", package = "ggcoverage")
+sample.meta = read.csv(meta.file)
+
+track.folder = system.file("extdata", "RNA-seq", package = "ggcoverage")
+track.df = LoadTrackFile(track.folder = track.folder, format = "bw",meta.info = sample.meta)
+
+mark.region=data.frame(start=c(21678900,21732001,21737590),
+                       end=c(21679900,21732400,21737650),
+                       label=c("M1", "M2", "M3"))
+# check data
+mark.region
+
+gtf.file = system.file("extdata", "used_hg19.gtf", package = "ggcoverage")
+gtf.gr = rtracklayer::import.gff(con = gtf.file, format = 'gtf')
+
+basic.coverage = ggcoverage(data = track.df, color = "auto", 
+                            mark.region = mark.region, range.position = "out")
+basic.coverage
+
+
+basic.coverage + 
+  geom_gene(gtf.gr=gtf.gr)
+
+basic.coverage + 
+  geom_transcript(gtf.gr=gtf.gr,label.vjust = 1.5)
+
+basic.coverage +
+  geom_gene(gtf.gr=gtf.gr) +
+  geom_ideogram(genome = "hg19",plot.space = 0)
+
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
