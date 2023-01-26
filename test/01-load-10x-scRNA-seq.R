@@ -444,10 +444,10 @@ writexl::write_xlsx(x = cell_stats, path = "data/result/01-qc/reads-stat.xlsx")
 
 sct %>%
   Seurat::RunPCA(npcs = 30) %>%
-  Seurat::RunUMAP(reduction = "pca", dims = 1:30) %>%
-  Seurat::RunTSNE(reduction = "pca", dims = 1:30) %>%
-  Seurat::FindNeighbors(reduction = "pca", dims = 1:30) %>%
-  Seurat::FindClusters() ->
+  Seurat::RunUMAP(reduction = "pca", dims = 1:10) %>%
+  Seurat::RunTSNE(reduction = "pca", dims = 1:10) %>%
+  Seurat::FindNeighbors(reduction = "pca", dims = 1:10) %>%
+  Seurat::FindClusters(resolution = 0.2) ->
   sct_cluster
 
 Seurat::DimPlot(sct_cluster, label = TRUE, reduction = "tsne") 
@@ -455,7 +455,7 @@ Seurat::DimPlot(sct_cluster, label = TRUE, reduction = "tsne")
 
 readr::write_rds(
   x = sct_cluster,
-  file = "data/rda/pbmc_sct_cluster.rds.gz"
+  file = "data/PBMC_10k_v3_10x/rda/pbmc_sct_cluster.rds.gz"
 )
 
 
@@ -544,7 +544,7 @@ for(j in unique(sctype_scores$cluster)) {
 
 readr::write_rds(
   x = sct_cluster,
-  file = "data/rda/pbmc_sct_cluster_annotated.rds.gz"
+  file = "data/PBMC_10k_v3_10x/rda/pbmc_sct_cluster_annotated.rds.gz"
 )
 
 
@@ -559,7 +559,7 @@ ggsave(
   filename = "cluster-plot-tsne-sctype.pdf",
   plot = p_tsne,
   device = "pdf",
-  path = "data/result/02-cluster",
+  path = "data/PBMC_10k_v3_10x/result/02-cluster",
   width = 13,
   height = 9
 )
@@ -575,7 +575,7 @@ ggsave(
   filename = "cluster-plot-umap-sctype.pdf",
   plot = p_umap,
   device = "pdf",
-  path = "data/result/02-cluster",
+  path = "data/PBMC_10k_v3_10x/result/02-cluster",
   width = 13,
   height = 9
 )
@@ -596,7 +596,7 @@ all.markers <- FindAllMarkers(
 
 readr::write_rds(
   x = all.markers,
-  file = "data/rda/sc_sct_cluster_marker_genes.rds.gz"
+  file = "data/PBMC_10k_v3_10x/rda/sc_sct_cluster_marker_genes.rds.gz"
 )
 
 all.markers %>% 
@@ -615,13 +615,13 @@ ggsave(
   filename = "top2-marker-gene-cluster.pdf",
   plot = p_marker,
   device = "pdf",
-  path = "data/result/02-cluster",
+  path = "data/PBMC_10k_v3_10x/result/02-cluster",
   width = 13,
   height = 9
 )
 
 sct_cluster <- readr::read_rds(
-"data/rda/pbmc_sct_cluster_annotated.rds.gz"
+"data/PBMC_10k_v3_10x/rda/pbmc_sct_cluster_annotated.rds.gz"
 )
 p_ppbp <- FeaturePlot(
   object = sct_cluster,
@@ -663,6 +663,6 @@ future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
 save.image(
-  file = "data/rda/01-load-10x-scRNA-seq.rda"
+  file = "data/PBMC_10k_v3_10x/rda/01-load-10x-scRNA-seq.rda"
 )
-load(file = "data/rda/01-load-10x-scRNA-seq.rda")
+load(file = "data/PBMC_10k_v3_10x/rda/01-load-10x-scRNA-seq.rda")
