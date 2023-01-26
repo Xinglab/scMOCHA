@@ -17,7 +17,7 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 
 # header ------------------------------------------------------------------
 
-future::plan(future::multisession, workers = 10)
+# future::plan(future::multisession, workers = 10)
 
 # function ----------------------------------------------------------------
 
@@ -84,7 +84,7 @@ fn_load_sc_10x <- function(.x, .project = "PBMC10X") {
     plot = .metrics_mito,
     filename = "{.project}-metrics-mt.pdf" %>% glue::glue(),
     device = "pdf",
-    path = "data/result/01-qc",
+    path = "data/PBMC_10k_v3_10x/result/01-qc",
     width = 7,
     height = 5
   )
@@ -104,7 +104,7 @@ fn_load_sc_10x <- function(.x, .project = "PBMC10X") {
     plot = .metrics_ribo,
     filename = "{.project}-metrics-ribo.pdf" %>% glue::glue(),
     device = "pdf",
-    path = "data/result/01-qc",
+    path = "data/PBMC_10k_v3_10x/result/01-qc",
     width = 7,
     height = 5
   )
@@ -118,7 +118,7 @@ fn_load_sc_10x <- function(.x, .project = "PBMC10X") {
     plot = .plot,
     filename = "{.project}-metrics-mt-ribo.pdf" %>% glue::glue(),
     device = "pdf",
-    path = "data/result/01-qc",
+    path = "data/PBMC_10k_v3_10x/result/01-qc",
     width = 14,
     height = 5
   )
@@ -157,7 +157,7 @@ fn_load_sc_10x <- function(.x, .project = "PBMC10X") {
     plot = .plot,
     filename = "{.project}-qc-mt-ribo-largest.pdf" %>% glue::glue(),
     device = "pdf",
-    path = "data/result/01-qc",
+    path = "data/PBMC_10k_v3_10x/result/01-qc",
     width = 15,
     height = 5
   )
@@ -416,20 +416,25 @@ fn_gene_dotplot <- function(.sct_cluster, .marker, .n = 3) {
 # sct ---------------------------------------------------------------------
 
 
-feature_path <- "data/pbmc_10k_v3_filtered_feature_bc_matrix"
+feature_path <- "data/PBMC_10k_v3_10x/pbmc_10k_v3_filtered_feature_bc_matrix"
 
 sc <- fn_load_sc_10x(feature_path)
 
 readr::write_rds(
   x = sc,
-  file = "data/rda/pbmc_sc_cluster.rds.gz"
+  file = "data/PBMC_10k_v3_10x/rda/pbmc_sc_cluster.rds.gz"
 )
 
 sct <- fn_filter_sct(.sc = sc)
 
+readr::write_rds(
+  x = sct,
+  file = "data/PBMC_10k_v3_10x/rda/pbmc_sct_cluster.rds.gz"
+)
+
 cell_stats <- fn_stat_cell(sc, sct)
 
-writexl::write_xlsx(x = cell_stats, path = "data/result/01-qc/reads-stat.xlsx")
+writexl::write_xlsx(x = cell_stats, path = "data/PBMC_10k_v3_10x/result/01-qc/reads-stat.xlsx")
 
 
 # pca ---------------------------------------------------------------------
@@ -450,7 +455,17 @@ sct %>%
   Seurat::FindClusters(resolution = 0.2) ->
   sct_cluster
 
-Seurat::DimPlot(sct_cluster, label = TRUE, reduction = "tsne") 
+Seurat::DimPlot(sct_cluster, label = TRUE, reduction = "umap") 
+
+# sct %>%
+#   Seurat::RunPCA(npcs = 15) %>%
+#   Seurat::RunUMAP(reduction = "pca", dims = 1:15) %>%
+#   Seurat::RunTSNE(reduction = "pca", dims = 1:15) %>%
+#   Seurat::FindNeighbors(reduction = "pca", dims = 1:15) %>%
+#   Seurat::FindClusters(resolution = 0.3) ->
+#   sct_cluster
+# 
+# Seurat::DimPlot(sct_cluster, label = TRUE, reduction = "umap") 
 
 
 readr::write_rds(
@@ -576,8 +591,8 @@ ggsave(
   plot = p_umap,
   device = "pdf",
   path = "data/PBMC_10k_v3_10x/result/02-cluster",
-  width = 13,
-  height = 9
+  width = 10,
+  height = 7
 )
 
 # Marker genes ------------------------------------------------------------
