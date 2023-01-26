@@ -15,3 +15,8 @@ param=$#
 ~/tools/anaconda3/bin/mgatk tenx -i /scr1/users/liuc9/tools/mgatk/tests/barcode/test_barcode.bam \
   -n CRR_test1 -o CRR_test1_mgatk -c 12 -ub UB \
   -bt CB -b /scr1/users/liuc9/tools/mgatk/tests/barcode/test_barcodes.txt
+
+
+mgatk tenx -i MT.bam -o mgatk -n mgatk \
+  -c 12 -ub UB  -bt CB -b barcodes.tsv \
+  --mito-genome /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/fasta/rCRS.fasta
