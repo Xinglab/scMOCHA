@@ -5,9 +5,9 @@
 # @DESCRIPTION:
 
 # Number of input parameters
-param=$#
-INPUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/cellsnp
-OUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/mquad
-~/tools/anaconda3/bin/mquad -c $INPUT_DIR -o $OUT_DIR -p 20 --minDP 5
+# param=$#
+# INPUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/cellsnp
+# OUT_DIR=/home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/mquad
+# ~/tools/anaconda3/bin/mquad -c $INPUT_DIR -o $OUT_DIR -p 20 --minDP 5
 
-mquad -c cellsnp -o mquad -p 20 --minDP 3
+~/tools/anaconda3/bin/mquad -c /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/cellsnp -o /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/mquad -p 20 --minDP 2
