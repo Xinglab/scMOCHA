@@ -640,12 +640,13 @@ sct_cluster <- readr::read_rds(
 )
 p_ppbp <- FeaturePlot(
   object = sct_cluster,
-  features = "TCL1A",
+  features = "CDK6",
   cols = c("lightgrey", "#CD0000"),
   order = TRUE,
   reduction = "umap",
   max.cutoff = 2,
 )
+p_ppbp
 ggsave(
   filename = "featureplot-ppbp.pdf",
   plot = p_ppbp,
@@ -677,7 +678,5 @@ ggsave(
 future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
-save.image(
-  file = "data/PBMC_10k_v3_10x/rda/01-load-10x-scRNA-seq.rda"
-)
+# save.image(file = "data/PBMC_10k_v3_10x/rda/01-load-10x-scRNA-seq.rda")
 load(file = "data/PBMC_10k_v3_10x/rda/01-load-10x-scRNA-seq.rda")

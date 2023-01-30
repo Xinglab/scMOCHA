@@ -21,12 +21,12 @@ param=$#
 
 /home/liuc9/tools/cellsnp-lite-1.2.2/bin/bin/cellsnp-lite \
   -s /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/MT.bam \
-  -b /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/barcodes.tsv.gz \
+  -b /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/barcodes.tsv \
   -O /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/cellsnp \
   --chrom MT \
   --UMItag Auto \
-  --minMAF 0 \
-  --minCOUNT 0 \
+  --minMAF 0.05 \
+  --minCOUNT 10 \
   --genotype \
   --gzip \
   -p 20
