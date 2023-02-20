@@ -23,3 +23,22 @@ mgatk tenx -i /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/MT.bam \
   -c 12 -ub UB  -bt CB \
   -b /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/barcodes.tsv \
   --mito-genome /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/fasta/rCRS.fasta
+
+
+mgatk call -i /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam \
+  -o /home/liuc9/tmp/mgatk \
+  -n mgatk \
+  -c 12 \
+  --mito-genome /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/fasta/rCRS.fasta
+
+mgatk bcall -i /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/MT_cluster.bam\
+  -o /home/liuc9/tmp/mgatk \
+  -n mgatk \
+  -c 12 -bt CJ \
+  --mito-genome /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/fasta/rCRS.fasta
+
+# sinto addtags \
+#   -b /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/MT.bam \
+#   -f /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/barcode_cluster.tsv \
+#   -o /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/MT_cluster.bam \
+#   -p 10

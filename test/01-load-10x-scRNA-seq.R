@@ -601,6 +601,11 @@ library(Seurat)
 DefaultAssay(sct_cluster) <- "RNA"
 sct_cluster <- PrepSCTFindMarkers(object = sct_cluster)
 
+
+
+saveRDS(sct_cluster, file = "data/PBMC_10k_v3_10x/rda/PBMC10k.RDS")
+
+
 all.markers <- FindAllMarkers(
   object = sct_cluster,
   assay = "SCT",
@@ -613,6 +618,11 @@ readr::write_rds(
   x = all.markers,
   file = "data/PBMC_10k_v3_10x/rda/sc_sct_cluster_marker_genes.rds.gz"
 )
+
+all.markers %>% 
+  writexl::write_xlsx(
+    path = "data/PBMC_10k_v3_10x/result/all.marker.xlsx"
+  )
 
 all.markers %>% 
   dplyr::group_by(cluster) %>% 
