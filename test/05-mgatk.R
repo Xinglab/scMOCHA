@@ -118,6 +118,9 @@ cluster <- sct_cluster@meta.data[, c("seurat_clusters", "sctype")] %>%
   dplyr::rename(cluster = seurat_clusters, celltype =  sctype)
 
 hetero %>% 
+  # tidyr::replace_na(
+  #   replace = list(af = 0)
+  # ) %>% 
   tidyr::pivot_wider(names_from  = variant, values_from = af) ->
   hetero_w
 
@@ -135,347 +138,360 @@ cell_cluster_af %>%
   dplyr::left_join(depthtable, by = "barcode") ->
   cell_cluster_af_depth
 
+
+library(RColorBrewer)
+
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 myPalette <- colorRampPalette(c("#969696", "#fa0202"))
 sc <- scale_colour_gradientn(colours = myPalette(100), limits=c(0, 1))
 
-cell_cluster_af %>% 
-  # dplyr::filter(variant == "2617A>G") %>% nrow()
-  ggplot() +
-  geom_point(
-    aes(
-      x = UMAP_1,
-      y = UMAP_2,
-      colour = `9966G>A`,
-      shape = NULL,
-      alpha = NULL
-    ),
-    size = 0.7
-  ) +
-  sc +
-  theme(
-    panel.background = element_blank(),
-    axis.line = element_line(
-      colour = "black",
-      size = 0.5,
-      arrow = grid::arrow(
-        angle = 5,
-        length = unit(5, "npc"),
-        type = "closed"
+{
+  cell_cluster_af %>% 
+    # dplyr::filter(variant == "2617A>G") %>% nrow()
+    ggplot() +
+    geom_point(
+      aes(
+        x = UMAP_1,
+        y = UMAP_2,
+        colour = `9966G>A`,
+        shape = NULL,
+        alpha = NULL
+      ),
+      size = 0.7
+    ) +
+    sc +
+    theme(
+      panel.background = element_blank(),
+      axis.line = element_line(
+        colour = "black",
+        size = 0.5,
+        arrow = grid::arrow(
+          angle = 5,
+          length = unit(5, "npc"),
+          type = "closed"
+        )
+      ),
+      axis.ticks = element_blank(),
+      axis.text = element_blank(),
+      axis.title = element_text(
+        size = 12, 
+        face = "bold", 
+        hjust = 0.05
+      ),
+      legend.background = element_blank(),
+      legend.key = element_blank(),
+      legend.text = element_text(
+        face = "bold",
+        color = "black",
+        size = 10
       )
-    ),
-    axis.ticks = element_blank(),
-    axis.text = element_blank(),
-    axis.title = element_text(
-      size = 12, 
-      face = "bold", 
-      hjust = 0.05
-    ),
-    legend.background = element_blank(),
-    legend.key = element_blank(),
-    legend.text = element_text(
-      face = "bold",
-      color = "black",
-      size = 10
-    )
-  ) +
-  coord_fixed(
-    ratio = 1,
-  ) ->
-  p_variant;p_variant
-
-
-ggsave(
-  filename = "mgatk_cell_genotype_variant.pdf",
-  plot = p_variant,
-  device = "pdf",
-  path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
-  width = 12,
-  height = 9
-)
-
-
-cell_cluster_af %>% 
-  # dplyr::filter(variant == "2617A>G") %>% nrow()
-  ggplot() +
-  geom_point(
-    aes(
-      x = UMAP_1,
-      y = UMAP_2,
-      colour = `263A>G`,
-      shape = NULL,
-      alpha = NULL
-    ),
-    size = 0.7
-  ) +
-  sc +
-  theme(
-    panel.background = element_blank(),
-    axis.line = element_line(
-      colour = "black",
-      size = 0.5,
-      arrow = grid::arrow(
-        angle = 5,
-        length = unit(5, "npc"),
-        type = "closed"
-      )
-    ),
-    axis.ticks = element_blank(),
-    axis.text = element_blank(),
-    axis.title = element_text(
-      size = 12, 
-      face = "bold", 
-      hjust = 0.05
-    ),
-    legend.background = element_blank(),
-    legend.key = element_blank(),
-    legend.text = element_text(
-      face = "bold",
-      color = "black",
-      size = 10
-    )
-  ) +
-  coord_fixed(
-    ratio = 1,
-  ) ->
-  p_variant_ag;p_variant_ag
-
-
-ggsave(
-  filename = "mgatk_cell_genotype_variant_ag.pdf",
-  plot = p_variant_ag,
-  device = "pdf",
-  path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
-  width = 12,
-  height = 9
-)
-
-
-cell_cluster_af_depth %>% 
-  ggplot(aes(
-    x = depth,
-    y = `9966G>A`,
-  )) +
-  geom_point() +
-  scale_x_continuous(
-    expand = c(0.01, 0)
-  ) +
-  scale_y_continuous(
-    expand = c(0.01, 0)
-  ) +
-  theme(
-    panel.background = element_blank(),
-    axis.line = element_line(
-      colour = "black",
-      size = 0.5,
-      # arrow = grid::arrow(
-      #   angle = 1,
-      #   length = unit(1, "npc"),
-      #   type = "closed"
-      # )
-    ),
-    # axis.ticks = element_blank(),
-    axis.text = element_text(
-      size = 12,
-      color = "black",
-      face = "bold"
-    ),
-    axis.title = element_text(
-      size = 14, 
-      face = "bold", 
-      # hjust = 0.01
-    ),
-    legend.background = element_blank(),
-    legend.key = element_blank(),
-    legend.text = element_text(
-      face = "bold",
-      color = "black",
-      size = 12
-    )
-  ) +
-  labs(
-    x = "Average depth"
+    ) +
+    coord_fixed(
+      ratio = 1,
+    ) ->
+    p_variant;p_variant
+  
+  
+  ggsave(
+    filename = "mgatk_cell_genotype_variant.pdf",
+    plot = p_variant,
+    device = "pdf",
+    path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
+    width = 12,
+    height = 9
   )
+  
+  
+  cell_cluster_af %>% 
+    # dplyr::filter(variant == "2617A>G") %>% nrow()
+    ggplot() +
+    geom_point(
+      aes(
+        x = UMAP_1,
+        y = UMAP_2,
+        colour = `263A>G`,
+        shape = NULL,
+        alpha = NULL
+      ),
+      size = 0.7
+    ) +
+    sc +
+    theme(
+      panel.background = element_blank(),
+      axis.line = element_line(
+        colour = "black",
+        size = 0.5,
+        arrow = grid::arrow(
+          angle = 5,
+          length = unit(5, "npc"),
+          type = "closed"
+        )
+      ),
+      axis.ticks = element_blank(),
+      axis.text = element_blank(),
+      axis.title = element_text(
+        size = 12, 
+        face = "bold", 
+        hjust = 0.05
+      ),
+      legend.background = element_blank(),
+      legend.key = element_blank(),
+      legend.text = element_text(
+        face = "bold",
+        color = "black",
+        size = 10
+      )
+    ) +
+    coord_fixed(
+      ratio = 1,
+    ) ->
+    p_variant_ag;p_variant_ag
+  
+  
+  ggsave(
+    filename = "mgatk_cell_genotype_variant_ag.pdf",
+    plot = p_variant_ag,
+    device = "pdf",
+    path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
+    width = 12,
+    height = 9
+  )
+}
 
 
-cell_cluster_af_depth %>% 
-  dplyr::select(barcode, depth, `9966G>A`) %>% 
-  dplyr::inner_join(
-    coverage_wider %>% 
-      dplyr::select(barcode, `9966`),
-    by = "barcode"
-  ) %>% 
-  dplyr::mutate(
-    dplyr::across(
-      dplyr::everything(), 
-      ~tidyr::replace_na(.x, 0)
-    )) ->
-  cell_cluster_af_depth_select
-
-cor.test(cell_cluster_af_depth_select$`9966G>A`, cell_cluster_af_depth_select$`9966`) -> pearson
-
-cell_cluster_af_depth_select %>% 
-  ggplot(aes(
-    x = `9966`,
-    y = `9966G>A`,
-  )) +
-  geom_point(position = position_jitter()) +
-  scale_x_continuous(
-    expand = c(0.01, 0)
-  ) +
-  scale_y_continuous(
-    expand = c(0.01, 0)
-  ) +
-  theme(
-    panel.background = element_blank(),
-    axis.line = element_line(
-      colour = "black",
-      size = 0.5,
-      # arrow = grid::arrow(
-      #   angle = 1,
-      #   length = unit(1, "npc"),
-      #   type = "closed"
-      # )
-    ),
-    # axis.ticks = element_blank(),
-    axis.text = element_text(
-      size = 12,
-      color = "black",
-      face = "bold"
-    ),
-    axis.title = element_text(
-      size = 14, 
-      face = "bold", 
-      # hjust = 0.01
-    ),
-    legend.background = element_blank(),
-    legend.key = element_blank(),
-    legend.text = element_text(
-      face = "bold",
-      color = "black",
-      size = 12
+{
+  
+  cell_cluster_af_depth %>% 
+    ggplot(aes(
+      x = depth,
+      y = `9966G>A`,
+    )) +
+    geom_point() +
+    scale_x_continuous(
+      expand = c(0.01, 0)
+    ) +
+    scale_y_continuous(
+      expand = c(0.01, 0)
+    ) +
+    theme(
+      panel.background = element_blank(),
+      axis.line = element_line(
+        colour = "black",
+        size = 0.5,
+        # arrow = grid::arrow(
+        #   angle = 1,
+        #   length = unit(1, "npc"),
+        #   type = "closed"
+        # )
+      ),
+      # axis.ticks = element_blank(),
+      axis.text = element_text(
+        size = 12,
+        color = "black",
+        face = "bold"
+      ),
+      axis.title = element_text(
+        size = 14, 
+        face = "bold", 
+        # hjust = 0.01
+      ),
+      legend.background = element_blank(),
+      legend.key = element_blank(),
+      legend.text = element_text(
+        face = "bold",
+        color = "black",
+        size = 12
+      )
+    ) +
+    labs(
+      x = "Average depth"
     )
-  ) +
-  annotate(
-    geom = "text",
-    size = 11,
-    x = 40,
-    y = 0.8,
-    label = glue::glue(
-      "$Pearson \\ r=<<round(pearson$estimate,3)>>$",
-      .open = "<<", 
-      .close = ">>"
+  
+  
+  cell_cluster_af_depth %>% 
+    dplyr::select(barcode, depth, `9966G>A`) %>% 
+    dplyr::inner_join(
+      coverage_wider %>% 
+        dplyr::select(barcode, `9966`),
+      by = "barcode"
     ) %>% 
-      latex2exp::TeX(),
-  ) +
-  labs(
-    x = "chrMT:9966 read depth",
-    y = "9966G>A Allele Freq"
-  ) ->
-  p_variant_cor;p_variant_cor
-
-
-ggsave(
-  filename = "mgatk_cell_genotype_variant_cor.pdf",
-  plot = p_variant_cor,
-  device = "pdf",
-  path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
-  width = 7,
-  height = 6
-)
-
-
-
-
-cell_cluster_af_depth %>% 
-  dplyr::select(barcode, depth, `263A>G`) %>% 
-  dplyr::inner_join(
-    coverage_wider %>% 
-      dplyr::select(barcode, `263`),
-    by = "barcode"
-  ) %>% 
-  dplyr::mutate(
-    dplyr::across(
-      dplyr::everything(), 
-      ~tidyr::replace_na(.x, 0)
-    )) ->
-  cell_cluster_af_depth_select
-
-cor.test(cell_cluster_af_depth_select$`263A>G`, cell_cluster_af_depth_select$`263`) -> pearson
-
-cell_cluster_af_depth_select %>% 
-  ggplot(aes(
-    x = `263`,
-    y = `263A>G`,
-  )) +
-  # geom_point() +
-  geom_point(position = position_jitter(
-    width = 0.5,
-    height = 0.002
-  )) +
-  scale_x_continuous(
-    expand = c(0.01, 0)
-  ) +
-  scale_y_continuous(
-    expand = c(0.01, 0)
-  ) +
-  theme(
-    panel.background = element_blank(),
-    axis.line = element_line(
-      colour = "black",
-      size = 0.5,
-      # arrow = grid::arrow(
-      #   angle = 1,
-      #   length = unit(1, "npc"),
-      #   type = "closed"
-      # )
-    ),
-    # axis.ticks = element_blank(),
-    axis.text = element_text(
-      size = 12,
-      color = "black",
-      face = "bold"
-    ),
-    axis.title = element_text(
-      size = 14, 
-      face = "bold", 
-      # hjust = 0.01
-    ),
-    legend.background = element_blank(),
-    legend.key = element_blank(),
-    legend.text = element_text(
-      face = "bold",
-      color = "black",
-      size = 12
-    )
-  ) +
-  annotate(
-    geom = "text",
-    size = 8,
-    x = 2,
-    y = 0.8,
-    label = glue::glue(
-      "$Pearson \\ r=<<round(pearson$estimate,3)>>$",
-      .open = "<<", 
-      .close = ">>"
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::everything(), 
+        ~tidyr::replace_na(.x, 0)
+      )) ->
+    cell_cluster_af_depth_select
+  
+  cor.test(cell_cluster_af_depth_select$`9966G>A`, cell_cluster_af_depth_select$`9966`) -> pearson
+  
+  cell_cluster_af_depth_select %>% 
+    ggplot(aes(
+      x = `9966`,
+      y = `9966G>A`,
+    )) +
+    geom_point(position = position_jitter()) +
+    scale_x_continuous(
+      expand = c(0.01, 0)
+    ) +
+    scale_y_continuous(
+      expand = c(0.01, 0)
+    ) +
+    theme(
+      panel.background = element_blank(),
+      axis.line = element_line(
+        colour = "black",
+        size = 0.5,
+        # arrow = grid::arrow(
+        #   angle = 1,
+        #   length = unit(1, "npc"),
+        #   type = "closed"
+        # )
+      ),
+      # axis.ticks = element_blank(),
+      axis.text = element_text(
+        size = 12,
+        color = "black",
+        face = "bold"
+      ),
+      axis.title = element_text(
+        size = 14, 
+        face = "bold", 
+        # hjust = 0.01
+      ),
+      legend.background = element_blank(),
+      legend.key = element_blank(),
+      legend.text = element_text(
+        face = "bold",
+        color = "black",
+        size = 12
+      )
+    ) +
+    annotate(
+      geom = "text",
+      size = 11,
+      x = 40,
+      y = 0.8,
+      label = glue::glue(
+        "$Pearson \\ r=<<round(pearson$estimate,3)>>$",
+        .open = "<<", 
+        .close = ">>"
+      ) %>% 
+        latex2exp::TeX(),
+    ) +
+    labs(
+      x = "chrMT:9966 read depth",
+      y = "9966G>A Allele Freq"
+    ) ->
+    p_variant_cor;p_variant_cor
+  
+  
+  ggsave(
+    filename = "mgatk_cell_genotype_variant_cor.pdf",
+    plot = p_variant_cor,
+    device = "pdf",
+    path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
+    width = 7,
+    height = 6
+  )
+  
+  
+  
+  
+  
+  
+  
+  cell_cluster_af_depth %>% 
+    dplyr::select(barcode, depth, `263A>G`) %>% 
+    dplyr::inner_join(
+      coverage_wider %>% 
+        dplyr::select(barcode, `263`),
+      by = "barcode"
     ) %>% 
-      latex2exp::TeX(),
-  ) +
-  labs(
-    x = "chrMT:263 read depth",
-    y = "263A>G Allele Freq"
-  ) ->
-  p_variant_cor;p_variant_cor
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::everything(), 
+        ~tidyr::replace_na(.x, 0)
+      )) ->
+    cell_cluster_af_depth_select
+  
+  cor.test(cell_cluster_af_depth_select$`263A>G`, cell_cluster_af_depth_select$`263`) -> pearson
+  
+  cell_cluster_af_depth_select %>% 
+    ggplot(aes(
+      x = `263`,
+      y = `263A>G`,
+    )) +
+    # geom_point() +
+    geom_point(position = position_jitter(
+      width = 0.5,
+      height = 0.002
+    )) +
+    scale_x_continuous(
+      expand = c(0.01, 0)
+    ) +
+    scale_y_continuous(
+      expand = c(0.01, 0)
+    ) +
+    theme(
+      panel.background = element_blank(),
+      axis.line = element_line(
+        colour = "black",
+        size = 0.5,
+        # arrow = grid::arrow(
+        #   angle = 1,
+        #   length = unit(1, "npc"),
+        #   type = "closed"
+        # )
+      ),
+      # axis.ticks = element_blank(),
+      axis.text = element_text(
+        size = 12,
+        color = "black",
+        face = "bold"
+      ),
+      axis.title = element_text(
+        size = 14, 
+        face = "bold", 
+        # hjust = 0.01
+      ),
+      legend.background = element_blank(),
+      legend.key = element_blank(),
+      legend.text = element_text(
+        face = "bold",
+        color = "black",
+        size = 12
+      )
+    ) +
+    annotate(
+      geom = "text",
+      size = 8,
+      x = 2,
+      y = 0.8,
+      label = glue::glue(
+        "$Pearson \\ r=<<round(pearson$estimate,3)>>$",
+        .open = "<<", 
+        .close = ">>"
+      ) %>% 
+        latex2exp::TeX(),
+    ) +
+    labs(
+      x = "chrMT:263 read depth",
+      y = "263A>G Allele Freq"
+    ) ->
+    p_variant_cor;p_variant_cor
+  
+  
+  ggsave(
+    filename = "mgatk_cell_genotype_variant_cor_ag.pdf",
+    plot = p_variant_cor,
+    device = "pdf",
+    path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
+    width = 7,
+    height = 6
+  )
+}
 
 
-ggsave(
-  filename = "mgatk_cell_genotype_variant_cor_ag.pdf",
-  plot = p_variant_cor,
-  device = "pdf",
-  path = "data/PBMC_10k_v3_10x/result/04-allele-freq/",
-  width = 7,
-  height = 6
-)
 
 # 
 # cell_cluster_af %>% 
@@ -501,7 +517,7 @@ cell_cluster_af %>%
     values_to = "af"
   ) %>% 
   dplyr::group_by(barcode) %>% 
-  dplyr::summarise(s_af = sum(af)) %>% 
+  dplyr::summarise(s_af = sum(af, na.rm = T)) %>% 
   dplyr::left_join(
     cell_cluster_af %>%
       dplyr::select(barcode, cluster) ,
@@ -531,7 +547,12 @@ cell_cluster_af_pos %>%
     coverage_log2_pos,
     by = c("barcode", "pos")
   ) %>% 
-  dplyr::mutate(af = ifelse(is.na(depth), NA, af)) %>% 
+  tidyr::replace_na(
+    replace = list(
+      af = 0
+    )
+  ) %>% 
+  dplyr::mutate(af = ifelse(is.na(depth), NA, af)) %>%
   dplyr::arrange(pos) %>% 
   dplyr::select(barcode, variant, af) %>% 
   tidyr::pivot_wider(
@@ -607,7 +628,7 @@ ComplexHeatmap::Heatmap(
 
 {
   pdf(
-    file = "data/PBMC_10k_v3_10x/result/04-allele-freq/mgatk_cell_genotype_heatmap.pdf",
+    file = "data/PBMC_10k_v3_10x/result/04-allele-freq/mgatk_cell_genotype_heatmap-a.pdf",
     width = 12, 
     height = 4
   )
@@ -671,73 +692,9 @@ ComplexHeatmap::Heatmap(
 
 {
   pdf(
-    file = "data/PBMC_10k_v3_10x/result/04-allele-freq/mgatk_cell_depth_heatmap.pdf",
+    file = "data/PBMC_10k_v3_10x/result/04-allele-freq/mgatk_cell_depth_heatmap-a.pdf",
     width = 12, 
     height = 4
-  )
-  ComplexHeatmap::draw(object = chm_depth)
-  
-  dev.off()
-}
-
-
-coverage_log2
-
-
-coverage_log2 %>% 
-  # dplyr::arrange(pos) %>% 
-  tidyr::pivot_wider(
-    names_from = pos,
-    values_from = depth
-  ) %>% 
-  dplyr::slice(match(cell_cluster_af_col_rank$barcode, barcode)) %>% 
-  tibble::column_to_rownames(var = "barcode") %>% 
-  # dplyr::filter_all(
-  #   dplyr::any_vars(.!=0)
-  # ) %>% 
-  as.matrix() %>% 
-  t() ->
-  depth_all_mtx
-
-
-
-ComplexHeatmap::Heatmap(
-  matrix = depth_all_mtx,
-  col = circlize::colorRamp2(
-    breaks = c(1, 10), 
-    colors = c("white", "red"), 
-    space = "RGB"
-  ),
-  name = "log2(Depth+1)",
-  na_col = "grey",
-  color_space = "LAB",
-  rect_gp = gpar(col = NA),
-  border = NA,
-  cell_fun = NULL,
-  layer_fun = NULL,
-  jitter = FALSE,
-  # row
-  cluster_rows = F,
-  cluster_row_slices = T,
-  clustering_distance_rows = "pearson",
-  clustering_method_rows = "ward.D",
-  # column
-  cluster_columns = FALSE,
-  cluster_column_slices = T,
-  # clustering_distance_columns = "pearson",
-  # clustering_method_columns = "ward.D",
-  show_column_names = FALSE,
-  show_row_names = FALSE,
-  
-  top_annotation = chm_top
-) ->
-  chm_depth_all;chm_depth_all
-
-{
-  pdf(
-    file = "data/PBMC_10k_v3_10x/result/04-allele-freq/mgatk_cell_depth_heatmap.pdf",
-    width = 12, 
-    height = 30
   )
   ComplexHeatmap::draw(object = chm_depth)
   
