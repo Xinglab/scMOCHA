@@ -164,7 +164,7 @@ chm_top <- ComplexHeatmap::HeatmapAnnotation(
   col = list(`Cell cluster` = col_colors),
   which = "column"
 )
-
+c("#FFAEB9", "#FFFFFF", "#FFFFFF")
 
 ComplexHeatmap::Heatmap(
   matrix = cluster_af_mtx,
@@ -200,7 +200,7 @@ ComplexHeatmap::Heatmap(
 {
   pdf(
     file = "data/PBMC_10k_v3_10x/result/04-allele-freq/mgatk_cluster_genotype_heatmap-bulk.pdf",
-    width = 6, 
+    width = 7, 
     height = 7
   )
   ComplexHeatmap::draw(object = chm)
@@ -263,7 +263,7 @@ ComplexHeatmap::Heatmap(
 {
   pdf(
     file = "data/PBMC_10k_v3_10x/result/04-allele-freq/mgatk_cluster_depth_heatmap-bulk.pdf",
-    width = 6, 
+    width = 7, 
     height = 7
   )
   ComplexHeatmap::draw(object = chm_depth)
