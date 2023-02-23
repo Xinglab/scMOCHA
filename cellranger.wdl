@@ -46,9 +46,13 @@ workflow CellRanger {
 
   call call_variant_on_single_cell_level {
     input:
-    possorted_genome_bam = cellranger_count.sorted_bam
-    gzipped_barcodes = cellranger_count.barcodes
-    rCRS = rCRS
+    possorted_genome_bam = cellranger_count.sorted_bam,
+    gzipped_barcodes = cellranger_count.barcodes,
+    rCRS = rCRS,
+    memory = memory,
+    boot_disk_size_gb = boot_disk_size_gb,
+    disk_space = disk_space,
+    cpu = cpu
   }
 
   output {
@@ -133,12 +137,18 @@ task call_variant_on_single_cell_level {
   # Set 'barcodes' to the uncompressed barcode file
   File barcodes = sub(".gz$", "", gzipped_barcodes)
 
+
+  String memory
+  Int boot_disk_size_gb
+  String disk_space
+  Int cpu
+
   command {
     gunzip -c ${gzipped_barcodes} > ${barcodes}
 
     mgatk tenx -i ${possorted_genome_bam} \
       -n sc \
-      -c 12 -ub UB  -bt CB \
+      -c ${cpu} -ub UB  -bt CB \
       -b ${barcodes} \
       --mito-genome ${rCRS}
 
