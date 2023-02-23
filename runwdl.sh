@@ -6,8 +6,8 @@
 
 # Number of input parameters
 param=$#
-
-java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \
+cd /home/liuc9/tmp/cellrangerwdl
+nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \
     -jar /home/liuc9/tools/cromwell-78.jar \
     run /home/liuc9/github/scRNAseq-MitoVariant/cellranger.wdl \
-    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json
+    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json &

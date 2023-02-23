@@ -13,10 +13,10 @@ workflow CellRanger {
     Int? expect_cells
 
     # Runtime attributes
-    String memory = "200 GB"
+    String memory = "50 GB"
     Int boot_disk_size_gb = 12
-    String disk_space = "400"
-    Int cpu = 64
+    String disk_space = "50"
+    Int cpu = 20
 
     parameter_meta {
         output_id: "Output ID"
