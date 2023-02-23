@@ -1,4 +1,3 @@
-version 1.0
 
 workflow CellRanger {
     # version of this pipeline
@@ -72,8 +71,8 @@ workflow CellRanger {
 
       # call_variant_on_single_cell_level
       File mgatk_single_cell_level = call_variant_on_single_cell_level.mgatk_single_cell_level
-      Flle cell_heteroplasmic_df = call_variant_on_single_cell_level.mgatk_single_cell_level
-      File coverage = call_variant_on_single_cell_level.mgatk_single_cell_level
+      File cell_heteroplasmic_df = call_variant_on_single_cell_level.cell_heteroplasmic_df
+      File coverage = call_variant_on_single_cell_level.coverage
   }
 
   meta {
@@ -130,6 +129,8 @@ task cellranger_count {
     }
 }
 
+task cell_cluster_annotation {}
+
 task call_variant_on_single_cell_level {
   File possorted_genome_bam
   File gzipped_barcodes
@@ -152,11 +153,17 @@ task call_variant_on_single_cell_level {
       -b ${barcodes} \
       --mito-genome ${rCRS}
 
-    tar czf mgatk_single_cell_level.tar.gz "mgatk_single_cell_level/final"
+    tar czf mgatk_single_cell_level.tar.gz "final"
   }
   output {
     File mgatk_single_cell_level = "mgatk_single_cell_level.tar.gz"
-    Flle cell_heteroplasmic_df =  "sc/final/sc.cell_heteroplasmic_df.tsv.gz"
-    File coverage =  "sc/final/sc.coverage.txt.gz"
+    File cell_heteroplasmic_df =  "final/sc.cell_heteroplasmic_df.tsv.gz"
+    File coverage =  "final/sc.coverage.txt.gz"
   }
 }
+
+task call_variant_on_cell_cluster_level {}
+
+task call_variant_on_bulk_cell_level {}
+
+task heteroplasmy_heatmap {}
