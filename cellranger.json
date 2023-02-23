@@ -1,0 +1,8 @@
+{
+  "CellRanger.sample_id": "pbmc_10k_v3",
+  "CellRanger.fastqs": "/home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/pbmc_10k_v3_fastqs",
+  "CellRanger.transcriptome": "/home/liuc9/data/refdata/mgatk_index/Human",
+  "CellRanger.output_id": "pbmc_10k_v3",
+  "CellRanger.output_dir": "a",
+  "CellRanger.rCRS": "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta"
+}

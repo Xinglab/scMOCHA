@@ -103,7 +103,7 @@ task cellranger_count {
         --transcriptome=${transcriptome} \
         --nosecondary \
         --disable-ui \
-        --local ${cpu}
+        --localcores ${cpu}
 
       # tar czf ${output_id}.tar.gz ${output_id}/outs
 
@@ -129,7 +129,7 @@ task cellranger_count {
     }
 }
 
-task cell_cluster_annotation {}
+# task cell_cluster_annotation {}
 
 task call_variant_on_single_cell_level {
   File possorted_genome_bam
@@ -162,8 +162,8 @@ task call_variant_on_single_cell_level {
   }
 }
 
-task call_variant_on_cell_cluster_level {}
+# task call_variant_on_cell_cluster_level {}
 
-task call_variant_on_bulk_cell_level {}
+# task call_variant_on_bulk_cell_level {}
 
-task heteroplasmy_heatmap {}
+# task heteroplasmy_heatmap {}
