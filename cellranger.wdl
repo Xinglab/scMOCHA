@@ -43,6 +43,11 @@ workflow CellRanger {
       cpu = cpu
   }
 
+  call cell_cluster_annotation {
+    input:
+      h5file = cellranger_count.filtered_feature_bc_matrix
+  }
+
   call call_variant_on_single_cell_level {
     input:
     possorted_genome_bam = cellranger_count.sorted_bam,
@@ -129,7 +134,19 @@ task cellranger_count {
     }
 }
 
-# task cell_cluster_annotation {}
+task cell_cluster_annotation {
+  File h5file
+
+  command {
+    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
+  }
+  output {
+    File barcode_cluster = "barcode_cluster.tsv"
+    File barcode_bulk = "barcode_bulk.tsv"
+    File cluster_umap = "cluster_umap.tsv"
+    File sct_clsuter = "sct_cluster.rds.gz"
+  }
+}
 
 task call_variant_on_single_cell_level {
   File possorted_genome_bam
