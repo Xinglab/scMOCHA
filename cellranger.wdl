@@ -114,14 +114,6 @@ task cellranger_count {
 
     }
 
-    # runtime {
-    #     docker: "quay.io/humancellatlas/secondary-analysis-cellranger:v1.0.0"
-    #     memory: memory
-    #     bootDiskSizeGb: boot_disk_size_gb
-    #     disks: "local-disk " + disk_space + " HDD"
-    #     cpu: cpu
-    # }
-
     output {
         File filtered_feature_bc_matrix = "${output_id}/outs/filtered_feature_bc_matrix.h5"
         File metrics_summary = "${output_id}/outs/metrics_summary.csv"
@@ -179,8 +171,71 @@ task call_variant_on_single_cell_level {
   }
 }
 
-# task call_variant_on_cell_cluster_level {}
+task call_variant_on_cell_cluster_level {
+  File possorted_genome_bam
+  File barcode_cluster
+  File barcode_bulk
+  File rCRS
 
-# task call_variant_on_bulk_cell_level {}
+  String memory
+  Int boot_disk_size_gb
+  String disk_space
+  Int cpu
 
-# task heteroplasmy_heatmap {}
+  command {
+
+    samtools view -hb ${possorted_genome_bam} MT > MT.bam
+    samtools index MT.bam
+
+    # cell cluster
+
+    sinto addtags \
+      -b MT.bam \
+      -f ${barcode_cluster} \
+      -o MT_cluster.bam \
+      -p ${cpu}
+
+    samtools index MT_cluster.bam
+
+    mgatk bcall -i MT_cluster.bam \
+    -o mgatk_cluster \
+    -n mgatk_cluster \
+    -c ${cpu} -bt CJ \
+    --mito-genome ${rCRS} \
+    --keep-temp-files
+
+    python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 MT
+
+
+    # cell bulk
+
+    sinto addtags \
+      -b MT.bam \
+      -f ${barcode_bulk} \
+      -o MT_bulk.bam \
+      -p ${cpu}
+
+    samtools index MT_bulk.bam
+
+
+    mgatk bcall -i MT_bulk.bam \
+      -o mgatk_bulk \
+      -n mgatk_bulk \
+      -c ${cpu} -bt CJ \
+      --mito-genome ${rCRS} \
+      --keep-temp-files
+
+    python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_bulk/final/ mgatk_bulk 16569 10 MT
+  }
+
+}
+
+task heteroplasmy_heatmap {
+  File hetero_file
+  File coverage_file
+  File cluster_umap_file
+
+  command {
+    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/heteroplasmy_heatmap.R ${hetero_file} ${coverage_file} ${cluster_umap_file}
+  }
+}
