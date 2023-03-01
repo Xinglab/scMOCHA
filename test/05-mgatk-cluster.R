@@ -108,6 +108,9 @@ hetero_cb %>%
   dplyr::inner_join(
     coverage_cb,
     by = c("barcode", "pos")
+  ) |> 
+  dplyr::mutate(
+    af = ifelse(af < 0.05, NA, af)
   ) ->
   hetero_af_pos
 
@@ -122,11 +125,11 @@ hetero_af_pos %>%
   hetero_af_pos_rank
 
 hetero_af_pos %>% 
-  tidyr::replace_na(
-    replace = list(
-      af = 0
-    )
-  ) %>% 
+  # tidyr::replace_na(
+  #   replace = list(
+  #     af = 0
+  #   )
+  # ) %>% 
   dplyr::mutate(af = ifelse(is.na(depth), NA, af)) %>% 
   dplyr::arrange(pos) %>% 
   dplyr::select(barcode, variant, af) %>% 
