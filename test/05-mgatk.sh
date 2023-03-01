@@ -66,3 +66,5 @@ mgatk bcall -i /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_clus
 python /home/liuc9/github/scRNAseq-MitoVariant/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/mgatk_bulk/final/ mgatk_bulk 16569 10 MT
 
 
+# test
+python /home/liuc9/github/scRNAseq-MitoVariant/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/mgatk/final mgatk_bulk 16569 10 MT
