@@ -198,11 +198,11 @@ task call_variant_on_cell_cluster_level {
     samtools index MT_cluster.bam
 
     mgatk bcall -i MT_cluster.bam \
-    -o mgatk_cluster \
-    -n mgatk_cluster \
-    -c ${cpu} -bt CJ \
-    --mito-genome ${rCRS} \
-    --keep-temp-files
+      -o mgatk_cluster \
+      -n mgatk_cluster \
+      -c ${cpu} -bt CJ \
+      --mito-genome ${rCRS} \
+      --keep-temp-files
 
     python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 MT
 
