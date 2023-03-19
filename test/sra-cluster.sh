@@ -122,7 +122,7 @@ mgatk bcall -i MT_cluster.bam \
     --mito-genome ${rCRS} \
     --keep-temp-files
 
-python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 MT
+python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 chrM
 
 sinto addtags \
   -b MT.bam \
@@ -139,4 +139,4 @@ mgatk bcall -i MT_bulk.bam \
   --mito-genome ${rCRS} \
   --keep-temp-files
 
-python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_bulk/final/ mgatk_bulk 16569 10 MT
+python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_bulk/final/ mgatk_bulk 16569 10 chrM
