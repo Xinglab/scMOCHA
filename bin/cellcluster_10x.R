@@ -404,7 +404,7 @@ sct <- fn_filter_sct(.sc = sc)
 
 cell_stats <- fn_stat_cell(sc, sct)
 writexl::write_xlsx(
-  x = cell_stats, 
+  x = cell_stats,
   path = "reads-stat.xlsx"
 )
 
@@ -426,35 +426,35 @@ readr::write_rds(
 )
 
 
-umap <- sct_cluster@reductions$umap@cell.embeddings
+umap <- as.data.frame(sct_cluster@reductions$umap@cell.embeddings)
 colnames(umap) <- c("UMAP_1", "UMAP_2")
 
-cluster <- sct_cluster@meta.data[, c("seurat_clusters")] %>% 
+cluster <- sct_cluster@meta.data[, c("seurat_clusters"), drop=FALSE] %>%
   dplyr::rename(cluster = seurat_clusters)
 
-dplyr::bind_cols(umap, cluster) %>% 
+dplyr::bind_cols(umap, cluster) %>%
   tibble::rownames_to_column(var = "barcode") ->
   cluster_umap
 
-cluster_umap %>% 
+cluster_umap %>%
   readr::write_tsv(
     file = "cluster_umap.tsv",
   )
 
 # cell cluster ------------------------------------------------------------
 
-sct_cluster@meta.data %>% 
-  as.data.frame() %>% 
+sct_cluster@meta.data %>%
+  as.data.frame() %>%
   tibble::rownames_to_column(
     var = "cellbarcode"
-  ) %>% 
+  ) %>%
   dplyr::select(
     cellbarcode,
     seurat_clusters
-  ) %>% 
-  tibble::as_tibble() %>% 
-  dplyr::mutate(tag = "CJ") %>% 
-  dplyr::mutate(seurat_clusters = as.numeric(seurat_clusters)) %>% 
+  ) %>%
+  tibble::as_tibble() %>%
+  dplyr::mutate(tag = "CJ") %>%
+  dplyr::mutate(seurat_clusters = as.numeric(seurat_clusters)) %>%
   dplyr::mutate(
     cluster = purrr::map_chr(
       .x = seurat_clusters,
@@ -462,19 +462,19 @@ sct_cluster@meta.data %>%
         glue::glue("cluster{.x}-1")
       }
     )
-  ) %>% 
+  ) %>%
   dplyr::select(1, 3, 4) ->
   cellbarcode
 
 
-cellbarcode %>% 
+cellbarcode %>%
   readr::write_tsv(
     file = "barcode_cluster.tsv",
     col_names = F
   )
 
-cellbarcode %>% 
-  dplyr::mutate(cluster = "Bulk") %>% 
+cellbarcode %>%
+  dplyr::mutate(cluster = "Bulk") %>%
   readr::write_tsv(
     file = "barcode_bulk.tsv",
     col_names = F
@@ -594,8 +594,8 @@ ggsave(
   width = 10,
   height = 7
 )
-
 # Marker genes ------------------------------------------------------------
+future::plan(future::sequential)
 library(Seurat)
 # DefaultAssay(sct_cluster) <- "integrated"
 DefaultAssay(sct_cluster) <- "RNA"
