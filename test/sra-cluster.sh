@@ -23,8 +23,8 @@ barcodes=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/out
 cpu=20
 rCRS=/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.chrM.fasta
 
-barcode_cluster=/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/barcode_cluster.tsv
-barcode_bulk=/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/barcode_bulk.tsv
+barcode_cluster=/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/barcode_cluster.tsv
+barcode_bulk=/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/fl25/Flu2/outs/barcode_bulk.tsv
 
 gunzip -c ${gzipped_barcodes} > ${barcodes}
 mgatk tenx -i ${possorted_genome_bam} \
@@ -45,6 +45,7 @@ sinto addtags \
   -f ${barcode_cluster} \
   -o MT_cluster.bam \
   -p ${cpu}
+
 samtools index MT_cluster.bam
 
 mgatk bcall -i MT_cluster.bam \
