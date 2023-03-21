@@ -17,6 +17,16 @@ fasterq-dump ${sra_dir}/MM068/SRR17022244.sra --include-technical --mem 50G --th
 
 fasterq-dump  ${sra_dir}/MM188/SRR17022252.sra --include-technical --mem 50G --threads 20 --split-files --outdir  ${sra_dir}/MM188
 
+
+
+mv SRR17022244_1.fastq SRR17022244_S1_L001_I1_001.fastq
+mv SRR17022244_2.fastq SRR17022244_S1_L001_R1_001.fastq
+mv SRR17022244_3.fastq SRR17022244_S1_L001_R2_001.fastq
+
+mv SRR17022252_1.fastq SRR17022252_S1_L001_I1_001.fastq
+mv SRR17022252_2.fastq SRR17022252_S1_L001_R1_001.fastq
+mv SRR17022252_3.fastq SRR17022252_S1_L001_R2_001.fastq
+
 # fasterq-dump --mem 50G --threads 15 --split-3 ${sra_dir}/MM0678/SRR17022244.sra
 
 # fasterq-dump --mem 50G --threads 15 --split-3  ${sra_dir}/MM188/SRR17022252.sra
