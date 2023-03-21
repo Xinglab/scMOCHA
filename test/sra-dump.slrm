@@ -10,9 +10,20 @@ module load R/4.1.0
 
 sra_dir="/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM"
 
-fasterq-dump --mem 50G --threads 15 --split-3 ${sra_dir}/MM0678/SRR17022244.sra
 
-fasterq-dump --mem 50G --threads 15 --split-3  ${sra_dir}/MM188/SRR17022252.sra
+
+
+fasterq-dump ${sra_dir}/MM068/SRR17022244.sra --include-technical --mem 50G --threads 20 --split-files --outdir ${sra_dir}/MM0678
+
+fasterq-dump  ${sra_dir}/MM188/SRR17022252.sra --include-technical --mem 50G --threads 20 --split-files --outdir  ${sra_dir}/MM188
+
+# fasterq-dump --mem 50G --threads 15 --split-3 ${sra_dir}/MM0678/SRR17022244.sra
+
+# fasterq-dump --mem 50G --threads 15 --split-3  ${sra_dir}/MM188/SRR17022252.sra
+
+
+
+# fasterq-dump SRR17022252.sra --include-technical --mem 50G --threads 20 --split-files --outdir
 
 
 # output_id="MM0678"
