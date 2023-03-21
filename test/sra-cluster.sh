@@ -24,7 +24,7 @@ cpu=20
 rCRS=/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.chrM.fasta
 
 barcode_cluster=/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/barcode_cluster.tsv
-barcode_bulk=/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/fl25/Flu2/outs/barcode_bulk.tsv
+barcode_bulk=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/barcode_bulk.tsv
 
 gunzip -c ${gzipped_barcodes} > ${barcodes}
 mgatk tenx -i ${possorted_genome_bam} \
@@ -55,7 +55,7 @@ mgatk bcall -i MT_cluster.bam \
     --mito-genome ${rCRS} \
     --keep-temp-files
 
-python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 MT
+python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 chrM
 
 sinto addtags \
   -b MT.bam \
@@ -72,7 +72,7 @@ mgatk bcall -i MT_bulk.bam \
   --mito-genome ${rCRS} \
   --keep-temp-files
 
-python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_bulk/final/ mgatk_bulk 16569 10 MT
+python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_bulk/final/ mgatk_bulk 16569 10 chrM
 
 
 # flu5
