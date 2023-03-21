@@ -1,0 +1,42 @@
+#!/bin/sh
+#SBATCH --signal=USR2
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=50
+#SBATCH --mem=200G
+#SBATCH --time=720:00:00
+#SBATCH --output=/home/%u/tmp/errout/sh.job.%j
+
+
+# Number of input parameters
+param=$#
+
+output_id="MM068"
+fastqs="/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068"
+sample_id="SRR17022244"
+transcriptome="/home/liuc9/data/refdata/cellranger/refdata-gex-GRCh38-2020-A"
+cpu=20
+
+cellranger count \
+  --id=${output_id} \
+  --fastqs=${fastqs} \
+  --sample=${sample_id} \
+  --transcriptome=${transcriptome} \
+  --nosecondary \
+  --disable-ui \
+  --localcores ${cpu}
+
+
+output_id="MM188"
+fastqs="/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188"
+sample_id="SRR17022252"
+transcriptome="/home/liuc9/data/refdata/cellranger/refdata-gex-GRCh38-2020-A"
+cpu=20
+
+cellranger count \
+  --id=${output_id} \
+  --fastqs=${fastqs} \
+  --sample=${sample_id} \
+  --transcriptome=${transcriptome} \
+  --nosecondary \
+  --disable-ui \
+  --localcores ${cpu}
