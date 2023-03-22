@@ -22,6 +22,7 @@ cellranger count \
   --disable-ui \
   --localcores ${cpu}
 
+# samtools depth -a -r chrM --threads=20 MT.bam > MT.depth
 
 output_id="Flu5"
 fastqs="/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu5"
