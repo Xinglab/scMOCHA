@@ -61,7 +61,7 @@ cluster_umap <- vroom::vroom(file = cluster_umap_file)
 
 hetero %>%
   dplyr::group_by(variant) %>%
-  dplyr::summarise(s_af = sum(af)) %>%
+  dplyr::summarise(s_af = sum(af, na.rm = T)) %>%
   dplyr::arrange(s_af) ->
   hetero_variant_rank
 
