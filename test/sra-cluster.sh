@@ -125,6 +125,7 @@ sinto addtags \
   -f ${barcode_cluster} \
   -o MT_cluster.bam \
   -p ${cpu}
+
 samtools index MT_cluster.bam
 
 mgatk bcall -i MT_cluster.bam \
