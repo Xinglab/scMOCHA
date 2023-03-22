@@ -43,6 +43,7 @@ samtools view -hb ${possorted_genome_bam} chrM > MT.bam
 samtools index MT.bam
 
 samtools depth -a -r chrM --threads=20 MT.bam > MT.depth
+Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/mt_depth.R MT.depth
 
 sinto addtags \
   -b MT.bam \
@@ -116,6 +117,8 @@ samtools view -hb ${possorted_genome_bam} chrM > MT.bam
 samtools index MT.bam
 
 samtools depth -a -r chrM --threads=20 MT.bam > MT.depth
+Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/mt_depth.R MT.depth
+
 
 sinto addtags \
   -b MT.bam \
