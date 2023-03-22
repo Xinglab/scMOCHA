@@ -199,7 +199,7 @@ ComplexHeatmap::Heatmap(
 
 cell_cluster_af_pos %>%
   dplyr::left_join(
-    coverage_log2_pos,
+    coverage_pos,
     by = c("barcode", "pos")
   ) %>%
   dplyr::select(barcode, pos, depth) %>%
