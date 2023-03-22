@@ -41,15 +41,15 @@ conn <- DBI::dbConnect(
   "/mnt/isilon/xing_lab/liuc9/refdata/ensembl/Homo_sapiens.GRCh38.107.gtf.plyranges.duckdb"
 )
 
-gtf_gene <- dplyr::tbl(conn, "grch38_107_plyranges") |> 
-  dplyr::filter(seqnames == "MT") |> 
+gtf_gene <- dplyr::tbl(conn, "grch38_107_plyranges") |>
+  dplyr::filter(seqnames == "MT") |>
   data.table::as.data.table()
 
-DBI::dbDisconnect(conn)
+DBI::dbDisconnect(conn,  shutdown=TRUE)
 
 
-gtf_gene |> 
-  dplyr::filter(type == "exon") |> 
+gtf_gene |>
+  dplyr::filter(type == "exon") |>
   as.data.frame() ->
   gtf_gene_df
 
@@ -74,9 +74,9 @@ coverage %>%
     axis.title.x = element_blank()
   ) +
   labs(y = "Depth") ->
-  p1;p1
+  p1
 
-gtf_gene_df %>% 
+gtf_gene_df %>%
   ggplot(aes(
     xstart = start,
     xend = end,
@@ -111,9 +111,9 @@ gtf_gene_df %>%
     legend.position = "bottom"
   ) +
   labs(
-    x = "Position",
+    x = "Position"
   ) ->
-  p2;p2
+  p2
 
 
 p <- cowplot::plot_grid(
