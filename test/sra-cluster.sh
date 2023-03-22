@@ -9,22 +9,24 @@ param=$#
 
 # Flu2
 # cell_cluster_annotation
-h5file="/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/filtered_feature_bc_matrix.h5"
+h5file="/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068/MM068/outs/filtered_feature_bc_matrix.h5"
 
-Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
+
 
 # call_variant_on_single_cell_level
 
-possorted_genome_bam=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/possorted_genome_bam.bam
+possorted_genome_bam=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068/MM068/outs/possorted_genome_bam.bam
 
-gzipped_barcodes=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/filtered_feature_bc_matrix/barcodes.tsv.gz
-barcodes=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/filtered_feature_bc_matrix/barcodes.tsv
+gzipped_barcodes=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068/MM068/outs/filtered_feature_bc_matrix/barcodes.tsv.gz
+barcodes=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068/MM068/outs/filtered_feature_bc_matrix/barcodes.tsv
 
 cpu=20
 rCRS=/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.chrM.fasta
 
 barcode_cluster=/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/barcode_cluster.tsv
-barcode_bulk=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/barcode_bulk.tsv
+barcode_bulk=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068/MM068/outs/barcode_bulk.tsv
+
+Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
 
 gunzip -c ${gzipped_barcodes} > ${barcodes}
 mgatk tenx -i ${possorted_genome_bam} \
@@ -39,6 +41,8 @@ tar czf mgatk_single_cell_level.tar.gz "mgatk_out/final"
 # call_variant_on_cell_cluster_level
 samtools view -hb ${possorted_genome_bam} chrM > MT.bam
 samtools index MT.bam
+
+samtools depth -a -r chrM --threads=20 MT.bam > MT.depth
 
 sinto addtags \
   -b MT.bam \
@@ -77,23 +81,25 @@ python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_bulk
 
 # flu5
 # cell_cluster_annotation
-h5file="/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/filtered_feature_bc_matrix.h5"
+h5file="/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/filtered_feature_bc_matrix.h5"
 
-Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
+
 
 # call_variant_on_single_cell_level
 
 
-possorted_genome_bam=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/possorted_genome_bam.bam
+possorted_genome_bam=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/possorted_genome_bam.bam
 
-gzipped_barcodes=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/filtered_feature_bc_matrix/barcodes.tsv.gz
-barcodes=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/filtered_feature_bc_matrix/barcodes.tsv
+gzipped_barcodes=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/filtered_feature_bc_matrix/barcodes.tsv.gz
+barcodes=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/filtered_feature_bc_matrix/barcodes.tsv
 
 cpu=20
 rCRS=/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.chrM.fasta
 
-barcode_cluster=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/barcode_cluster.tsv
-barcode_bulk=/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs/barcode_bulk.tsv
+barcode_cluster=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/barcode_cluster.tsv
+barcode_bulk=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/barcode_bulk.tsv
+
+Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
 
 gunzip -c ${gzipped_barcodes} > ${barcodes}
 mgatk tenx -i ${possorted_genome_bam} \
@@ -108,6 +114,8 @@ tar czf mgatk_single_cell_level.tar.gz "mgatk_out/final"
 # call_variant_on_cell_cluster_level
 samtools view -hb ${possorted_genome_bam} chrM > MT.bam
 samtools index MT.bam
+
+samtools depth -a -r chrM --threads=20 MT.bam > MT.depth
 
 sinto addtags \
   -b MT.bam \
