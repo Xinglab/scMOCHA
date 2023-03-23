@@ -381,8 +381,7 @@ fn_gene_dotplot <- function(.sct_cluster, .marker, .n = 3) {
 
   .marker %>%
     dplyr::group_by(cluster) %>%
-    dplyr::slice_max(n = .n, order_by = avg_log2FC) %>%
-    print(n = Inf) ->
+    dplyr::slice_max(n = .n, order_by = avg_log2FC) ->
     .marker_head
 
   DefaultAssay(.sct_cluster) <- "SCT"
