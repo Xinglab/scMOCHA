@@ -518,31 +518,32 @@ cL_results <- do.call(
     }
   )
 )
-cL_results %>%
-  dplyr::group_by(cluster) %>%
-  tidyr::nest() %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(mm = purrr::map(
-    .x = data,
-    .f = function(.x) {
-      .x %>%
-        dplyr::mutate(
-          cell = gsub(
-            pattern = " \\(.*\\)",
-            replacement = "",
-            x = type
-          )
-        ) %>%
-        dplyr::mutate(
-          tissue = gsub(
-            pattern = ".*\\(|\\)",
-            replacement = "",
-            x = type
-          )
-        ) %>%
-        dplyr::arrange(tissue, -scores)
-    }
-  ))
+
+# cL_results %>%
+#   dplyr::group_by(cluster) %>%
+#   tidyr::nest() %>%
+#   dplyr::ungroup() %>%
+#   dplyr::mutate(mm = purrr::map(
+#     .x = data,
+#     .f = function(.x) {
+#       .x %>%
+#         dplyr::mutate(
+#           cell = gsub(
+#             pattern = " \\(.*\\)",
+#             replacement = "",
+#             x = type
+#           )
+#         ) %>%
+#         dplyr::mutate(
+#           tissue = gsub(
+#             pattern = ".*\\(|\\)",
+#             replacement = "",
+#             x = type
+#           )
+#         ) %>%
+#         dplyr::arrange(tissue, -scores)
+#     }
+#   ))
 
 
 sctype_scores <-  cL_results %>%
