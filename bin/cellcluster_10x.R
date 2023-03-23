@@ -19,6 +19,7 @@ args <- commandArgs(TRUE)
 
 h5file <- args[1]
 # h5file <- "/scr1/users/liuc9/tmp/singlecell/pbmc_10k_v3/outs/filtered_feature_bc_matrix.h5"
+h5file <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/raw_feature_bc_matrix.h5"
 
 
 # src ---------------------------------------------------------------------
@@ -33,8 +34,19 @@ future::plan(future::multisession, workers = 10)
 fn_load_sc_10x <- function(.x, .project = "singlecell") {
   # .x is the feature_bc_matrix
   # .x <- feature_path
-
-  .counts <- Seurat::Read10X_h5(filename = h5file)
+  # .x <- h5file
+  # .x
+  
+  .counts <- tryCatch(
+    expr = {
+      Seurat::Read10X_h5(filename = .x)
+    },
+    error = function(e){
+      .xx <- gsub(pattern = ".h5", replacement = "", x = .x)
+      Seurat::Read10X(data.dir = .xx)
+    }
+  )
+  # .counts <- Seurat::Read10X_h5(filename = .x)
 
   .sc <- Seurat::CreateSeuratObject(
     counts = .counts,
@@ -426,21 +438,6 @@ readr::write_rds(
 )
 
 
-umap <- as.data.frame(sct_cluster@reductions$umap@cell.embeddings)
-colnames(umap) <- c("UMAP_1", "UMAP_2")
-
-cluster <- sct_cluster@meta.data[, c("seurat_clusters"), drop=FALSE] %>%
-  dplyr::rename(cluster = seurat_clusters)
-
-dplyr::bind_cols(umap, cluster) %>%
-  tibble::rownames_to_column(var = "barcode") ->
-  cluster_umap
-
-cluster_umap %>%
-  readr::write_tsv(
-    file = "cluster_umap.tsv",
-  )
-
 # cell cluster ------------------------------------------------------------
 
 sct_cluster@meta.data %>%
@@ -561,6 +558,8 @@ for(j in unique(sctype_scores$cluster)) {
   sct_cluster@meta.data$sctype[sct_cluster@meta.data$seurat_clusters == j] = as.character(cl_type$type[1])
 }
 
+
+
 readr::write_rds(
   x = sct_cluster,
   file = "sct_cluster_annotated.rds.gz"
@@ -594,6 +593,26 @@ ggsave(
   width = 10,
   height = 7
 )
+
+# write cluster umap ------------------------------------------------------
+
+
+
+umap <- as.data.frame(sct_cluster@reductions$umap@cell.embeddings)
+colnames(umap) <- c("UMAP_1", "UMAP_2")
+
+cluster <- sct_cluster@meta.data[, c("seurat_clusters", "sctype"), drop=FALSE] %>%
+  dplyr::rename(cluster = seurat_clusters)
+
+dplyr::bind_cols(umap, cluster) %>%
+  tibble::rownames_to_column(var = "barcode") ->
+  cluster_umap
+
+cluster_umap %>%
+  readr::write_tsv(
+    file = "cluster_umap.tsv",
+  )
+
 # Marker genes ------------------------------------------------------------
 future::plan(future::sequential)
 library(Seurat)
