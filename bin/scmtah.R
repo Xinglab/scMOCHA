@@ -18,7 +18,10 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 
 args <- commandArgs(TRUE)
 
-sc_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs"
+# sc_dir is the cell ranger outs
+sc_dir <- args[1]
+
+# sc_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs"
 # cluster_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs" 
 
 # hetero_file <- args[1]
@@ -63,11 +66,15 @@ fn_load_cluster <- function(.filename) {
     input = .filename,
     sep = "\t"
   ) |> 
-    dplyr::mutate(cluster = factor(cluster))
+    dplyr::mutate(cluster = factor(cluster)) |> 
+    dplyr::mutate(sctype = glue::glue("{cluster}, {sctype}")) |> 
+    dplyr::mutate(sctype = factor(sctype))
 }
 
 fn_af <- function(.cluster, .hetero) {
-  .cluster %>%
+  .cluster |>
+    dplyr::select(-cluster) |> 
+    dplyr::rename(cluster = sctype) |> 
     dplyr::left_join(
       .hetero |> tidyr::pivot_wider(
         names_from  = variant, 
@@ -91,27 +98,27 @@ fn_forplot <- function(.af, .coverage) {
     dplyr::arrange(cluster, -s_af) ->
     .rank
   
-  .af %>%
-    dplyr::select(barcode, dplyr::contains(">")) %>%
+  .af |>
+    dplyr::select(barcode, dplyr::contains(">")) |>
     tidyr::pivot_longer(
       cols = -barcode,
       names_to = "variant",
       values_to = "af"
-    ) %>%
+    ) |>
     dplyr::mutate(
-      pos = gsub(pattern = "([[:digit:]]*).*", "\\1", variant) %>%
+      pos = gsub(pattern = "([[:digit:]]*).*", "\\1", variant) |>
         as.numeric()
     ) |> 
     dplyr::left_join(
       .coverage,
       by = c("barcode", "pos")
-    ) %>%
+    ) |>
     tidyr::replace_na(
       replace = list(
         af = 0
       )
-    ) %>%
-    dplyr::mutate(af = ifelse(is.na(depth), NA, af)) %>%
+    ) |>
+    dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
     dplyr::arrange(pos) ->
     .forplot
   
@@ -121,47 +128,59 @@ fn_forplot <- function(.af, .coverage) {
   )
 }
 
-fn_heatmap <- function(.forplot) {
-  
+fn_heatmap <- function(.forplot, .cell_variants = NULL) {
   .forplot$forplot |> 
-    dplyr::select(barcode, variant, af) %>%
+    dplyr::select(barcode, variant, af)  |> 
     tidyr::pivot_wider(
       names_from = "variant",
       values_from = af
-    ) %>%
+    ) |>
     dplyr::slice(
       match(.forplot$rank$barcode, barcode)
-    ) %>%
-    tibble::column_to_rownames(var = "barcode") %>%
-    as.matrix() %>%
+    ) |>
+    tibble::column_to_rownames(var = "barcode") |>
+    as.matrix() |>
     t() ->
     .af_mtx
   
+  tibble::tibble(
+    variants = rownames(.af_mtx)
+  ) |> 
+    dplyr::mutate(
+      cell_variants = ifelse(
+        variants %in% .cell_variants,
+        "red",
+        "black"
+      )
+    ) ->
+    .gcol
+  
+  
   .forplot$forplot |> 
-    dplyr::select(barcode, pos, depth) %>%
-    dplyr::arrange(pos) %>%
+    dplyr::select(barcode, pos, depth) |>
+    dplyr::arrange(pos) |>
     tidyr::pivot_wider(
       names_from = pos,
       values_from = depth
-    ) %>%
-    dplyr::slice(match(.forplot$rank$barcode, barcode)) %>%
-    tibble::column_to_rownames(var = "barcode") %>%
-    as.matrix() %>%
+    ) |>
+    dplyr::slice(match(.forplot$rank$barcode, barcode)) |>
+    tibble::column_to_rownames(var = "barcode") |>
+    as.matrix() |>
     t() ->
     .depth_mtx
   
   
-  .forplot$rank %>%
-    dplyr::select(barcode, cluster) %>%
+  .forplot$rank |>
+    dplyr::select(barcode, cluster) |>
     dplyr::slice(
       match(colnames(.af_mtx), barcode)
-    ) %>%
-    tibble::column_to_rownames(var = "barcode") %>%
+    ) |>
+    tibble::column_to_rownames(var = "barcode") |>
     dplyr::select(Cluster = cluster) ->
     .af_cluster
   
   
-  col_clusters <- levels(.af_cluster$Cluster) %>% as.numeric()
+  col_clusters <- levels(.af_cluster$Cluster)
   col_colors <- pcc$color[1:length(levels(.af_cluster$Cluster))]
   
   names(col_colors) <- col_clusters
@@ -194,6 +213,10 @@ fn_heatmap <- function(.forplot) {
     cluster_row_slices = T,
     clustering_distance_rows = "pearson",
     clustering_method_rows = "ward.D",
+    row_names_gp = gpar(
+      # fontsize = 20,
+      col = .gcol$cell_variants
+    ),
     # column
     cluster_columns = FALSE,
     cluster_column_slices = T,
@@ -227,6 +250,10 @@ fn_heatmap <- function(.forplot) {
     cluster_row_slices = T,
     clustering_distance_rows = "pearson",
     clustering_method_rows = "ward.D",
+    row_names_gp = gpar(
+      # fontsize = 20,
+      col = .gcol$cell_variants
+    ),
     # column
     cluster_columns = FALSE,
     cluster_column_slices = T,
@@ -254,6 +281,7 @@ cluster_umap <- fn_load_cluster(
 )
 
 # Cell allele -------------------------------------------------------------
+
 hetero <- fn_load_hetero(
   .filename = file.path(
     sc_dir,
@@ -317,10 +345,18 @@ hetero_cluster <- fn_load_hetero(
       replacement = "",
       x = barcode
     )
-  ) %>% 
+  ) |> 
   dplyr::mutate(barcode = as.integer(barcode) -1) |> 
   dplyr::mutate(cluster = barcode) |> 
-  dplyr::mutate(cluster = factor(cluster))
+  dplyr::mutate(cluster = factor(cluster)) |> 
+  dplyr::left_join(
+    cluster_umap |> 
+      dplyr::select(cluster, sctype) |> 
+      dplyr::distinct(),
+    by = "cluster"
+  ) |> 
+  dplyr::select(-cluster) |> 
+  dplyr::rename(cluster = sctype)
 
 coverage_cluster <- fn_load_coverage(
   .filename = file.path(
@@ -335,7 +371,7 @@ coverage_cluster <- fn_load_coverage(
       replacement = "",
       x = barcode
     )
-  ) %>% 
+  ) |> 
   dplyr::mutate(barcode = as.integer(barcode) -1)
 
 
@@ -372,12 +408,59 @@ cluster_ch_af_depth <- fn_heatmap(.forplot = cluster_cluster_forplot)
 }
 
 
-# Cluster allele ----------------------------------------------------------
 
+# Cluster cell allele -----------------------------------------------------
 
+hetero_raw <- fn_load_hetero(
+  .filename = file.path(
+    sc_dir,
+    "mgatk_out/final",
+    "sc.cell_heteroplasmic_df_raw.tsv.gz"
+  )
+)
+
+cell_raw_cluster_af <- cluster_umap |> 
+  dplyr::left_join(hetero_raw, by = "barcode") |> 
+  dplyr::select(-cluster) |> 
+  dplyr::rename(cluster = sctype) |> 
+  dplyr::filter(variant %in% hetero_cluster$variant) |> 
+  tidyr::pivot_wider(
+    names_from = variant,
+    values_from = af
+  )
+  
+cell_raw_cluster_forplot <- fn_forplot(
+  .af = cell_raw_cluster_af, 
+  .coverage = coverage
+)
+
+cell_raw_ch_af_depth <- fn_heatmap(
+  .forplot = cell_raw_cluster_forplot, 
+  .cell_variants = cell_cluster_forplot$forplot$variant
+  )
+
+{
+  pdf(
+    file = "mgatk_cluster_cell_al_heatmap.pdf",
+    width = 14, 
+    height = 7
+  )
+  ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
+  dev.off()
+  
+  pdf(
+    file = "mgatk_cluster_cell_depth_heatmap.pdf",
+    width = 14, 
+    height = 7
+  )
+  ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)
+  dev.off()
+}
 
 # footer ------------------------------------------------------------------
 
 future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
+
+save.image(file = "scmtah.rda")
