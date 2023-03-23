@@ -177,8 +177,8 @@ fn_heatmap <- function(.forplot) {
   ComplexHeatmap::Heatmap(
     matrix = .af_mtx,
     col = circlize::colorRamp2(
-      breaks = c(0, 1),
-      colors = c("white", "red"),
+      breaks = c(0, 0.98, 1),
+      colors = c("white", "#440154FF", "#FDE725FF"),
       space = "RGB"
     ),
     name = "Allele Freq",
@@ -209,8 +209,9 @@ fn_heatmap <- function(.forplot) {
   ComplexHeatmap::Heatmap(
     matrix = .depth_mtx,
     col = circlize::colorRamp2(
-      breaks = c(0, 4),
+      breaks = c(0, quantile(.depth_mtx, na.rm = T, probs = 0.75)),
       colors = c("white", "red"),
+      # colors =  c("#440154FF", "#FDE725FF"),
       space = "RGB"
     ),
     name = "log2(Depth+1)",
@@ -236,6 +237,7 @@ fn_heatmap <- function(.forplot) {
     top_annotation = chm_top
   ) ->
     ch_depth
+  
   list(
     ch_af = ch_af,
     ch_depth = ch_depth
@@ -308,7 +310,17 @@ hetero_cluster <- fn_load_hetero(
     "mgatk_cluster/final",
     "mgatk_cluster.cell_heteroplasmic_df.tsv.gz"
   )
-)
+) |> 
+  dplyr::mutate(
+    barcode = gsub(
+      pattern = "cluster|-1",
+      replacement = "",
+      x = barcode
+    )
+  ) %>% 
+  dplyr::mutate(barcode = as.integer(barcode) -1) |> 
+  dplyr::mutate(cluster = barcode) |> 
+  dplyr::mutate(cluster = factor(cluster))
 
 coverage_cluster <- fn_load_coverage(
   .filename = file.path(
@@ -316,18 +328,49 @@ coverage_cluster <- fn_load_coverage(
     "mgatk_cluster/final",
     "mgatk_cluster.coverage.txt.gz"
   ) 
-)
+) |> 
+  dplyr::mutate(
+    barcode = gsub(
+      pattern = "cluster|-1",
+      replacement = "",
+      x = barcode
+    )
+  ) %>% 
+  dplyr::mutate(barcode = as.integer(barcode) -1)
 
 
-cluster_cluster_af <- fn_af(.cluster = cluster_umap, .hetero = hetero_cluster)
+cluster_cluster_af <- 
+  hetero_cluster |> tidyr::pivot_wider(
+      names_from  = variant, 
+      values_from = af
+  )
 
-cluster_cluster_forplot <- fn_forplot(.af = cluster_cluster_af, .coverage = coverage_cluster)
+cluster_cluster_forplot <- fn_forplot(
+  .af = cluster_cluster_af, 
+  .coverage = coverage_cluster
+  )
 
 
 cluster_ch_af_depth <- fn_heatmap(.forplot = cluster_cluster_forplot)
 
-cluster_ch_af_depth$ch_af
-cluster_ch_af_depth$ch_depth
+{
+  pdf(
+    file = "mgatk_cluster_al_heatmap.pdf",
+    width = 7, 
+    height = 7
+  )
+  ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_af)
+  dev.off()
+  
+  pdf(
+    file = "mgatk_cluster_depth_heatmap.pdf",
+    width = 7, 
+    height = 7
+  )
+  ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_depth)
+  dev.off()
+}
+
 
 # Cluster allele ----------------------------------------------------------
 
