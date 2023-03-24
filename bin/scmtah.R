@@ -21,7 +21,7 @@ args <- commandArgs(TRUE)
 # sc_dir is the cell ranger outs
 sc_dir <- args[1]
 
-# sc_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs"
+# sc_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs"
 # cluster_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs" 
 
 # hetero_file <- args[1]
