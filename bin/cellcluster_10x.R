@@ -18,8 +18,7 @@ library(Seurat)
 args <- commandArgs(TRUE)
 
 h5file <- args[1]
-# h5file <- "/scr1/users/liuc9/tmp/singlecell/pbmc_10k_v3/outs/filtered_feature_bc_matrix.h5"
-h5file <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/raw_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/filtered_feature_bc_matrix.h5"
 
 
 # src ---------------------------------------------------------------------
@@ -51,8 +50,8 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
   .sc <- Seurat::CreateSeuratObject(
     counts = .counts,
     project = .project,
-    min.cells = 3,
-    min.features = 200
+    # min.cells = 3,
+    # min.features = 200
   )
 
   .sc <- Seurat::PercentageFeatureSet(
