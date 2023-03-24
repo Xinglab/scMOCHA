@@ -120,15 +120,15 @@ p <- cowplot::plot_grid(
   plotlist = list(p1, p2),
   ncol = 1,
   align = "v",
-  rel_heights = c(0.4, 0.6)
+  rel_heights = c(0.3, 0.7)
 )
 
 ggsave(
   filename = "MT.depth.pdf",
   plot = p,
   device = "pdf",
-  width = 12,
-  height = 9
+  width = 10,
+  height = 11
 )
 
 # footer ------------------------------------------------------------------
