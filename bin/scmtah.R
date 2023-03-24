@@ -12,7 +12,8 @@ library(ggplot2)
 library(patchwork)
 library(rlang)
 library(ComplexHeatmap)
-pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
+  dplyr::arrange(cancer_types)
 
 # src ---------------------------------------------------------------------
 
@@ -197,7 +198,9 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL) {
     matrix = .af_mtx,
     col = circlize::colorRamp2(
       breaks = c(0, 0.98, 1),
-      colors = c("white", "#440154FF", "#FDE725FF"),
+      # colors = c("white", "#440154FF", "#FDE725FF"),
+      colors = c("white", "red", "#440154FF"),
+      # colors = c("white", "blue", "red"),
       space = "RGB"
     ),
     name = "Allele Freq",
@@ -307,8 +310,6 @@ cell_cluster_forplot <- fn_forplot(.af = cell_cluster_af, .coverage = coverage)
 ch_af_depth <- fn_heatmap(.forplot = cell_cluster_forplot)
 
 
-ch_af_depth$ch_af
-ch_af_depth$ch_depth
 
 {
   pdf(
