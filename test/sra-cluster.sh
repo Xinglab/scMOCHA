@@ -79,6 +79,8 @@ mgatk bcall -i MT_bulk.bam \
 
 python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling_cluster.py mgatk_bulk/final/ mgatk_bulk 16569 10 chrM
 
+Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/heteroplasmy_heatmap.R
+
 
 # flu5
 # cell_cluster_annotation
