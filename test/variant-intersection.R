@@ -290,6 +290,8 @@ ggvenn::ggvenn(
   text_size = 8
 )
 
+
+
 ggplot() +  
   annotate(
     "text", x = 1, y = 1,
@@ -303,6 +305,9 @@ ggplot() +
     )
     ) + 
   theme_void()
+
+intersect(unique(flu2_variant$variant), unique(flu5_variant$variant)) |> 
+  paste0(collapse = ",")
 
 ggplot() +  
   annotate(
@@ -319,6 +324,11 @@ ggplot() +
   ) + 
   theme_void()
 
+setdiff(
+  unique(flu2_variant$variant),
+  unique(flu5_variant$variant)
+) |> paste0(collapse = ", ")
+
 ggplot() +  
   annotate(
     "text", x = 1, y = 1,
@@ -334,6 +344,10 @@ ggplot() +
   ) + 
   theme_void()
 
+setdiff(
+  unique(flu5_variant$variant),
+  unique(flu2_variant$variant)
+) |> paste0(collapse = ", ")
 
 # cluster -----------------------------------------------------------------
 
@@ -425,6 +439,11 @@ ggplot() +
   ) + 
   theme_void()
 
+intersect(
+  unique(flu2_variant_celltype$variant),
+  unique(flu5_variant_celltype$variant)
+) |> paste0(collapse = ", ")
+
 ggplot() +  
   annotate(
     "text", x = 1, y = 1,
@@ -440,6 +459,11 @@ ggplot() +
   ) + 
   theme_void()
 
+setdiff(
+  unique(flu2_variant_celltype$variant),
+  unique(flu5_variant_celltype$variant)
+) |> paste0(collapse = ", ")
+
 ggplot() +  
   annotate(
     "text", x = 1, y = 1,
@@ -454,6 +478,11 @@ ggplot() +
     )
   ) + 
   theme_void()
+
+setdiff(
+  unique(flu5_variant_celltype$variant),
+  unique(flu2_variant_celltype$variant)
+) |> paste0(collapse = ", ")
 
 
 # footer ------------------------------------------------------------------
