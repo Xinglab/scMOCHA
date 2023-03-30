@@ -401,7 +401,14 @@ fn_gene_dotplot <- function(.sct_cluster, .marker, .n = 3) {
 
 # sct ---------------------------------------------------------------------
 
-
+# sc <- Azimuth::RunAzimuth(
+#   query = h5file,
+#   reference = "/home/liuc9/data/refdata/azimuth/pbmcref.SeuratData/inst/azimuth"
+# )
+# 
+# DimPlot(sc) + NoLegend()
+# 
+# DimPlot(sc, group.by = "predicted.celltype.l3", label = TRUE, label.size = 3) + NoLegend()
 
 sc <- fn_load_sc_10x(h5file)
 readr::write_rds(
