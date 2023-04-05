@@ -11,7 +11,7 @@ param=$#
 # cell_cluster_annotation
 h5file="/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068/MM068/outs/filtered_feature_bc_matrix.h5"
 
-
+#
 
 # call_variant_on_single_cell_level
 
@@ -28,21 +28,20 @@ barcode_bulk=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM068/MM0
 
 Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
 
-gunzip -c ${gzipped_barcodes} > ${barcodes}
+gunzip -c ${gzipped_barcodes} >${barcodes}
 mgatk tenx -i ${possorted_genome_bam} \
   -n sc \
-  -c ${cpu} -ub UB  -bt CB \
+  -c ${cpu} -ub UB -bt CB \
   -b ${barcodes} \
   --mito-genome ${rCRS}
 
 tar czf mgatk_single_cell_level.tar.gz "mgatk_out/final"
 
-
 # call_variant_on_cell_cluster_level
-samtools view -hb ${possorted_genome_bam} chrM > MT.bam
+samtools view -hb ${possorted_genome_bam} chrM >MT.bam
 samtools index MT.bam
 
-samtools depth -a -r chrM --threads=20 MT.bam > MT.depth
+samtools depth -a -r chrM --threads=20 MT.bam >MT.depth
 Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/mt_depth.R MT.depth
 
 sinto addtags \
@@ -54,11 +53,11 @@ sinto addtags \
 samtools index MT_cluster.bam
 
 mgatk bcall -i MT_cluster.bam \
-    -o mgatk_cluster \
-    -n mgatk_cluster \
-    -c ${cpu} -bt CJ \
-    --mito-genome ${rCRS} \
-    --keep-temp-files
+  -o mgatk_cluster \
+  -n mgatk_cluster \
+  -c ${cpu} -bt CJ \
+  --mito-genome ${rCRS} \
+  --keep-temp-files
 
 python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling_cluster.py mgatk_cluster/final/ mgatk_cluster 16569 10 chrM
 
@@ -81,15 +80,11 @@ python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling_cluster.py mg
 
 Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/heteroplasmy_heatmap.R
 
-
 # flu5
 # cell_cluster_annotation
 h5file="/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/filtered_feature_bc_matrix.h5"
 
-
-
 # call_variant_on_single_cell_level
-
 
 possorted_genome_bam=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM188/outs/possorted_genome_bam.bam
 
@@ -104,23 +99,21 @@ barcode_bulk=/home/liuc9/scratch/mitochondrial/testdata/4_old_donor_MM/MM188/MM1
 
 Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
 
-gunzip -c ${gzipped_barcodes} > ${barcodes}
+gunzip -c ${gzipped_barcodes} >${barcodes}
 mgatk tenx -i ${possorted_genome_bam} \
   -n sc \
-  -c ${cpu} -ub UB  -bt CB \
+  -c ${cpu} -ub UB -bt CB \
   -b ${barcodes} \
   --mito-genome ${rCRS}
 
 tar czf mgatk_single_cell_level.tar.gz "mgatk_out/final"
 
-
 # call_variant_on_cell_cluster_level
-samtools view -hb ${possorted_genome_bam} chrM > MT.bam
+samtools view -hb ${possorted_genome_bam} chrM >MT.bam
 samtools index MT.bam
 
-samtools depth -a -r chrM --threads=20 MT.bam > MT.depth
+samtools depth -a -r chrM --threads=20 MT.bam >MT.depth
 Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/mt_depth.R MT.depth
-
 
 sinto addtags \
   -b MT.bam \
@@ -131,11 +124,11 @@ sinto addtags \
 samtools index MT_cluster.bam
 
 mgatk bcall -i MT_cluster.bam \
-    -o mgatk_cluster \
-    -n mgatk_cluster \
-    -c ${cpu} -bt CJ \
-    --mito-genome ${rCRS} \
-    --keep-temp-files
+  -o mgatk_cluster \
+  -n mgatk_cluster \
+  -c ${cpu} -bt CJ \
+  --mito-genome ${rCRS} \
+  --keep-temp-files
 
 python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling_cluster.py mgatk_cluster/final/ mgatk_cluster 16569 10 chrM
 
