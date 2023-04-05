@@ -46,6 +46,11 @@ sc <- Azimuth::RunAzimuth(
   reference = refname
 )
 
+DimPlot(sc, group.by = "predicted.celltype.l1", label = TRUE, label.size = 3) 
+
+sc$predicted.celltype.l1 |> unique() |> length()
+sc$predicted.celltype.l2 |> unique() |> length()
+sc$predicted.celltype.l3 |> unique() |> length()
 
 # footer ------------------------------------------------------------------
 
