@@ -5,9 +5,13 @@
 # @DESCRIPTION:
 
 # Number of input parameters
-param=$#
-cd /home/liuc9/tmp/cellrangerwdl
-nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \
-    -jar /home/liuc9/tools/cromwell-78.jar \
+# param=$#
+# cd /home/liuc9/tmp/mito/flu2
+# nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \
+#     -jar /home/liuc9/tools/cromwell-78.jar \
+#     run /home/liuc9/github/scRNAseq-MitoVariant/cellranger.wdl \
+#     -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json &
+
+java -jar /home/liuc9/tools/cromwell-78.jar \
     run /home/liuc9/github/scRNAseq-MitoVariant/cellranger.wdl \
-    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json &
+    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json
