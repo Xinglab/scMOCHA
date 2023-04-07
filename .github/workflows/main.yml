@@ -1,0 +1,22 @@
+
+name: Build SCMTAH Image
+
+on:
+  push:
+    branches:
+      - main
+  paths-ignore:
+    - README.md
+    - LICENSE
+    - .github/*
+    - .gitignore
+    - .gitattributes
+    - .gitmodules
+    - .travis.yml
+    - .dockerignore
+    - .git
+    - .vscode
+    - .idea
+    - .gitlab-ci.yml
+    - .gitlab
+    - .gitlab-ci
