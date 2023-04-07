@@ -22,9 +22,9 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-h5file <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/filtered_feature_bc_matrix.h5"
-refname <- "pbmcref"
-celllevel <- "celltype.l1"
+# h5file <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/filtered_feature_bc_matrix.h5"
+# refname <- "pbmcref"
+# celllevel <- "celltype.l1"
 
 
 # src ---------------------------------------------------------------------
