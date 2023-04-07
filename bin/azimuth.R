@@ -484,7 +484,7 @@ sc$plot_umap <- fn_plot_azimuth_umap(.x = sc$sc_azimuth)
 
 # readr -------------------------------------------------------------------
 
-names(sc)
+# names(sc)
 
 readr::write_tsv(
   x = sc$cellbarcode_cluster,
