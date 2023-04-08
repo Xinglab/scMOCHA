@@ -20,16 +20,19 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 args <- commandArgs(TRUE)
 
 # sc_dir is the cell ranger outs
-sc_dir <- args[1]
+# sc_dir <- args[1]
+
 
 # sc_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu5/Flu5/outs"
-# cluster_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs" 
+# sc_dir <- "/home/liuc9/scratch/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs"
 
-# hetero_file <- args[1]
-# coverage_file <- args[2]
-# cluster_umap_file <- args[3]
+barcode_cluster <- "/scr1/users/liuc9/tmp/mito/flu2-cell/barcode_cluster.tsv"
+cell_hetero <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/mgatk_out/final/sc.cell_heteroplasmic_df.tsv.gz"
+cell_coverage <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/mgatk_out/final/sc.coverage.txt.gz"
 
+hetero_cluster <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/mgatk_cluster/final/mgatk_cluster.cell_heteroplasmic_df.tsv.gz"
 
+cell_hetero_raw <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/mgatk_out/final/sc.cell_heteroplasmic_df_raw.tsv.gz"
 # header ------------------------------------------------------------------
 
 # future::plan(future::multisession, workers = 10)
@@ -65,17 +68,17 @@ fn_load_coverage <- function(.filename) {
 fn_load_cluster <- function(.filename) {
   data.table::fread(
     input = .filename,
-    sep = "\t"
+    sep = "\t",
+    col.names = c("barcode", "tag", "celltype")
   ) |> 
-    dplyr::mutate(cluster = factor(cluster)) |> 
-    dplyr::mutate(sctype = glue::glue("{cluster}, {sctype}")) |> 
-    dplyr::mutate(sctype = factor(sctype))
+    dplyr::arrange(celltype) |> 
+    dplyr::mutate(celltype = factor(celltype)) |> 
+    dplyr::select(-tag)
 }
 
 fn_af <- function(.cluster, .hetero) {
   .cluster |>
-    dplyr::select(-cluster) |> 
-    dplyr::rename(cluster = sctype) |> 
+    dplyr::rename(cluster = celltype) |> 
     dplyr::left_join(
       .hetero |> tidyr::pivot_wider(
         names_from  = variant, 
@@ -277,37 +280,34 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL) {
 # cell cluster ------------------------------------------------------------
 
 cluster_umap <- fn_load_cluster(
-  .filename = file.path(
-    sc_dir,
-    "cluster_umap.tsv"
-  )
+  .filename = barcode_cluster
 )
 
 # Cell allele -------------------------------------------------------------
 
-hetero <- fn_load_hetero(
-  .filename = file.path(
-    sc_dir,
-    "mgatk_out/final",
-    "sc.cell_heteroplasmic_df.tsv.gz"
+cell_hetero <- fn_load_hetero(
+  .filename = cell_hetero
+)
+
+cell_coverage <- fn_load_coverage(
+  .filename = cell_coverage
+)
+
+
+
+cell_cluster_af <- fn_af(
+  .cluster = cluster_umap, 
+  .hetero = cell_hetero
+)
+
+cell_cluster_forplot <- fn_forplot(
+  .af = cell_cluster_af, 
+  .coverage = cell_coverage
+)
+
+ch_af_depth <- fn_heatmap(
+  .forplot = cell_cluster_forplot
   )
-)
-
-coverage <- fn_load_coverage(
-  .filename = file.path(
-    sc_dir,
-    "mgatk_out/final",
-    "sc.coverage.txt.gz"
-  ) 
-)
-
-
-
-cell_cluster_af <- fn_af(.cluster = cluster_umap, .hetero = hetero)
-
-cell_cluster_forplot <- fn_forplot(.af = cell_cluster_af, .coverage = coverage)
-
-ch_af_depth <- fn_heatmap(.forplot = cell_cluster_forplot)
 
 
 
@@ -334,11 +334,7 @@ ch_af_depth <- fn_heatmap(.forplot = cell_cluster_forplot)
 
 
 hetero_cluster <- fn_load_hetero(
-  .filename = file.path(
-    sc_dir,
-    "mgatk_cluster/final",
-    "mgatk_cluster.cell_heteroplasmic_df.tsv.gz"
-  )
+  .filename = hetero_cluster
 ) |> 
   dplyr::mutate(
     barcode = gsub(
@@ -347,7 +343,7 @@ hetero_cluster <- fn_load_hetero(
       x = barcode
     )
   ) |> 
-  dplyr::mutate(barcode = as.integer(barcode) -1) |> 
+  # dplyr::mutate(barcode = as.integer(barcode) -1) |> 
   dplyr::mutate(cluster = barcode) |> 
   dplyr::mutate(cluster = factor(cluster)) |> 
   dplyr::left_join(
