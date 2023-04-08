@@ -13,6 +13,6 @@ nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf
     run /home/liuc9/github/scRNAseq-MitoVariant/cellranger.wdl \
     -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger-a.json &
 
-java -jar /home/liuc9/tools/cromwell-78.jar \
-    run /home/liuc9/github/scRNAseq-MitoVariant/cellranger.wdl \
-    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json
+# java -jar /home/liuc9/tools/cromwell-78.jar \
+#     run /home/liuc9/github/scRNAseq-MitoVariant/cellranger.wdl \
+#     -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json

@@ -32,20 +32,24 @@ workflow SCMTAH {
 
   call cellranger_count {
       input:
-      output_id = output_id,
-      fastqs = fastqs,
-      sample_id = sample_id,
-      transcriptome = transcriptome,
+        output_id = output_id,
+        fastqs = fastqs,
+        sample_id = sample_id,
+        transcriptome = transcriptome,
+        memory = memory,
+        boot_disk_size_gb = boot_disk_size_gb,
+        disk_space = disk_space,
+        cpu = cpu
+  }
+
+  call cell_cluster_annotation {
+    input:
+      h5file = cellranger_count.filtered_feature_bc_matrix,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
       cpu = cpu
   }
-
-  # call cell_cluster_annotation {
-  #   input:
-  #     h5file = cellranger_count.filtered_feature_bc_matrix
-  # }
 
   # call call_variant_on_single_cell_level {
   #   input:
@@ -58,26 +62,33 @@ workflow SCMTAH {
   #   cpu = cpu
   # }
 
-  # output {
-  #     # version of this pipeline
-  #     String pipeline_version = version
+  output {
+      # version of this pipeline
+      String pipeline_version = version
 
-  #     # cellranger count
-  #     File filtered_feature_bc_matrix = cellranger_count.filtered_feature_bc_matrix
-  #     File metrics_summary = cellranger_count.metrics_summary
-  #     File sorted_bam = cellranger_count.sorted_bam
-  #     File sorted_bam_index = cellranger_count.sorted_bam_index
-  #     File web_summary = cellranger_count.web_summary
-  #     File barcodes = cellranger_count.barcodes
-  #     File features = cellranger_count.features
-  #     File matrix = cellranger_count.matrix
+      # cellranger count
+      File filtered_feature_bc_matrix = cellranger_count.filtered_feature_bc_matrix
+      File metrics_summary = cellranger_count.metrics_summary
+      File sorted_bam = cellranger_count.sorted_bam
+      File sorted_bam_index = cellranger_count.sorted_bam_index
+      File web_summary = cellranger_count.web_summary
+      File barcodes = cellranger_count.barcodes
+      File features = cellranger_count.features
+      File matrix = cellranger_count.matrix
 
 
-  #     # call_variant_on_single_cell_level
-  #     File mgatk_single_cell_level = call_variant_on_single_cell_level.mgatk_single_cell_level
-  #     File cell_heteroplasmic_df = call_variant_on_single_cell_level.cell_heteroplasmic_df
-  #     File coverage = call_variant_on_single_cell_level.coverage
-  # }
+      # cell_cluster_annotation
+      File azimuth_rda = cell_cluster_annotation.azimuth_rda
+      File barcode_cluster = cell_cluster_annotation.barcode_cluster
+      File barcode_bulk = cell_cluster_annotation.barcode_bulk
+      File celltype_ratio = cell_cluster_annotation.celltype_ratio
+      File plot_metrics = cell_cluster_annotation.plot_metrics
+      File plot_pie_celltype = cell_cluster_annotation.plot_pie_celltype
+      File plot_qc = cell_cluster_annotation.plot_qc
+      File plot_umap = cell_cluster_annotation.plot_umap
+      File qc_cell_stats = cell_cluster_annotation.qc_cell_stats
+      File sc_azimuth_rds_gz = cell_cluster_annotation.sc_azimuth_rds_gz
+  }
 
   meta {
     author: "Chun-Jie Liu"
@@ -124,15 +135,29 @@ task cellranger_count {
 
 task cell_cluster_annotation {
   File h5file
+  String refname = "pbmcref"
+  String celllevel = "celltype.l1"
+
+  String memory
+  Int boot_disk_size_gb
+  String disk_space
+  Int cpu
 
   command {
-    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
+    module load R/4.1.0
+    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/azimuth.R ${h5file} ${refname} ${celllevel}
   }
   output {
+    File azimuth_rda = "azimuth.rda"
     File barcode_cluster = "barcode_cluster.tsv"
     File barcode_bulk = "barcode_bulk.tsv"
-    File cluster_umap = "cluster_umap.tsv"
-    File sct_clsuter = "sct_cluster.rds.gz"
+    File celltype_ratio = "celltype_ratio.tsv"
+    File plot_metrics = "plot-metrics.pdf"
+    File plot_pie_celltype = "plot-pie-celltype.pdf"
+    File plot_qc = "plot-qc.pdf"
+    File plot_umap = "plot-umap.pdf"
+    File qc_cell_stats = "qc-cell-stats.xlsx"
+    File sc_azimuth_rds_gz = "sc_azimuth.rds.gz"
   }
 }
 
