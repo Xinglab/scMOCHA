@@ -30,10 +30,13 @@ Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
 
 gunzip -c ${gzipped_barcodes} >${barcodes}
 mgatk tenx -i ${possorted_genome_bam} \
-  -n sc \
-  -c ${cpu} -ub UB -bt CB \
+  -o cell \
+  -n cell \
+  -g ${rCRS} \
+  -c ${cpu} \
+  -bt CB \
   -b ${barcodes} \
-  --mito-genome ${rCRS}
+  -ub UB
 
 tar czf mgatk_single_cell_level.tar.gz "mgatk_out/final"
 
