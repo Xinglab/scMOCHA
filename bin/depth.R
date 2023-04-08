@@ -18,6 +18,7 @@ library(ggtranscript)
 args <- commandArgs(TRUE)
 
 depthfile <- args[1]
+outfile <- args[2]
 
 # depthfile <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/MT.depth"
 
@@ -124,11 +125,11 @@ p <- cowplot::plot_grid(
 )
 
 ggsave(
-  filename = "MT.depth.pdf",
+  filename = outfile,
   plot = p,
   device = "pdf",
   width = 10,
-  height = 11
+  height = 13
 )
 
 # footer ------------------------------------------------------------------
