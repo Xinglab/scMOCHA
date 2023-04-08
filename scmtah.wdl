@@ -110,6 +110,39 @@ workflow SCMTAH {
       File plot_umap = cell_cluster_annotation.plot_umap
       File qc_cell_stats = cell_cluster_annotation.qc_cell_stats
       File sc_azimuth_rds_gz = cell_cluster_annotation.sc_azimuth_rds_gz
+      File mt_cluster_bam = cell_cluster_annotation.mt_cluster_bam
+      File mt_cluster_bam_index = cell_cluster_annotation.mt_cluster_bam_index
+      File mt_bulk_bam = cell_cluster_annotation.mt_bulk_bam
+      File mt_bulk_bam_index = cell_cluster_annotation.mt_bulk_bam_index
+
+      # call_mt_variants
+      File cell_A_txt_gz = call_mt_variants.cell_A_txt_gz
+      File cell_C_txt_gz = call_mt_variants.cell_C_txt_gz
+      File cell_G_txt_gz = call_mt_variants.cell_G_txt_gz
+      File cell_T_txt_gz = call_mt_variants.cell_T_txt_gz
+      File cell_cell_heteroplasmic_df_tsv_gz = call_mt_variants.cell_cell_heteroplasmic_df_tsv_gz
+      File cell_cell_heteroplasmic_df_raw_tsv_gz = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz
+      File cell_coverage_txt_gz = call_mt_variants.cell_coverage_txt_gz
+      File cell_depthTable_txt = call_mt_variants.cell_depthTable_txt
+      File cell_rds = call_mt_variants.cell_rds
+      File cell_signac_rds = call_mt_variants.cell_signac_rds
+      File cell_variant_stats_tsv_gz = call_mt_variants.cell_variant_stats_tsv_gz
+      File cell_vmr_strand_plot_png = call_mt_variants.cell_vmr_strand_plot_png
+
+      File barcodeQuants_tsv = call_mt_variants.barcodeQuants_tsv
+      File cluster_A_txt_gz = call_mt_variants.cluster_A_txt_gz
+      File cluster_C_txt_gz = call_mt_variants.cluster_C_txt_gz
+      File cluster_G_txt_gz = call_mt_variants.cluster_G_txt_gz
+      File cluster_T_txt_gz = call_mt_variants.cluster_T_txt_gz
+      File cluster_cell_heteroplasmic_df_tsv_gz = call_mt_variants.cluster_cell_heteroplasmic_df_tsv_gz
+      File cluster_coverage_txt_gz = call_mt_variants.cluster_coverage_txt_gz
+      File cluster_depthTable_txt = call_mt_variants.cluster_depthTable_txt
+      File cluster_rds = call_mt_variants.cluster_rds
+      File cluster_signac_rds = call_mt_variants.cluster_signac_rds
+      File cluster_variant_stats_tsv_gz = call_mt_variants.cluster_variant_stats_tsv_gz
+      File cluster_vmr_strand_plot_png = call_mt_variants.cluster_vmr_strand_plot_png
+      File passingBarcodes_tsv = call_mt_variants.passingBarcodes_tsv
+
   }
 
   meta {
@@ -222,7 +255,7 @@ task cell_cluster_annotation {
     File plot_pie_celltype = "plot-pie-celltype.pdf"
     File plot_qc = "plot-qc.pdf"
     File plot_umap = "plot-umap.pdf"
-    File qc_cell_stats = "qc-cell-stats.xlsx"
+    File qc_cell_stats = "qc_cell_stats.xlsx"
     File sc_azimuth_rds_gz = "sc_azimuth.rds.gz"
     File mt_cluster_bam = "MT_cluster.bam"
     File mt_cluster_bam_index = "MT_cluster.bam.bai"
@@ -323,6 +356,6 @@ task call_mt_variants {
 }
 
 
-task plot_scmtah {
+# task plot_scmtah {
 
-}
+# }
