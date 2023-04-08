@@ -253,6 +253,8 @@ task call_mt_variants {
   Int cpu
 
   command {
+
+    module load R/4.1.0
     # call variants on single cell level
     mgatk tenx -i ${sorted_bam} \
       -o cell \
@@ -321,3 +323,6 @@ task call_mt_variants {
 }
 
 
+task plot_scmtah {
+
+}
