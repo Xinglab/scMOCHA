@@ -16,3 +16,21 @@ nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf
 # java -jar /home/liuc9/tools/cromwell-78.jar \
 #     run /home/liuc9/github/scRNAseq-MitoVariant/cellranger.wdl \
 #     -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger.json
+
+module load Java/15.0.1
+nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \
+    -jar /home/liuc9/tools/cromwell-78.jar \
+    run /home/liuc9/github/scRNAseq-MitoVariant/scmtah.wdl \
+    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger-flu5-a.json &
+
+module load Java/15.0.1
+nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \
+    -jar /home/liuc9/tools/cromwell-78.jar \
+    run /home/liuc9/github/scRNAseq-MitoVariant/scmtah.wdl \
+    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger-mm068.json &
+
+module load Java/15.0.1
+nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \
+    -jar /home/liuc9/tools/cromwell-78.jar \
+    run /home/liuc9/github/scRNAseq-MitoVariant/scmtah.wdl \
+    -i /home/liuc9/github/scRNAseq-MitoVariant/cellranger-mm188.json &
