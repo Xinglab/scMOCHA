@@ -89,6 +89,72 @@ workflow SCMTAH {
       cell_hetero_raw_file = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz,
   }
 
+  call gather_outputfiles {
+    input:
+      output_dir = output_dir,
+      # plot_scmth
+      scmtah_rda = plot_scmtah.scmtah_rda,
+      cell_af_heatmap = plot_scmtah.cell_af_heatmap,
+      cell_depth_heatmap = plot_scmtah.cell_depth_heatmap,
+      cluster_af_heatmap = plot_scmtah.cluster_af_heatmap,
+      cluster_depth_heatmap = plot_scmtah.cluster_depth_heatmap,
+      cluster_cell_af_heatmap = plot_scmtah.cluster_cell_af_heatmap,
+      cluster_cell_depth_heatmap = plot_scmtah.cluster_cell_depth_heatmap,
+      # call_mt_variants
+      # cell level
+      cell_A_txt_gz = call_mt_variants.cell_A_txt_gz,
+      cell_C_txt_gz = call_mt_variants.cell_C_txt_gz,
+      cell_G_txt_gz = call_mt_variants.cell_G_txt_gz,
+      cell_T_txt_gz = call_mt_variants.cell_T_txt_gz,
+      cell_cell_heteroplasmic_df_tsv_gz = call_mt_variants.cell_cell_heteroplasmic_df_tsv_gz,
+      cell_cell_heteroplasmic_df_raw_tsv_gz = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz,
+      cell_coverage_txt_gz = call_mt_variants.cell_coverage_txt_gz,
+      cell_depthTable_txt = call_mt_variants.cell_depthTable_txt,
+      cell_variant_stats_tsv_gz = call_mt_variants.cell_variant_stats_tsv_gz,
+      cell_vmr_strand_plot_png = call_mt_variants.cell_vmr_strand_plot_png,
+      # cluster level
+      barcodeQuants_tsv = call_mt_variants.barcodeQuants_tsv,
+      cluster_A_txt_gz = call_mt_variants.cluster_A_txt_gz,
+      cluster_C_txt_gz = call_mt_variants.cluster_C_txt_gz,
+      cluster_G_txt_gz = call_mt_variants.cluster_G_txt_gz,
+      cluster_T_txt_gz = call_mt_variants.cluster_T_txt_gz,
+      cluster_cell_heteroplasmic_df_tsv_gz = call_mt_variants.cluster_cell_heteroplasmic_df_tsv_gz,
+      cluster_coverage_txt_gz = call_mt_variants.cluster_coverage_txt_gz,
+      cluster_depthTable_txt = call_mt_variants.cluster_depthTable_txt,
+      cluster_rds = call_mt_variants.cluster_rds,
+      cluster_signac_rds = call_mt_variants.cluster_signac_rds,
+      cluster_variant_stats_tsv_gz = call_mt_variants.cluster_variant_stats_tsv_gz,
+      cluster_vmr_strand_plot_png = call_mt_variants.cluster_vmr_strand_plot_png,
+      passingBarcodes_tsv = call_mt_variants.passingBarcodes_tsv,
+      # cell_cluster_annotation
+      azimuth_rda = cell_cluster_annotation.azimuth_rda,
+      barcode_cluster = cell_cluster_annotation.barcode_cluster,
+      barcode_bulk = cell_cluster_annotation.barcode_bulk,
+      celltype_ratio = cell_cluster_annotation.celltype_ratio,
+      plot_metrics = cell_cluster_annotation.plot_metrics,
+      plot_pie_celltype = cell_cluster_annotation.plot_pie_celltype,
+      plot_qc = cell_cluster_annotation.plot_qc,
+      plot_umap = cell_cluster_annotation.plot_umap,
+      qc_cell_stats = cell_cluster_annotation.qc_cell_stats,
+      sc_azimuth_rds_gz = cell_cluster_annotation.sc_azimuth_rds_gz,
+      mt_cluster_bam = cell_cluster_annotation.mt_cluster_bam,
+      mt_cluster_bam_index = cell_cluster_annotation.mt_cluster_bam_index,
+      # cellranger_count
+      filtered_feature_bc_matrix = cellranger_count.filtered_feature_bc_matrix,
+      metrics_summary = cellranger_count.metrics_summary,
+      web_summary = cellranger_count.web_summary,
+      barcodes = cellranger_count.barcodes,
+      barcodes_tsv = cellranger_count.barcodes_tsv,
+      features = cellranger_count.features,
+      matrix = cellranger_count.matrix,
+      mt_depth = cellranger_count.mt_depth,
+      mt_depth_plot = cellranger_count.mt_depth_plot,
+      mt_bam = cellranger_count.mt_bam,
+      mt_bam_index = cellranger_count.mt_bam_index
+
+
+  }
+
   output {
       # version of this pipeline
       String pipeline_version = version
@@ -163,6 +229,9 @@ workflow SCMTAH {
       File cluster_depth_heatmap = plot_scmtah.cluster_depth_heatmap
       File cluster_cell_af_heatmap = plot_scmtah.cluster_cell_af_heatmap
       File cluster_cell_depth_heatmap = plot_scmtah.cluster_cell_depth_heatmap
+
+      # gather_outputfiles
+      File output_dir_tar_gz = gather_outputfiles.output_dir_tar_gz
 
   }
 
@@ -408,4 +477,149 @@ task plot_scmtah {
     File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
   }
 
+}
+
+task gather_outputfiles {
+  String output_dir
+
+  # plot_scmtah
+  File scmtah_rda
+  File cell_af_heatmap
+  File cell_depth_heatmap
+  File cluster_af_heatmap
+  File cluster_depth_heatmap
+  File cluster_cell_af_heatmap
+  File cluster_cell_depth_heatmap
+
+  # call_mt_variants
+  # cell level
+  File cell_A_txt_gz
+  File cell_C_txt_gz
+  File cell_G_txt_gz
+  File cell_T_txt_gz
+  File cell_cell_heteroplasmic_df_tsv_gz
+  File cell_cell_heteroplasmic_df_raw_tsv_gz
+  File cell_coverage_txt_gz
+  File cell_depthTable_txt
+  File cell_rds
+  File cell_signac_rds
+  File cell_variant_stats_tsv_gz
+  File cell_vmr_strand_plot_png
+  # cluster level
+  File barcodeQuants_tsv
+  File cluster_A_txt_gz
+  File cluster_C_txt_gz
+  File cluster_G_txt_gz
+  File cluster_T_txt_gz
+  File cluster_cell_heteroplasmic_df_tsv_gz
+  File cluster_coverage_txt_gz
+  File cluster_depthTable_txt
+  File cluster_rds
+  File cluster_signac_rds
+  File cluster_variant_stats_tsv_gz
+  File cluster_vmr_strand_plot_png
+  File passingBarcodes_tsv
+
+  # cell_cluster_annotation
+  File azimuth_rda
+  File barcode_cluster
+  File barcode_bulk
+  File celltype_ratio
+  File plot_metrics
+  File plot_pie_celltype
+  File plot_qc
+  File plot_umap
+  File qc_cell_stats
+  File sc_azimuth_rds_gz
+  File mt_cluster_bam
+  File mt_cluster_bam_index
+
+  # cellranger_count
+  File filtered_feature_bc_matrix
+  File metrics_summary
+  File web_summary
+  File barcodes_tsv
+  File barcodes
+  File features
+  File matrix
+  File mt_depth
+  File mt_depth_plot
+  File mt_bam
+  File mt_bam_index
+
+
+  command {
+    mkdir -p ${output_dir}
+    # plot_scmtah
+    cp ${scmtah_rda} ${output_dir}
+    cp ${cell_af_heatmap} ${output_dir}
+    cp ${cell_depth_heatmap} ${output_dir}
+    cp ${cluster_af_heatmap} ${output_dir}
+    cp ${cluster_depth_heatmap} ${output_dir}
+    cp ${cluster_cell_af_heatmap} ${output_dir}
+    cp ${cluster_cell_depth_heatmap} ${output_dir}
+
+    # call_mt_variants
+    # cell level
+    cp ${cell_A_txt_gz} ${output_dir}
+    cp ${cell_C_txt_gz} ${output_dir}
+    cp ${cell_G_txt_gz} ${output_dir}
+    cp ${cell_T_txt_gz} ${output_dir}
+    cp ${cell_cell_heteroplasmic_df_tsv_gz} ${output_dir}
+    cp ${cell_cell_heteroplasmic_df_raw_tsv_gz} ${output_dir}
+    cp ${cell_coverage_txt_gz} ${output_dir}
+    cp ${cell_depthTable_txt} ${output_dir}
+    cp ${cell_rds} ${output_dir}
+    cp ${cell_signac_rds} ${output_dir}
+    cp ${cell_variant_stats_tsv_gz} ${output_dir}
+    cp ${cell_vmr_strand_plot_png} ${output_dir}
+    # cluster level
+    cp ${barcodeQuants_tsv} ${output_dir}
+    cp ${cluster_A_txt_gz} ${output_dir}
+    cp ${cluster_C_txt_gz} ${output_dir}
+    cp ${cluster_G_txt_gz} ${output_dir}
+    cp ${cluster_T_txt_gz} ${output_dir}
+    cp ${cluster_cell_heteroplasmic_df_tsv_gz} ${output_dir}
+    cp ${cluster_coverage_txt_gz} ${output_dir}
+    cp ${cluster_depthTable_txt} ${output_dir}
+    cp ${cluster_rds} ${output_dir}
+    cp ${cluster_signac_rds} ${output_dir}
+    cp ${cluster_variant_stats_tsv_gz} ${output_dir}
+    cp ${cluster_vmr_strand_plot_png} ${output_dir}
+    cp ${passingBarcodes_tsv} ${output_dir}
+
+    # cell_cluster_annotation
+    cp ${azimuth_rda} ${output_dir}
+    cp ${barcode_cluster} ${output_dir}
+    cp ${barcode_bulk} ${output_dir}
+    cp ${celltype_ratio} ${output_dir}
+    cp ${plot_metrics} ${output_dir}
+    cp ${plot_pie_celltype} ${output_dir}
+    cp ${plot_qc} ${output_dir}
+    cp ${plot_umap} ${output_dir}
+    cp ${qc_cell_stats} ${output_dir}
+    cp ${sc_azimuth_rds_gz} ${output_dir}
+    cp ${mt_cluster_bam} ${output_dir}
+    cp ${mt_cluster_bam_index} ${output_dir}
+
+    # cellranger_count
+    cp ${filtered_feature_bc_matrix} ${output_dir}
+    cp ${metrics_summary} ${output_dir}
+    cp ${web_summary} ${output_dir}
+    cp ${barcodes_tsv} ${output_dir}
+    cp ${barcodes} ${output_dir}
+    cp ${features} ${output_dir}
+    cp ${matrix} ${output_dir}
+    cp ${mt_depth} ${output_dir}
+    cp ${mt_depth_plot} ${output_dir}
+    cp ${mt_bam} ${output_dir}
+    cp ${mt_bam_index} ${output_dir}
+
+
+    tar -czf ${output_dir}.tar.gz ${output_dir}
+  }
+
+  output {
+    File output_dir_tar_gz = "${output_dir}.tar.gz"
+  }
 }
