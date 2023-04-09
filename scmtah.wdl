@@ -110,6 +110,8 @@ workflow SCMTAH {
       cell_cell_heteroplasmic_df_raw_tsv_gz = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz,
       cell_coverage_txt_gz = call_mt_variants.cell_coverage_txt_gz,
       cell_depthTable_txt = call_mt_variants.cell_depthTable_txt,
+      cell_rds = call_mt_variants.cell_rds,
+      cell_signac_rds = call_mt_variants.cell_signac_rds,
       cell_variant_stats_tsv_gz = call_mt_variants.cell_variant_stats_tsv_gz,
       cell_vmr_strand_plot_png = call_mt_variants.cell_vmr_strand_plot_png,
       # cluster level
