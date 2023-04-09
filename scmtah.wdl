@@ -79,6 +79,16 @@ workflow SCMTAH {
       cpu = cpu
   }
 
+  call plot_scmtah {
+    input:
+      barcode_cluster_file = cell_cluster_annotation.barcode_cluster,
+      cell_hetero_file = call_mt_variants.cell_cell_heteroplasmic_df_tsv_gz,
+      cell_coverage_file = call_mt_variants.cell_coverage_txt_gz,
+      cluster_hetero_file = call_mt_variants.cluster_cell_heteroplasmic_df_tsv_gz,
+      cluster_coverage_file = call_mt_variants.cluster_coverage_txt_gz,
+      cell_hetero_raw_file = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz,
+  }
+
   output {
       # version of this pipeline
       String pipeline_version = version
@@ -116,6 +126,7 @@ workflow SCMTAH {
       File mt_bulk_bam_index = cell_cluster_annotation.mt_bulk_bam_index
 
       # call_mt_variants
+      # cell level
       File cell_A_txt_gz = call_mt_variants.cell_A_txt_gz
       File cell_C_txt_gz = call_mt_variants.cell_C_txt_gz
       File cell_G_txt_gz = call_mt_variants.cell_G_txt_gz
@@ -129,6 +140,7 @@ workflow SCMTAH {
       File cell_variant_stats_tsv_gz = call_mt_variants.cell_variant_stats_tsv_gz
       File cell_vmr_strand_plot_png = call_mt_variants.cell_vmr_strand_plot_png
 
+      # cluster level
       File barcodeQuants_tsv = call_mt_variants.barcodeQuants_tsv
       File cluster_A_txt_gz = call_mt_variants.cluster_A_txt_gz
       File cluster_C_txt_gz = call_mt_variants.cluster_C_txt_gz
@@ -142,6 +154,15 @@ workflow SCMTAH {
       File cluster_variant_stats_tsv_gz = call_mt_variants.cluster_variant_stats_tsv_gz
       File cluster_vmr_strand_plot_png = call_mt_variants.cluster_vmr_strand_plot_png
       File passingBarcodes_tsv = call_mt_variants.passingBarcodes_tsv
+
+      # plot scmtah
+      File scmtah_rda = plot_scmtah.scmtah_rda
+      File cell_af_heatmap = plot_scmtah.cell_af_heatmap
+      File cell_depth_heatmap = plot_scmtah.cell_depth_heatmap
+      File cluster_af_heatmap = plot_scmtah.cluster_af_heatmap
+      File cluster_depth_heatmap = plot_scmtah.cluster_depth_heatmap
+      File cluster_cell_af_heatmap = plot_scmtah.cluster_cell_af_heatmap
+      File cluster_cell_depth_heatmap = plot_scmtah.cluster_cell_depth_heatmap
 
   }
 
@@ -355,7 +376,36 @@ task call_mt_variants {
   }
 }
 
+task plot_scmtah {
 
-# task plot_scmtah {
+  File barcode_cluster_file
+  File cell_hetero_file
+  File cell_coverage_file
 
-# }
+  File cluster_hetero_file
+  File cluster_coverage_file
+
+  File cell_hetero_raw_file
+
+  command {
+    module load R/4.1.0
+    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/scmtah.R \
+      ${barcode_cluster_file} \
+      ${cell_hetero_file} \
+      ${cell_coverage_file} \
+      ${cluster_hetero_file} \
+      ${cluster_coverage_file} \
+      ${cell_hetero_raw_file}
+  }
+
+  output {
+    File scmtah_rda = "scmtah.rda"
+    File cell_af_heatmap = "cell_af_heatmap.pdf"
+    File cell_depth_heatmap = "cell_depth_heatmap.pdf"
+    File cluster_af_heatmap = "cluster_af_heatmap.pdf"
+    File cluster_depth_heatmap = "cluster_depth_heatmap.pdf"
+    File cluster_cell_af_heatmap = "cluster_cell_af_heatmap.pdf"
+    File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
+  }
+
+}
