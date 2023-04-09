@@ -141,6 +141,7 @@ workflow SCMTAH {
       sc_azimuth_rds_gz = cell_cluster_annotation.sc_azimuth_rds_gz,
       mt_cluster_bam = cell_cluster_annotation.mt_cluster_bam,
       mt_cluster_bam_index = cell_cluster_annotation.mt_cluster_bam_index,
+      plot_mt_cluster_depth = cell_cluster_annotation.plot_mt_cluster_depth,
       # cellranger_count
       filtered_feature_bc_matrix = cellranger_count.filtered_feature_bc_matrix,
       metrics_summary = cellranger_count.metrics_summary,
@@ -339,6 +340,8 @@ task cell_cluster_annotation {
 
     # split MT bam by cluster
     bamtools split -in MT_cluster.bam -tag CJ
+    # gmoviz plot of cluster coverage
+    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/depth_cluster_gmoviz.R
 
   }
   output {
@@ -356,6 +359,7 @@ task cell_cluster_annotation {
     File mt_cluster_bam_index = "MT_cluster.bam.bai"
     File mt_bulk_bam = "MT_bulk.bam"
     File mt_bulk_bam_index = "MT_bulk.bam.bai"
+    File plot_mt_cluster_depth = "plot-mt-cluster-depth.pdf"
   }
 }
 
@@ -538,6 +542,7 @@ task gather_outputfiles {
   File sc_azimuth_rds_gz
   File mt_cluster_bam
   File mt_cluster_bam_index
+  File plot_mt_cluster_depth
 
   # cellranger_count
   File filtered_feature_bc_matrix
