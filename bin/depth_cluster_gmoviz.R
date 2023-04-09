@@ -12,12 +12,15 @@ library(ggplot2)
 library(patchwork)
 library(rlang)
 library(gmoviz)
+library(ggtranscript)
 
 # args --------------------------------------------------------------------
 
 
 # src ---------------------------------------------------------------------
 
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
+  dplyr::arrange(cancer_types)
 
 # header ------------------------------------------------------------------
 
@@ -25,8 +28,8 @@ library(gmoviz)
 
 # function ----------------------------------------------------------------
 fn_plot_coverage <- function(.filename, .celltype) {
-  .filename
-  .celltype
+  # .filename
+  # .celltype
 
   bam <- Rsamtools::BamFile(file = .filename)
   Rsamtools::indexBam(bam)
@@ -34,7 +37,7 @@ fn_plot_coverage <- function(.filename, .celltype) {
   .coverage <- gmoviz::getCoverage(
     regions_of_interest = "MT",
     bam_file = .filename,
-    window_size = 50
+    window_size = 1
   )
 
   .coverage |>
@@ -90,6 +93,8 @@ fn_plot_coverage <- function(.filename, .celltype) {
     height = 10, 
     units = "in"
   )
+  
+  .coverage_a
 }
 
 # load data ---------------------------------------------------------------
@@ -113,16 +118,147 @@ celltype_bams
 
 celltype_bams |>
   dplyr::mutate(
-    a = purrr::map2(
+    coverage = purrr::map2(
       .x = filename,
       .y = celltype,
       .f = fn_plot_coverage
     )
+  ) ->
+  celltype_bams_cov
+
+
+
+celltype_bams_cov |> 
+  dplyr::mutate(
+    coverage = purrr::map(
+      .x = coverage,
+      .f = data.table::as.data.table
+    )
+  ) |> 
+  dplyr::select(-filename) |> 
+  dplyr::mutate(celltype = factor(celltype)) |> 
+  tidyr::unnest(cols = coverage) |> 
+  dplyr::select(
+    celltype, pos = end, depth = coverage
+  ) ->
+  coverage
+
+
+coverage %>%
+  ggplot(aes(x=pos, y = depth, fill = celltype)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.03)),
+    limits = c(1, 17000),
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0),
+    label = scales::label_number(scale = 1e-5, suffix = "x10^5")
+  ) +
+  scale_fill_manual(
+    name = "Cell type",
+    values = pcc$color,
+    guide = guide_legend(nrow = 1)
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    # axis.title.y = element_blank(),
+    axis.line.x.bottom = element_line(color = "black"),
+    # strip.background = element_rect(fill = NA, colour = "black"),
+    strip.background = element_blank(),
+    # strip.text = element_text(
+    #   color = "black",
+    #   face = "bold",
+    #   size = 8
+    # ),
+    strip.text = element_blank(),
+    legend.position = "top"
+  ) +
+  facet_wrap(
+    facets = ~celltype,
+    ncol = 1,
+    strip.position = "top"
+  ) +
+  labs(y = "Depth")  ->
+  p1
+
+
+gtf_gene_df <- 
+  readr::read_rds(
+    file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
   )
 
+
+gtf_gene_df %>%
+  ggplot(aes(
+    xstart = start,
+    xend = end,
+    y = gene_name
+  )) +
+  geom_range( aes(fill = transcript_biotype)) +
+  geom_intron(
+    data = to_intron(gtf_gene_df, "transcript_name"),
+    aes(strand = strand)
+  ) +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.03)),
+    limits = c(1, 17000),
+    breaks = seq(1000, 17000, 1000),
+    labels = seq(1000, 17000, 1000)
+  ) +
+  # scale_fill_brewer(palette = "Set3")
+  ggsci::scale_fill_jama(
+    name = "Biotype",
+    labels = c("MT rRNA", "MT tRNA", "Protein coding")
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_line(colour = "grey", linetype = "dashed"),
+    panel.grid.major = element_line(
+      colour = "grey",
+      linetype = "dashed",
+      size = 0.2
+    ),
+    axis.line = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.title.x = element_blank(),
+    # axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_blank(),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Position"
+  ) ->
+  p2
+
+p <- cowplot::plot_grid(
+  plotlist = list(p1, p2),
+  ncol = 1,
+  align = "v",
+  rel_heights = c(0.5, 0.5)
+)
+
+ggsave(
+  filename = "plot-mt-cluster-depth.pdf",
+  plot = p,
+  device = "pdf",
+  width = 17,
+  height = 15
+)
 
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
+save.image(
+  file = "depth_cluster_gmoviz.rda"
+)
