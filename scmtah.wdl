@@ -337,6 +337,9 @@ task cell_cluster_annotation {
       -p ${cpu}
     samtools index MT_bulk.bam
 
+    # split MT bam by cluster
+    bamtools split -in MT_cluster.bam -tag CJ
+
   }
   output {
     File azimuth_rda = "azimuth.rda"
