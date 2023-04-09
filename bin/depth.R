@@ -37,22 +37,30 @@ coverage <- data.table::fread(
 )
 
 # body --------------------------------------------------------------------
-conn <- DBI::dbConnect(
-  duckdb::duckdb(),
-  "/mnt/isilon/xing_lab/liuc9/refdata/ensembl/Homo_sapiens.GRCh38.107.gtf.plyranges.duckdb"
-)
+# conn <- DBI::dbConnect(
+#   duckdb::duckdb(),
+#   "/mnt/isilon/xing_lab/liuc9/refdata/ensembl/Homo_sapiens.GRCh38.107.gtf.plyranges.duckdb"
+# )
+# 
+# gtf_gene <- dplyr::tbl(conn, "grch38_107_plyranges") |>
+#   dplyr::filter(seqnames == "MT") |>
+#   data.table::as.data.table()
+# 
+# DBI::dbDisconnect(conn,  shutdown=TRUE)
+# 
+# 
+# gtf_gene |>
+#   dplyr::filter(type == "exon") |>
+#   as.data.frame() ->
+#   gtf_gene_df
+# readr::write_rds(
+#   x = gtf_gene_df,file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
+# )
 
-gtf_gene <- dplyr::tbl(conn, "grch38_107_plyranges") |>
-  dplyr::filter(seqnames == "MT") |>
-  data.table::as.data.table()
-
-DBI::dbDisconnect(conn,  shutdown=TRUE)
-
-
-gtf_gene |>
-  dplyr::filter(type == "exon") |>
-  as.data.frame() ->
-  gtf_gene_df
+gtf_gene_df <- 
+  readr::read_rds(
+    file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
+  )
 
 coverage %>%
   ggplot(aes(x=pos, y = depth)) +
@@ -77,6 +85,7 @@ coverage %>%
   labs(y = "Depth") ->
   p1
 
+
 gtf_gene_df %>%
   ggplot(aes(
     xstart = start,
@@ -94,6 +103,11 @@ gtf_gene_df %>%
     breaks = seq(1000, 17000, 1000),
     labels = seq(1000, 17000, 1000)
   ) +
+  # scale_fill_brewer(palette = "Set3")
+  ggsci::scale_fill_jama(
+    name = "Biotype",
+    labels = c("MT rRNA", "MT tRNA", "Protein coding")
+  ) +
   theme(
     plot.margin = margin(t = 0, b = 0, unit = "cm"),
     panel.background = element_blank(),
@@ -107,7 +121,7 @@ gtf_gene_df %>%
     # axis.ticks.x = element_blank(),
     # axis.text.x = element_blank(),
     # axis.title.x = element_blank(),
-    axis.text.y = element_text(size = 12, color = "black"),
+    # axis.text.y = element_text(size = 12, color = "black"),
     axis.title.y = element_blank(),
     legend.position = "bottom"
   ) +
