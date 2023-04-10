@@ -439,6 +439,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
   dev.off()
 }
 
+
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
@@ -446,3 +447,4 @@ cell_raw_ch_af_depth <- fn_heatmap(
 # save image --------------------------------------------------------------
 
 save.image(file = "scmtah.rda")
+# load(file = "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/0138fcd0-c384-42c2-8704-6647767610d2/call-plot_scmtah/execution/scmtah.rda")
