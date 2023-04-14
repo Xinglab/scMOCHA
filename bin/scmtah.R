@@ -440,6 +440,75 @@ cell_raw_ch_af_depth <- fn_heatmap(
 }
 
 
+# Variant annotation ------------------------------------------------------
+
+
+cell_raw_cluster_forplot$forplot |> 
+  # dplyr::filter(depth > 3) |>  
+  dplyr::select(pos, variant) |>  
+  dplyr::distinct() |> 
+  dplyr::mutate(variant = gsub(
+    pattern = "[0-9]*",
+    replacement = "",
+    x = variant
+  )) |> 
+  tidyr::separate(
+    col = variant,
+    into = c("ref", "var")
+  ) |> 
+  dplyr::mutate(sample = "Sample1") |> 
+  dplyr::select(
+    sample = sample, 
+    pos = pos, 
+    ref = ref,
+    var = var
+  ) ->
+  cell_variants
+
+readr::write_tsv(
+  x = cell_variants,
+  file = "cell_snvlist.tsv"
+)
+# library(httr)
+
+tryCatch(
+  {
+    cell_variant_response <- POST(
+      "https://mitomap.org/mitomaster/websrvc.cgi",
+      body = list(
+        file = upload_file("cell_snvlist.tsv"),
+        fileType = "snvlist",
+        output = "detail"
+      ),
+      encode = "multipart"
+    )
+    # print(content(response, "text"))
+  },
+  error = function(err) {
+    print(paste("HTTP error:", err$message))
+  },
+  warning = function(w) {
+    print(paste("Warning:", w$message))
+  },
+  finally = {
+    print("Done.")
+  }
+)
+
+cell_anno <- content(
+  x = cell_variant_response,
+  as = "text",
+  encoding = "UTF-8"
+) |> 
+  data.table::fread(
+    sep = "\t"
+  )
+
+readr::write_tsv(
+  x = cell_anno,
+  file = "cell_variant_annotation.tsv"
+)
+
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
