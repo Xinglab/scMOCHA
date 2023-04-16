@@ -509,6 +509,11 @@ readr::write_tsv(
   file = "cell_variant_annotation.tsv"
 )
 
+writexl::write_xlsx(
+  x = cell_anno,
+  path = "cell_variant_annotation.xlsx"
+)
+
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
