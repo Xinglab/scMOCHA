@@ -19,6 +19,3 @@ First test PBMC data was source from [Stuart el al., Cell, 2019](https://www.sci
 
 ## Pipeline
 ![](img/workflow.png)
-
-
-
