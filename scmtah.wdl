@@ -100,6 +100,8 @@ workflow SCMTAH {
       cluster_depth_heatmap = plot_scmtah.cluster_depth_heatmap,
       cluster_cell_af_heatmap = plot_scmtah.cluster_cell_af_heatmap,
       cluster_cell_depth_heatmap = plot_scmtah.cluster_cell_depth_heatmap,
+      cell_variant_annotation_tsv = plot_scmtah.cell_variant_annotation_tsv,
+      cell_variant_annotation_xlsx = plot_scmtah.cell_variant_annotation_xlsx,
       # call_mt_variants
       # cell level
       cell_A_txt_gz = call_mt_variants.cell_A_txt_gz,
@@ -232,6 +234,8 @@ workflow SCMTAH {
       File cluster_depth_heatmap = plot_scmtah.cluster_depth_heatmap
       File cluster_cell_af_heatmap = plot_scmtah.cluster_cell_af_heatmap
       File cluster_cell_depth_heatmap = plot_scmtah.cluster_cell_depth_heatmap
+      File cell_variant_annotation_tsv = plot_scmtah.cell_variant_annotation_tsv
+      File cell_variant_annotation_xlsx = plot_scmtah.cell_variant_annotation_xlsx
 
       # gather_outputfiles
       File output_dir_tar_gz = gather_outputfiles.output_dir_tar_gz
@@ -484,6 +488,8 @@ task plot_scmtah {
     File cluster_depth_heatmap = "cluster_depth_heatmap.pdf"
     File cluster_cell_af_heatmap = "cluster_cell_af_heatmap.pdf"
     File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
+    File cell_variant_annotation_tsv = "cell_variant_annotation.tsv"
+    File cell_variant_annotation_xlsx = "cell_variant_annotation.xlsx"
   }
 
 }
@@ -556,6 +562,8 @@ task gather_outputfiles {
   File mt_depth_plot
   File mt_bam
   File mt_bam_index
+  File cell_variant_annotation_tsv
+  File cell_variant_annotation_xlsx
 
 
   command {
