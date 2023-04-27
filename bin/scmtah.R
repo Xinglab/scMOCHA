@@ -12,6 +12,7 @@ library(ggplot2)
 library(patchwork)
 library(rlang)
 library(ComplexHeatmap)
+library(httr)
 
 # src ---------------------------------------------------------------------
 pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
@@ -140,7 +141,8 @@ fn_forplot <- function(.af, .coverage) {
   )
 }
 
-fn_heatmap <- function(.forplot, .cell_variants = NULL) {
+fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
+  
   .forplot$forplot |> 
     dplyr::select(barcode, variant, af)  |> 
     tidyr::pivot_wider(
@@ -155,17 +157,28 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL) {
     t() ->
     .af_mtx
   
+  
+  
   tibble::tibble(
     variants = rownames(.af_mtx)
-  ) |> 
-    dplyr::mutate(
-      cell_variants = ifelse(
-        variants %in% .cell_variants,
-        "red",
-        "black"
+  ) ->
+    .for_gcol
+  
+  .gcol <- if(is.null(.cell_variants)) {
+    .for_gcol |> 
+      dplyr::mutate(
+        cell_variants = "black"
       )
-    ) ->
-    .gcol
+  } else {
+    .for_gcol |> 
+      dplyr::mutate(
+        cell_variants = ifelse(
+          variants %in% .cell_variants,
+          "black",
+          "red"
+        )
+      ) 
+  }
   
   
   .forplot$forplot |> 
@@ -180,7 +193,6 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL) {
     as.matrix() |>
     t() ->
     .depth_mtx
-  
   
   .forplot$rank |>
     dplyr::select(barcode, cluster) |>
@@ -204,44 +216,91 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL) {
     which = "column"
   )
   
-  
-  ComplexHeatmap::Heatmap(
-    matrix = .af_mtx,
-    col = circlize::colorRamp2(
-      breaks = c(0, 0.98, 1),
-      # colors = c("white", "#440154FF", "#FDE725FF"),
-      colors = c("white", "red", "#440154FF"),
-      # colors = c("white", "blue", "red"),
-      space = "RGB"
-    ),
-    name = "Allele Freq",
-    na_col = "grey",
-    color_space = "LAB",
-    rect_gp = gpar(col = NA),
-    border = NA,
-    cell_fun = NULL,
-    layer_fun = NULL,
-    jitter = FALSE,
-    # row
-    cluster_rows = F,
-    cluster_row_slices = T,
-    clustering_distance_rows = "pearson",
-    clustering_method_rows = "ward.D",
-    row_names_gp = gpar(
-      # fontsize = 20,
-      col = .gcol$cell_variants
-    ),
-    # column
-    cluster_columns = FALSE,
-    cluster_column_slices = T,
-    # clustering_distance_columns = "pearson",
-    # clustering_method_columns = "ward.D",
-    show_column_names = FALSE,
+  ch_af <- if(!is.null(.variant_annotation)) {
     
-    top_annotation = chm_top
-  ) ->
-    ch_af
-  
+    hma_right <- ComplexHeatmap::rowAnnotation(
+      df = .variant_annotation |> 
+        dplyr::select(-Conservation)
+    )
+    hma_left <- ComplexHeatmap::rowAnnotation(
+      df = .variant_annotation |> 
+        dplyr::select(Conservation)
+    )
+    ComplexHeatmap::Heatmap(
+      matrix = .af_mtx,
+      col = circlize::colorRamp2(
+        breaks = c(0, 0.98, 1),
+        colors = c("white", "red", "#440154FF"),
+        space = "RGB"
+      ),
+      name = "Allele Freq",
+      na_col = "grey",
+      color_space = "LAB",
+      rect_gp = gpar(col = NA),
+      border = NA,
+      cell_fun = NULL,
+      layer_fun = NULL,
+      jitter = FALSE,
+      # row
+      cluster_rows = F,
+      cluster_row_slices = T,
+      clustering_distance_rows = "pearson",
+      clustering_method_rows = "ward.D",
+      row_names_gp = gpar(
+        # fontsize = 20,
+        col = .gcol$cell_variants
+      ),
+      # column
+      cluster_columns = FALSE,
+      cluster_column_slices = T,
+      # clustering_distance_columns = "pearson",
+      # clustering_method_columns = "ward.D",
+      show_column_names = FALSE,
+      row_names_side = "left",
+      
+      top_annotation = chm_top,
+      left_annotation = hma_left,
+      right_annotation = hma_right
+    )
+    
+  } else {
+    ComplexHeatmap::Heatmap(
+      matrix = .af_mtx,
+      col = circlize::colorRamp2(
+        breaks = c(0, 0.98, 1),
+        colors = c("white", "red", "#440154FF"),
+        space = "RGB"
+      ),
+      name = "Allele Freq",
+      na_col = "grey",
+      color_space = "LAB",
+      rect_gp = gpar(col = NA),
+      border = NA,
+      cell_fun = NULL,
+      layer_fun = NULL,
+      jitter = FALSE,
+      # row
+      cluster_rows = F,
+      cluster_row_slices = T,
+      clustering_distance_rows = "pearson",
+      clustering_method_rows = "ward.D",
+      row_names_gp = gpar(
+        # fontsize = 20,
+        col = .gcol$cell_variants
+      ),
+      # column
+      cluster_columns = FALSE,
+      cluster_column_slices = T,
+      # clustering_distance_columns = "pearson",
+      # clustering_method_columns = "ward.D",
+      show_column_names = FALSE,
+      row_names_side = "left",
+      
+      top_annotation = chm_top,
+    )
+    
+  }
+
   
   ComplexHeatmap::Heatmap(
     matrix = .depth_mtx,
@@ -274,6 +333,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL) {
     # clustering_distance_columns = "pearson",
     # clustering_method_columns = "ward.D",
     show_column_names = FALSE,
+    row_names_side = "left",
     
     top_annotation = chm_top
   ) ->
@@ -394,58 +454,13 @@ cluster_ch_af_depth <- fn_heatmap(
   dev.off()
 }
 
-
-
-# Cluster cell allele -----------------------------------------------------
-
-cell_hetero_raw <- fn_load_hetero(
-  .filename = cell_hetero_raw_file
-)
-
-cell_raw_cluster_af <- cluster_umap |> 
-  dplyr::left_join(cell_hetero_raw, by = "barcode") |>
-  dplyr::rename(cluster = celltype) |> 
-  dplyr::filter(variant %in% cluster_hetero$variant) |> 
-  tidyr::pivot_wider(
-    names_from = variant,
-    values_from = af
-  )
-  
-cell_raw_cluster_forplot <- fn_forplot(
-  .af = cell_raw_cluster_af, 
-  .coverage = cell_coverage
-)
-
-cell_raw_ch_af_depth <- fn_heatmap(
-  .forplot = cell_raw_cluster_forplot, 
-  .cell_variants = cell_cluster_forplot$forplot$variant
-  )
-
-{
-  pdf(
-    file = "cluster_cell_af_heatmap.pdf",
-    width = 14, 
-    height = 7
-  )
-  ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
-  dev.off()
-  
-  pdf(
-    file = "cluster_cell_depth_heatmap.pdf",
-    width = 14, 
-    height = 7
-  )
-  ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)
-  dev.off()
-}
-
-
 # Variant annotation ------------------------------------------------------
 
 
-cell_raw_cluster_forplot$forplot |> 
-  # dplyr::filter(depth > 3) |>  
-  dplyr::select(pos, variant) |>  
+cluster_cluster_forplot$forplot |> 
+  dplyr::filter(!is.na(depth)) |> 
+  # dplyr::select(barcode, pos, variant) |>  
+  dplyr::select(pos, variant) |> 
   dplyr::distinct() |> 
   dplyr::mutate(variant = gsub(
     pattern = "[0-9]*",
@@ -456,7 +471,8 @@ cell_raw_cluster_forplot$forplot |>
     col = variant,
     into = c("ref", "var")
   ) |> 
-  dplyr::mutate(sample = "Sample1") |> 
+  # dplyr::rename(sample = barcode) |> 
+  dplyr::mutate(sample = "sample1") |> 
   dplyr::select(
     sample = sample, 
     pos = pos, 
@@ -469,7 +485,6 @@ readr::write_tsv(
   x = cell_variants,
   file = "cell_snvlist.tsv"
 )
-# library(httr)
 
 tryCatch(
   {
@@ -482,7 +497,6 @@ tryCatch(
       ),
       encode = "multipart"
     )
-    # print(content(response, "text"))
   },
   error = function(err) {
     print(paste("HTTP error:", err$message))
@@ -513,6 +527,94 @@ writexl::write_xlsx(
   x = cell_anno,
   path = "cell_variant_annotation.xlsx"
 )
+
+
+cell_anno |> 
+  dplyr::mutate(
+    variant = glue::glue("{tpos}{tnt}>{qnt}")
+  ) |> 
+  dplyr::select(
+    variant, ntchange, calc_locus, patientphenotype,
+    conservation, verbose_haplogroup
+  ) |> 
+  dplyr::mutate(
+    calc_locus = gsub(
+      pattern = "<br>.*",
+      replace = "",
+      x = calc_locus
+    )
+  ) |> 
+  dplyr::mutate(
+    conservation = gsub(
+      pattern = "%",
+      replacement = "",
+      x = conservation
+    )
+  ) |> 
+  dplyr::mutate(
+    patientphenotype = stringr::str_wrap(
+      stringr::str_to_sentence(string = patientphenotype),
+      width = 10
+    )
+  ) |> 
+  dplyr::mutate(conservation = as.numeric(conservation)) |> 
+  dplyr::select(
+    Ntchange = ntchange,
+    Locus = calc_locus,
+    Conservation = conservation,
+    Haplogroup = verbose_haplogroup,
+    Phenotype = patientphenotype
+  ) ->
+  variant_annotation
+  
+
+
+# Cluster cell allele -----------------------------------------------------
+
+cell_hetero_raw <- fn_load_hetero(
+  .filename = cell_hetero_raw_file
+)
+
+cell_raw_cluster_af <- cluster_umap |> 
+  dplyr::left_join(cell_hetero_raw, by = "barcode") |>
+  dplyr::rename(cluster = celltype) |> 
+  dplyr::filter(variant %in% cluster_hetero$variant) |> 
+  tidyr::pivot_wider(
+    names_from = variant,
+    values_from = af
+  )
+  
+cell_raw_cluster_forplot <- fn_forplot(
+  .af = cell_raw_cluster_af, 
+  .coverage = cell_coverage
+)
+
+cell_raw_ch_af_depth <- fn_heatmap(
+  .forplot = cell_raw_cluster_forplot, 
+  .cell_variants = cell_cluster_forplot$forplot$variant,
+  .variant_annotation = variant_annotation
+  )
+
+{
+  pdf(
+    file = "cluster_cell_af_heatmap.pdf",
+    width = 14, 
+    height = 7
+  )
+  ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
+  dev.off()
+  
+  pdf(
+    file = "cluster_cell_depth_heatmap.pdf",
+    width = 14, 
+    height = 7
+  )
+  ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)
+  dev.off()
+}
+
+
+
 
 # footer ------------------------------------------------------------------
 
