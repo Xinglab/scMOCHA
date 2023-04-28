@@ -97,10 +97,10 @@ srafiles_conf |>
           .x, "{.srrid}.json" |> glue::glue()
         )
         .errfile <- file.path(
-          .x, "{.srrid}.err"
+          .x, "{.srrid}.err" |> glue::glue()
         )
         .logfile <- file.path(
-          .x, "{.srrid}.log"
+          .x, "{.srrid}.log" |> glue::glue()
         )
         
         runwdl_sh_file <- file.path(
@@ -170,8 +170,8 @@ srafiles_conf_scmtah |>
           cmd_dump,
           "",
           cmd_rename,
-          "",
-          cmd_runwdl
+          ""
+          # cmd_runwdl
         )
         
         
@@ -197,7 +197,7 @@ srafiles_conf_scmtah |>
 
 readr::write_tsv(
   x = sarfiles_dump_conf_scmtah,
-  file = "runs/01-Sci_Immunol_32651212/runfiles.tsv"
+  file = "/home/liuc9/github/scRNAseq-MitoVariant/runs/01-Sci_Immunol_32651212/runfiles.tsv"
 )
 
 # footer ------------------------------------------------------------------

@@ -31,31 +31,35 @@ library(rlang)
 # body --------------------------------------------------------------------
 
 runfiles <- readr::read_tsv(
-  file = "runs/01-Sci_Immunol_32651212/runfiles.tsv"
+  file = "/home/liuc9/github/scRNAseq-MitoVariant/runs/01-Sci_Immunol_32651212/runfiles.tsv"
 )
 
 # step1 -------------------------------------------------------------------
 
-runfiles$dump_slrm |> 
-  purrr::map(
-    .f = function(.x) {
-      command <- "/cm/shared/apps/slurm/current/bin/sbatch {.x}" |> glue::glue()
-      # print(cmd)
-      system(command = command)
-    }
-  )
+# runfiles$dump_slrm |> 
+#   purrr::map(
+#     .f = function(.x) {
+#       command <- "/cm/shared/apps/slurm/current/bin/sbatch {.x}" |> glue::glue()
+#       # print(cmd)
+#       system(command = command)
+#     }
+#   )
 
 # step2 -------------------------------------------------------------------
 
 
 
-# runfiles$scmtah_sh |> 
-#   purrr::map(
-#     .f = function(.x) {
-#       cmd <- "bash {.x}" |> glue::glue()
-#       system(command = cmd)
-#     }
-#   )
+runfiles$scmtah_sh |>
+  purrr::map_chr(
+    .f = function(.x) {
+      "bash {.x} &" |> glue::glue()
+      # system(command = cmd)
+    }
+  ) |> 
+  readr::write_lines(
+    file = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/runwdl.sh"
+  )
+  
 
 
 # footer ------------------------------------------------------------------
