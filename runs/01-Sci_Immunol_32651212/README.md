@@ -1,0 +1,1 @@
+SRR11680209 can not pass the cellranger count QC

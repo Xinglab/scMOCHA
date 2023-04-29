@@ -31,15 +31,14 @@ cluster_hetero_file <- args[4]
 cluster_coverage_file <- args[5]
 
 cell_hetero_raw_file <- args[6]
+
 # 
-# barcode_cluster_file <- "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/b4545ece-8969-47e7-aea8-2dfeb2d1f872/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
-# cell_hetero_file <- "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/b4545ece-8969-47e7-aea8-2dfeb2d1f872/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <- "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/b4545ece-8969-47e7-aea8-2dfeb2d1f872/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
-# 
-# cluster_hetero_file <- "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/b4545ece-8969-47e7-aea8-2dfeb2d1f872/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <- "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/b4545ece-8969-47e7-aea8-2dfeb2d1f872/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
-# 
-# cell_hetero_raw_file <- "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/b4545ece-8969-47e7-aea8-2dfeb2d1f872/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
+# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
+# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
+# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
 
 
 # header ------------------------------------------------------------------
@@ -182,10 +181,10 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   
   
   .forplot$forplot |> 
-    dplyr::select(barcode, pos, depth) |>
-    dplyr::arrange(pos) |>
+    dplyr::select(barcode, variant, depth) |>
+    # dplyr::arrange(pos) |>
     tidyr::pivot_wider(
-      names_from = pos,
+      names_from = variant,
       values_from = depth
     ) |>
     dplyr::slice(match(.forplot$rank$barcode, barcode)) |>
@@ -486,10 +485,10 @@ readr::write_tsv(
   file = "cell_snvlist.tsv"
 )
 
-tryCatch(
+cell_variant_response <- tryCatch(
   {
-    cell_variant_response <- POST(
-      "https://mitomap.org/mitomaster/websrvc.cgi",
+    POST(
+      "https://mitomap.org/mitomaster/websrvc.cgia",
       body = list(
         file = upload_file("cell_snvlist.tsv"),
         fileType = "snvlist",
@@ -499,7 +498,8 @@ tryCatch(
     )
   },
   error = function(err) {
-    print(paste("HTTP error:", err$message))
+    # print(paste("HTTP error:", err$message))
+    "error"
   },
   warning = function(w) {
     print(paste("Warning:", w$message))
@@ -509,63 +509,68 @@ tryCatch(
   }
 )
 
-cell_anno <- content(
-  x = cell_variant_response,
-  as = "text",
-  encoding = "UTF-8"
-) |> 
-  data.table::fread(
-    sep = "\t"
+status <- httr::status_code(cell_variant_response)
+
+variant_annotation <- if(status == 200) {
+  cell_anno <- content(
+    x = cell_variant_response,
+    as = "text",
+    encoding = "UTF-8"
+  ) |> 
+    data.table::fread(
+      sep = "\t"
+    )
+  
+  readr::write_tsv(
+    x = cell_anno,
+    file = "cell_variant_annotation.tsv"
   )
-
-readr::write_tsv(
-  x = cell_anno,
-  file = "cell_variant_annotation.tsv"
-)
-
-writexl::write_xlsx(
-  x = cell_anno,
-  path = "cell_variant_annotation.xlsx"
-)
-
-
-cell_anno |> 
-  dplyr::mutate(
-    variant = glue::glue("{tpos}{tnt}>{qnt}")
-  ) |> 
-  dplyr::select(
-    variant, ntchange, calc_locus, patientphenotype,
-    conservation, verbose_haplogroup
-  ) |> 
-  dplyr::mutate(
-    calc_locus = gsub(
-      pattern = "<br>.*",
-      replace = "",
-      x = calc_locus
+  
+  writexl::write_xlsx(
+    x = cell_anno,
+    path = "cell_variant_annotation.xlsx"
+  )
+  
+  
+  cell_anno |> 
+    dplyr::mutate(
+      variant = glue::glue("{tpos}{tnt}>{qnt}")
+    ) |> 
+    dplyr::select(
+      variant, ntchange, calc_locus, patientphenotype,
+      conservation, verbose_haplogroup
+    ) |> 
+    dplyr::mutate(
+      calc_locus = gsub(
+        pattern = "<br>.*",
+        replace = "",
+        x = calc_locus
+      )
+    ) |> 
+    dplyr::mutate(
+      conservation = gsub(
+        pattern = "%",
+        replacement = "",
+        x = conservation
+      )
+    ) |> 
+    dplyr::mutate(
+      patientphenotype = stringr::str_wrap(
+        stringr::str_to_sentence(string = patientphenotype),
+        width = 10
+      )
+    ) |> 
+    dplyr::mutate(conservation = as.numeric(conservation)) |> 
+    dplyr::select(
+      Ntchange = ntchange,
+      Locus = calc_locus,
+      Conservation = conservation,
+      Haplogroup = verbose_haplogroup,
+      Phenotype = patientphenotype
     )
-  ) |> 
-  dplyr::mutate(
-    conservation = gsub(
-      pattern = "%",
-      replacement = "",
-      x = conservation
-    )
-  ) |> 
-  dplyr::mutate(
-    patientphenotype = stringr::str_wrap(
-      stringr::str_to_sentence(string = patientphenotype),
-      width = 10
-    )
-  ) |> 
-  dplyr::mutate(conservation = as.numeric(conservation)) |> 
-  dplyr::select(
-    Ntchange = ntchange,
-    Locus = calc_locus,
-    Conservation = conservation,
-    Haplogroup = verbose_haplogroup,
-    Phenotype = patientphenotype
-  ) ->
-  variant_annotation
+} else {NULL}
+
+
   
 
 
