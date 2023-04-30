@@ -488,7 +488,7 @@ readr::write_tsv(
 cell_variant_response <- tryCatch(
   {
     POST(
-      "https://mitomap.org/mitomaster/websrvc.cgia",
+      "https://mitomap.org/mitomaster/websrvc.cgi",
       body = list(
         file = upload_file("cell_snvlist.tsv"),
         fileType = "snvlist",
@@ -498,8 +498,8 @@ cell_variant_response <- tryCatch(
     )
   },
   error = function(err) {
-    # print(paste("HTTP error:", err$message))
-    "error"
+    print(paste("HTTP error:", err$message))
+    # "error"
   },
   warning = function(w) {
     print(paste("Warning:", w$message))
@@ -509,7 +509,16 @@ cell_variant_response <- tryCatch(
   }
 )
 
-status <- httr::status_code(cell_variant_response)
+status <- tryCatch(
+  expr = {
+    httr::status_code(cell_variant_response)
+  },
+  error = function(err) {
+    0
+  }
+)
+  
+  
 
 variant_annotation <- if(status == 200) {
   cell_anno <- content(
