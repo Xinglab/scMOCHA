@@ -33,12 +33,12 @@ cluster_coverage_file <- args[5]
 cell_hetero_raw_file <- args[6]
 
 # 
-# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
-# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
-# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/a20c5ae0-e93e-4b08-9a64-fb4b13d9957f/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
+# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
+# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
+# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
 
 
 # header ------------------------------------------------------------------
@@ -453,10 +453,33 @@ cluster_ch_af_depth <- fn_heatmap(
   dev.off()
 }
 
+
+
+# Cluster cell allele -----------------------------------------------------
+
+cell_hetero_raw <- fn_load_hetero(
+  .filename = cell_hetero_raw_file
+)
+
+cell_raw_cluster_af <- cluster_umap |> 
+  dplyr::left_join(cell_hetero_raw, by = "barcode") |>
+  dplyr::rename(cluster = celltype) |> 
+  dplyr::filter(variant %in% cluster_hetero$variant) |> 
+  tidyr::pivot_wider(
+    names_from = variant,
+    values_from = af
+  )
+  
+cell_raw_cluster_forplot <- fn_forplot(
+  .af = cell_raw_cluster_af, 
+  .coverage = cell_coverage
+)
+
+
 # Variant annotation ------------------------------------------------------
 
 
-cluster_cluster_forplot$forplot |> 
+cell_raw_cluster_forplot$forplot |> 
   dplyr::filter(!is.na(depth)) |> 
   # dplyr::select(barcode, pos, variant) |>  
   dplyr::select(pos, variant) |> 
@@ -517,8 +540,8 @@ status <- tryCatch(
     0
   }
 )
-  
-  
+
+
 
 variant_annotation <- if(status == 200) {
   cell_anno <- content(
@@ -579,29 +602,6 @@ variant_annotation <- if(status == 200) {
     )
 } else {NULL}
 
-
-  
-
-
-# Cluster cell allele -----------------------------------------------------
-
-cell_hetero_raw <- fn_load_hetero(
-  .filename = cell_hetero_raw_file
-)
-
-cell_raw_cluster_af <- cluster_umap |> 
-  dplyr::left_join(cell_hetero_raw, by = "barcode") |>
-  dplyr::rename(cluster = celltype) |> 
-  dplyr::filter(variant %in% cluster_hetero$variant) |> 
-  tidyr::pivot_wider(
-    names_from = variant,
-    values_from = af
-  )
-  
-cell_raw_cluster_forplot <- fn_forplot(
-  .af = cell_raw_cluster_af, 
-  .coverage = cell_coverage
-)
 
 cell_raw_ch_af_depth <- fn_heatmap(
   .forplot = cell_raw_cluster_forplot, 
