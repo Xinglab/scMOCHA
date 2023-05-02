@@ -65,7 +65,9 @@ srafiles |>
           "SCMTAH.sample_id" = "{.srrid}" |> glue::glue(),
           "SCMTAH.transcriptome" = "/home/liuc9/data/refdata/mgatk_index/Human",
           "SCMTAH.rCRS" = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta",
-          "SCMTAH.output_dir" = "{.srrid}" |> glue::glue()
+          "SCMTAH.output_dir" = "{.srrid}" |> glue::glue(),
+          "SCMTAH.cellrefname" = "humancortexref",
+          "SCMTAH.celllevel" = "subclass"
         )
         
         conf_file <- file.path(
@@ -73,11 +75,11 @@ srafiles |>
           "{.srrid}.json" |> glue::glue()
         )
         
-        # jsonlite::write_json(
-        #   x = conf,
-        #   path = conf_file,
-        #   auto_unbox = TRUE
-        # )
+        jsonlite::write_json(
+          x = conf,
+          path = conf_file,
+          auto_unbox = TRUE
+        )
         
         conf_file
       }
