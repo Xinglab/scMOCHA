@@ -73,11 +73,11 @@ srafiles |>
           "{.srrid}.json" |> glue::glue()
         )
         
-        jsonlite::write_json(
-          x = conf,
-          path = conf_file,
-          auto_unbox = TRUE
-        )
+        # jsonlite::write_json(
+        #   x = conf,
+        #   path = conf_file,
+        #   auto_unbox = TRUE
+        # )
         
         conf_file
       }
@@ -120,10 +120,10 @@ srafiles_conf |>
           "-i {.jsonfile} 1>{.logfile} 2>{.errfile} &" |> glue::glue()
         )
         
-        readr::write_lines(
-          x = runwdl_cmd,
-          file = runwdl_sh_file
-        )
+        # readr::write_lines(
+        #   x = runwdl_cmd,
+        #   file = runwdl_sh_file
+        # )
         
         runwdl_sh_file
       }
@@ -157,8 +157,8 @@ srafiles_conf_scmtah |>
           "/home/liuc9/tools/sratoolkit.2.11.2-centos_linux64/bin/fasterq-dump {.y} --temp /scr1/users/liuc9/tmp/fasterq_dump  --include-technical --mem 50G --threads 10 --split-files --outdir {.x}" |> glue::glue()
         )
         cmd_rename <- c(
-          "mv {.x}/{.srrid}_1.fastq {.x}/{.srrid}_S1_L001_I1_001.fastq" |> glue::glue(),
-          "mv {.x}/{.srrid}_2.fastq {.x}/{.srrid}_S1_L001_R1_001.fastq" |> glue::glue(),
+          "mv {.x}/{.srrid}_S1_L001_R1_001.fastq {.x}/{.srrid}_S1_L001_I1_001.fastq" |> glue::glue(),
+          "mv {.x}/{.srrid}_S1_L001_R2_001.fastq {.x}/{.srrid}_S1_L001_R1_001.fastq" |> glue::glue(),
           "mv {.x}/{.srrid}_3.fastq {.x}/{.srrid}_S1_L001_R2_001.fastq" |> glue::glue()
         )
         
@@ -168,7 +168,7 @@ srafiles_conf_scmtah |>
         cmd <- c(
           cmd_slrm,
           "",
-          cmd_dump,
+          # cmd_dump,
           "",
           cmd_rename,
           ""
@@ -178,7 +178,7 @@ srafiles_conf_scmtah |>
         
         dump_slrm_file <-  file.path(
           .x,
-          "dump_{.srrid}.slrm" |> glue::glue()
+          "dump_{.srrid}_rename.slrm" |> glue::glue()
         )
         
         readr::write_lines(
@@ -196,10 +196,10 @@ srafiles_conf_scmtah |>
 
 
 
-readr::write_tsv(
-  x = sarfiles_dump_conf_scmtah,
-  file = "{datadir}/runfiles.tsv" |> glue::glue()
-)
+# readr::write_tsv(
+#   x = sarfiles_dump_conf_scmtah,
+#   file = "{datadir}/runfiles.tsv" |> glue::glue()
+# )
 
 # footer ------------------------------------------------------------------
 
