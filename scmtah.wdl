@@ -633,6 +633,8 @@ task gather_outputfiles {
     cp ${mt_depth_plot} ${output_dir}
     cp ${mt_bam} ${output_dir}
     cp ${mt_bam_index} ${output_dir}
+    cp ${cell_variant_annotation_tsv} ${output_dir}
+    cp ${cell_variant_annotation_xlsx} ${output_dir}
 
 
     tar -czf ${output_dir}.tar.gz ${output_dir}
