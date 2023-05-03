@@ -619,6 +619,7 @@ task gather_outputfiles {
     cp ${sc_azimuth_rds_gz} ${output_dir}
     cp ${mt_cluster_bam} ${output_dir}
     cp ${mt_cluster_bam_index} ${output_dir}
+    cp ${plot_mt_cluster_depth} ${output_dir}
 
     # cellranger_count
     cp ${filtered_feature_bc_matrix} ${output_dir}
