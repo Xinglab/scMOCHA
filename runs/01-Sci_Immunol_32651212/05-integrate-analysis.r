@@ -345,7 +345,162 @@ ggsave(
 
 # Depth -------------------------------------------------------------------
 
-metadata_anno_cellratio
+gtf_gene_df <- 
+  readr::read_rds(
+    file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
+  )
+
+library(ggtranscript)
+gtf_gene_df %>%
+  ggplot(aes(
+    xstart = start,
+    xend = end,
+    y = gene_name
+  )) +
+  geom_range( aes(fill = transcript_biotype)) +
+  geom_intron(
+    data = to_intron(gtf_gene_df, "transcript_name"),
+    aes(strand = strand)
+  ) +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.03)),
+    limits = c(1, 17000),
+    breaks = seq(1000, 17000, 1000),
+    labels = seq(1000, 17000, 1000)
+  ) +
+  # scale_fill_brewer(palette = "Set3")
+  ggsci::scale_fill_jama(
+    name = "Biotype",
+    labels = c("MT rRNA", "MT tRNA", "Protein coding")
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_line(colour = "grey", linetype = "dashed"),
+    panel.grid.major = element_line(
+      colour = "grey",
+      linetype = "dashed",
+      size = 0.2
+    ),
+    axis.line = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.title.x = element_blank(),
+    # axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_blank(),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Position"
+  ) ->
+  p_mt_chrom
+
+metadata_anno_cellratio |> 
+  dplyr::mutate(
+    depth = purrr::map(
+      .x = tardir,
+      .f = function(.x) {
+        if(is.na(.x)) {return(NULL)}
+        data.table::fread(
+          input = file.path(
+            .x, "possorted_genome_bam.MT.depth"
+          ),
+          col.names =  c("chr", "pos", "depth")
+        )
+        
+      }
+    )
+  ) ->
+  metadata_anno_depth
+
+metadata_anno_depth |> 
+  dplyr::filter(!purrr::map_lgl(.x = depth, .f = is.null)) |> 
+  dplyr::select(srrid, source_name, depth) |> 
+  dplyr::mutate(color = dplyr::case_match(
+    source_name,
+    "Flu_PBMC" ~ggsci::pal_jama()(4)[[1]],
+    "Normal_PBMC" ~ ggsci::pal_jama()(4)[[2]],
+    "nCoV_PBMC(mild)" ~ ggsci::pal_jama()(4)[[3]],
+    "nCoV_PBMC(severe)" ~ ggsci::pal_jama()(4)[[4]]
+  )) |> 
+  dplyr::slice(
+    5:8, 1:4, 9:19
+  ) |> 
+  dplyr::mutate(srrid = factor(srrid, levels = srrid)) ->
+  for_depth_plot
+
+for_depth_plot |> 
+  tidyr::unnest(cols = depth) |>
+  ggplot(aes(x=pos, y = depth, fill = srrid)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.03)),
+    limits = c(1, 17000),
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0),
+    # label = scales::label_number(scale = 1e-5, suffix = "x10^5")
+  ) +
+  scale_fill_manual(
+    name = "Sample",
+    values = for_depth_plot$color,
+    guide = guide_legend(nrow = 3)
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    # axis.title.y = element_blank(),
+    axis.line.x.bottom = element_line(color = "black"),
+    # strip.background = element_rect(fill = NA, colour = "black"),
+    strip.background = element_blank(),
+    # strip.text = element_text(
+    #   color = "black",
+    #   face = "bold",
+    #   size = 8
+    # ),
+    # strip.text = element_text(
+    #   color = for_depth_plot$color
+    # ),
+    strip.text = element_blank(),
+    legend.position = "none"
+  ) +
+  facet_wrap(
+    facets = ~srrid,
+    ncol = 1,
+    strip.position = "right"
+  ) +
+  labs(y = "Depth") ->
+  p_mt_depth
+
+ggsave(
+  filename = "Sample_depth.pdf",
+  plo = p_mt_depth,
+  device = "pdf",
+  width = 15,
+  height = 10,
+  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+)
+
+p_depth <- cowplot::plot_grid(
+  plotlist = list(p_mt_depth, p_mt_chrom),
+  ncol = 1,
+  align = "v",
+  rel_heights = c(0.7, 0.3)
+)
+
+ggsave(
+  filename = "Sample_depth_merge.pdf",
+  plo = p_depth,
+  device = "pdf",
+  width = 15,
+  height = 15,
+  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+)
 
 # footer ------------------------------------------------------------------
 
