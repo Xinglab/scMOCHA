@@ -17,6 +17,9 @@ library(rlang)
 
 # src ---------------------------------------------------------------------
 
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
+  dplyr::arrange(cancer_types)
+
 
 # header ------------------------------------------------------------------
 
@@ -192,7 +195,10 @@ metadata_anno |>
       replacement = "",
       x = Status
     )
-  )  ->
+  )  |> 
+  dplyr::slice(
+    6:9, 1:5, 10:20
+  ) ->
   metadata_clean
 
 metadata_clean |> 
@@ -257,36 +263,89 @@ ggsave(
 )
 
 
+# cell ratio --------------------------------------------------------------
+
 metadata_anno |> 
-  dplyr::filter(!is.na(linkfile)) |> 
   dplyr::mutate(
-    variant = purrr::map_chr(
-      .x = anno,
+    cellratio = purrr::map(
+      .x = tardir,
       .f = function(.x) {
-        # .x |> 
-        #   dplyr::mutate(variant = glue::glue("{tpos}{tnt}>{qnt}")) |> 
-        #   dplyr::pull(variant)
-        .x |> 
-          dplyr::pull(verbose_haplogroup) |> 
-          unique()
+        if(is.na(.x)) {return(NULL)}
+        .ratio <- readr::read_tsv(
+          file = file.path(
+            .x, "celltype_ratio.tsv"
+          ),
+          show_col_types = FALSE
+        )
+        .ratio
       }
     )
+  ) ->
+  metadata_anno_cellratio
+
+
+metadata_anno_cellratio |> 
+  dplyr::filter(!purrr::map_lgl(.x = cellratio, .f = is.null)) |> 
+  dplyr::select(srrid, source_name, cellratio) |> 
+  dplyr::mutate(color = dplyr::case_match(
+    source_name,
+    "Flu_PBMC" ~ggsci::pal_jama()(4)[[1]],
+    "Normal_PBMC" ~ ggsci::pal_jama()(4)[[2]],
+    "nCoV_PBMC(mild)" ~ ggsci::pal_jama()(4)[[3]],
+    "nCoV_PBMC(severe)" ~ ggsci::pal_jama()(4)[[4]]
+  )) |> 
+  dplyr::slice(
+    5:8, 1:4, 9:19
   ) |> 
-  dplyr::select(srrid, source_name, variant) ->
-  metadata_anno_v
+  dplyr::arrange(dplyr::desc(dplyr::row_number())) ->
+  for_ratio_plot
 
-metadata_anno_v |> 
-  dplyr::filter(source_name == "Normal_PBMC") |> 
-  dplyr::select(srrid, variant) |> 
-  tibble::deframe() ->
-  normal
+for_ratio_plot |> 
+  tidyr::unnest(cellratio) |> 
+  ggplot(aes(
+    x = ratio,
+    y = srrid,
+    fill = celltype
+  )) +
+  geom_col() +
+  ggsci::scale_fill_nejm(name = "Cell type") +
+  scale_x_continuous(
+    expand = expansion(mult = 0, add = 0),
+    labels = scales::percent_format()
+  ) +
+  scale_y_discrete(
+    limits = for_ratio_plot$srrid 
+  ) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.text = element_text(color = "black", size = 12, face = "bold"),
+    axis.text.y = element_text(
+      color = for_ratio_plot$color
+    ),
+    axis.ticks.y = element_blank(),
+    axis.line.x = element_line(color = "black", size = 0.5),
+    axis.title = element_text(color = "black", size = 14, face = "bold"),
+    axis.title.y = element_blank(),
+    legend.position = "right"
+  ) +
+  labs(x = "Cell ratio") ->
+  p_cellratio
 
-metadata_anno_v |> 
-  dplyr::filter(source_name == "Flu_PBMC") |> 
-  dplyr::select(srrid, variant) |> 
-  tibble::deframe() ->
-  Flu_PBMC
 
+ggsave(
+  filename = "Cell_ratio.pdf",
+  plo = p_cellratio,
+  device = "pdf",
+  width = 11,
+  height = 5,
+  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+)
+
+
+# Depth -------------------------------------------------------------------
+
+metadata_anno_cellratio
 
 # footer ------------------------------------------------------------------
 
