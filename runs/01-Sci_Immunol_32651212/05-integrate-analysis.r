@@ -128,7 +128,27 @@ metadata |>
         nrow(.x)
       }
     )
-  ) ->
+  ) |> 
+  dplyr::mutate(
+    haplogroup = purrr::map(
+      .x = anno,
+      .f = function(.x) {
+        if(all(is.na(.x))) {
+          return(
+            tibble::tibble(
+              haplogroup = NA_character_,
+              verbose_haplogroup = NA_character_
+            )
+          )
+          
+        }
+        .x |> 
+          dplyr::select(haplogroup, verbose_haplogroup) |> 
+          dplyr::distinct()
+      }
+    )
+  ) |> 
+  tidyr::unnest(cols = haplogroup) ->
   metadata_anno
 
 
@@ -140,7 +160,7 @@ metadata_anno |>
       no = "Pass"
     )
   )|> 
-  dplyr::select(srrid, Age, gender, source_name, subject_status, pass, `estimated number of cells`, `median UMI counts per cell`, `median genes per cell`, `number of cells after filtering`, nmut) |> 
+  dplyr::select(srrid, Age, gender, source_name, subject_status, pass, `estimated number of cells`, `median UMI counts per cell`, `median genes per cell`, `number of cells after filtering`, haplogroup, verbose_haplogroup, nmut) |> 
   dplyr::arrange(
     source_name, 
     subject_status,
@@ -163,6 +183,8 @@ metadata_anno |>
     `# cells after filter` = `number of cells after filtering`,
     `Cell ratio` = ratio,
     `# of variants` = nmut,
+    Haplogroup = haplogroup, 
+    Haplogroup_v = verbose_haplogroup
   ) |> 
   dplyr::mutate(
     Status = gsub(
@@ -233,6 +255,38 @@ ggsave(
   height = 6,
   path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
 )
+
+
+metadata_anno |> 
+  dplyr::filter(!is.na(linkfile)) |> 
+  dplyr::mutate(
+    variant = purrr::map_chr(
+      .x = anno,
+      .f = function(.x) {
+        # .x |> 
+        #   dplyr::mutate(variant = glue::glue("{tpos}{tnt}>{qnt}")) |> 
+        #   dplyr::pull(variant)
+        .x |> 
+          dplyr::pull(verbose_haplogroup) |> 
+          unique()
+      }
+    )
+  ) |> 
+  dplyr::select(srrid, source_name, variant) ->
+  metadata_anno_v
+
+metadata_anno_v |> 
+  dplyr::filter(source_name == "Normal_PBMC") |> 
+  dplyr::select(srrid, variant) |> 
+  tibble::deframe() ->
+  normal
+
+metadata_anno_v |> 
+  dplyr::filter(source_name == "Flu_PBMC") |> 
+  dplyr::select(srrid, variant) |> 
+  tibble::deframe() ->
+  Flu_PBMC
+
 
 # footer ------------------------------------------------------------------
 
