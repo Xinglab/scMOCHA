@@ -15,7 +15,7 @@ library(ComplexHeatmap)
 library(httr)
 
 # src ---------------------------------------------------------------------
-pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
   dplyr::arrange(cancer_types)
 
 
@@ -32,7 +32,7 @@ cluster_coverage_file <- args[5]
 
 cell_hetero_raw_file <- args[6]
 
-# 
+#
 # barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
 # cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
 # cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
@@ -53,9 +53,9 @@ fn_load_hetero <- function(.filename) {
   #   "mgatk_out/final",
   #   "sc.cell_heteroplasmic_df.tsv.gz"
   # )
-  
-  data.table::fread(input = .filename) |> 
-    dplyr::rename(barcode = "V1") |> 
+
+  data.table::fread(input = .filename) |>
+    dplyr::rename(barcode = "V1") |>
     tidyr::pivot_longer(
       cols = -barcode,
       names_to = "variant",
@@ -64,12 +64,12 @@ fn_load_hetero <- function(.filename) {
 }
 
 fn_load_coverage <- function(.filename) {
-  
+
   data.table::fread(
     input = .filename,
     sep = ",",
     col.names = c("pos", "barcode", "depth")
-  ) |> 
+  ) |>
     dplyr::mutate(depth = log2(depth + 1))
 }
 
@@ -78,38 +78,38 @@ fn_load_cluster <- function(.filename) {
     input = .filename,
     sep = "\t",
     col.names = c("barcode", "tag", "celltype")
-  ) |> 
-    dplyr::arrange(celltype) |> 
-    dplyr::mutate(celltype = factor(celltype)) |> 
+  ) |>
+    dplyr::arrange(celltype) |>
+    dplyr::mutate(celltype = factor(celltype)) |>
     dplyr::select(-tag)
 }
 
 fn_af <- function(.cluster, .hetero) {
   .cluster |>
-    dplyr::rename(cluster = celltype) |> 
+    dplyr::rename(cluster = celltype) |>
     dplyr::left_join(
       .hetero |> tidyr::pivot_wider(
-        names_from  = variant, 
+        names_from  = variant,
         values_from = af
-      ), 
+      ),
       by = "barcode"
-    ) 
+    )
 }
 
 fn_forplot <- function(.af, .coverage) {
-  .af |> 
-    dplyr::select(barcode, cluster, dplyr::contains(">")) |> 
+  .af |>
+    dplyr::select(barcode, cluster, dplyr::contains(">")) |>
     tidyr::pivot_longer(
       cols = -c(barcode, cluster),
       names_to = "variant",
       values_to = "af"
-    ) |> 
-    dplyr::group_by(barcode, cluster) |> 
-    dplyr::summarise(s_af = sum(af, na.rm = T)) |> 
-    dplyr::ungroup() |> 
+    ) |>
+    dplyr::group_by(barcode, cluster) |>
+    dplyr::summarise(s_af = sum(af, na.rm = T)) |>
+    dplyr::ungroup() |>
     dplyr::arrange(cluster, -s_af) ->
     .rank
-  
+
   .af |>
     dplyr::select(barcode, dplyr::contains(">")) |>
     tidyr::pivot_longer(
@@ -120,7 +120,7 @@ fn_forplot <- function(.af, .coverage) {
     dplyr::mutate(
       pos = gsub(pattern = "([[:digit:]]*).*", "\\1", variant) |>
         as.numeric()
-    ) |> 
+    ) |>
     dplyr::left_join(
       .coverage,
       by = c("barcode", "pos")
@@ -133,7 +133,7 @@ fn_forplot <- function(.af, .coverage) {
     dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
     dplyr::arrange(pos) ->
     .forplot
-  
+
   list(
     rank = .rank,
     forplot = .forplot
@@ -141,9 +141,9 @@ fn_forplot <- function(.af, .coverage) {
 }
 
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
-  
-  .forplot$forplot |> 
-    dplyr::select(barcode, variant, af)  |> 
+
+  .forplot$forplot |>
+    dplyr::select(barcode, variant, af)  |>
     tidyr::pivot_wider(
       names_from = "variant",
       values_from = af
@@ -155,32 +155,32 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     as.matrix() |>
     t() ->
     .af_mtx
-  
-  
-  
+
+
+
   tibble::tibble(
     variants = rownames(.af_mtx)
   ) ->
     .for_gcol
-  
+
   .gcol <- if(is.null(.cell_variants)) {
-    .for_gcol |> 
+    .for_gcol |>
       dplyr::mutate(
         cell_variants = "black"
       )
   } else {
-    .for_gcol |> 
+    .for_gcol |>
       dplyr::mutate(
         cell_variants = ifelse(
           variants %in% .cell_variants,
           "black",
           "red"
         )
-      ) 
+      )
   }
-  
-  
-  .forplot$forplot |> 
+
+
+  .forplot$forplot |>
     dplyr::select(barcode, variant, depth) |>
     # dplyr::arrange(pos) |>
     tidyr::pivot_wider(
@@ -192,7 +192,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     as.matrix() |>
     t() ->
     .depth_mtx
-  
+
   .forplot$rank |>
     dplyr::select(barcode, cluster) |>
     dplyr::slice(
@@ -201,28 +201,28 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     tibble::column_to_rownames(var = "barcode") |>
     dplyr::select(Cluster = cluster) ->
     .af_cluster
-  
-  
+
+
   col_clusters <- levels(.af_cluster$Cluster)
   col_colors <- pcc$color[1:length(levels(.af_cluster$Cluster))]
-  
+
   names(col_colors) <- col_clusters
-  
+
   chm_top <- ComplexHeatmap::HeatmapAnnotation(
     df = .af_cluster,
     gap = unit(c(2,2), "mm"),
     col = list(Cluster = col_colors),
     which = "column"
   )
-  
+
   ch_af <- if(!is.null(.variant_annotation)) {
-    
+
     hma_right <- ComplexHeatmap::rowAnnotation(
-      df = .variant_annotation |> 
+      df = .variant_annotation |>
         dplyr::select(-Conservation)
     )
     hma_left <- ComplexHeatmap::rowAnnotation(
-      df = .variant_annotation |> 
+      df = .variant_annotation |>
         dplyr::select(Conservation)
     )
     ComplexHeatmap::Heatmap(
@@ -256,12 +256,12 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       # clustering_method_columns = "ward.D",
       show_column_names = FALSE,
       row_names_side = "left",
-      
+
       top_annotation = chm_top,
       left_annotation = hma_left,
       right_annotation = hma_right
     )
-    
+
   } else {
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
@@ -294,13 +294,13 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       # clustering_method_columns = "ward.D",
       show_column_names = FALSE,
       row_names_side = "left",
-      
+
       top_annotation = chm_top,
     )
-    
+
   }
 
-  
+
   ComplexHeatmap::Heatmap(
     matrix = .depth_mtx,
     col = circlize::colorRamp2(
@@ -333,11 +333,11 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     # clustering_method_columns = "ward.D",
     show_column_names = FALSE,
     row_names_side = "left",
-    
+
     top_annotation = chm_top
   ) ->
     ch_depth
-  
+
   list(
     ch_af = ch_af,
     ch_depth = ch_depth
@@ -361,12 +361,12 @@ cell_coverage <- fn_load_coverage(
 )
 
 cell_cluster_af <- fn_af(
-  .cluster = cluster_umap, 
+  .cluster = cluster_umap,
   .hetero = cell_hetero
 )
 
 cell_cluster_forplot <- fn_forplot(
-  .af = cell_cluster_af, 
+  .af = cell_cluster_af,
   .coverage = cell_coverage
 )
 
@@ -379,7 +379,7 @@ ch_af_depth <- fn_heatmap(
 {
   pdf(
     file = "cell_af_heatmap.pdf",
-    width = 14, 
+    width = 14,
     height = 7
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_af)
@@ -387,7 +387,7 @@ ch_af_depth <- fn_heatmap(
 
   pdf(
     file = "cell_depth_heatmap.pdf",
-    width = 14, 
+    width = 14,
     height = 7
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_depth)
@@ -400,18 +400,18 @@ ch_af_depth <- fn_heatmap(
 
 cluster_hetero <- fn_load_hetero(
   .filename = cluster_hetero_file
-) |> 
-  dplyr::mutate(cluster = barcode) |> 
-  dplyr::mutate(cluster = factor(cluster)) |> 
+) |>
+  dplyr::mutate(cluster = barcode) |>
+  dplyr::mutate(cluster = factor(cluster)) |>
   dplyr::left_join(
-    cluster_umap |> 
-      dplyr::mutate(cluster = celltype) |> 
-      dplyr::mutate(cluster = factor(cluster)) |> 
-      dplyr::select(cluster, celltype) |> 
+    cluster_umap |>
+      dplyr::mutate(cluster = celltype) |>
+      dplyr::mutate(cluster = factor(cluster)) |>
+      dplyr::select(cluster, celltype) |>
       dplyr::distinct(),
     by = "cluster"
-  ) |> 
-  dplyr::select(-cluster) |> 
+  ) |>
+  dplyr::select(-cluster) |>
   dplyr::rename(cluster = celltype)
 
 cluster_coverage <- fn_load_coverage(
@@ -419,14 +419,14 @@ cluster_coverage <- fn_load_coverage(
 )
 
 
-cluster_cluster_af <- 
+cluster_cluster_af <-
   cluster_hetero |> tidyr::pivot_wider(
-      names_from  = variant, 
+      names_from  = variant,
       values_from = af
   )
 
 cluster_cluster_forplot <- fn_forplot(
-  .af = cluster_cluster_af, 
+  .af = cluster_cluster_af,
   .coverage = cluster_coverage
   )
 
@@ -438,15 +438,15 @@ cluster_ch_af_depth <- fn_heatmap(
 {
   pdf(
     file = "cluster_af_heatmap.pdf",
-    width = 7, 
+    width = 7,
     height = 7
   )
   ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_af)
   dev.off()
-  
+
   pdf(
     file = "cluster_depth_heatmap.pdf",
-    width = 7, 
+    width = 7,
     height = 7
   )
   ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_depth)
@@ -461,17 +461,17 @@ cell_hetero_raw <- fn_load_hetero(
   .filename = cell_hetero_raw_file
 )
 
-cell_raw_cluster_af <- cluster_umap |> 
+cell_raw_cluster_af <- cluster_umap |>
   dplyr::left_join(cell_hetero_raw, by = "barcode") |>
-  dplyr::rename(cluster = celltype) |> 
-  dplyr::filter(variant %in% cluster_hetero$variant) |> 
+  dplyr::rename(cluster = celltype) |>
+  dplyr::filter(variant %in% cluster_hetero$variant) |>
   tidyr::pivot_wider(
     names_from = variant,
     values_from = af
   )
-  
+
 cell_raw_cluster_forplot <- fn_forplot(
-  .af = cell_raw_cluster_af, 
+  .af = cell_raw_cluster_af,
   .coverage = cell_coverage
 )
 
@@ -479,25 +479,25 @@ cell_raw_cluster_forplot <- fn_forplot(
 # Variant annotation ------------------------------------------------------
 
 
-cell_raw_cluster_forplot$forplot |> 
-  dplyr::filter(!is.na(depth)) |> 
-  # dplyr::select(barcode, pos, variant) |>  
-  dplyr::select(pos, variant) |> 
-  dplyr::distinct() |> 
+cell_raw_cluster_forplot$forplot |>
+  dplyr::filter(!is.na(depth)) |>
+  # dplyr::select(barcode, pos, variant) |>
+  dplyr::select(pos, variant) |>
+  dplyr::distinct() |>
   dplyr::mutate(variant = gsub(
     pattern = "[0-9]*",
     replacement = "",
     x = variant
-  )) |> 
+  )) |>
   tidyr::separate(
     col = variant,
     into = c("ref", "var")
-  ) |> 
-  # dplyr::rename(sample = barcode) |> 
-  dplyr::mutate(sample = "sample1") |> 
+  ) |>
+  # dplyr::rename(sample = barcode) |>
+  dplyr::mutate(sample = "sample1") |>
   dplyr::select(
-    sample = sample, 
-    pos = pos, 
+    sample = sample,
+    pos = pos,
     ref = ref,
     var = var
   ) ->
@@ -548,51 +548,51 @@ variant_annotation <- if(status == 200) {
     x = cell_variant_response,
     as = "text",
     encoding = "UTF-8"
-  ) |> 
+  ) |>
     data.table::fread(
       sep = "\t"
     )
-  
+
   readr::write_tsv(
     x = cell_anno,
     file = "cell_variant_annotation.tsv"
   )
-  
+
   writexl::write_xlsx(
     x = cell_anno,
     path = "cell_variant_annotation.xlsx"
   )
-  
-  
-  cell_anno |> 
+
+
+  cell_anno |>
     dplyr::mutate(
       variant = glue::glue("{tpos}{tnt}>{qnt}")
-    ) |> 
+    ) |>
     dplyr::select(
       variant, ntchange, calc_locus, patientphenotype,
       conservation, verbose_haplogroup
-    ) |> 
+    ) |>
     dplyr::mutate(
       calc_locus = gsub(
         pattern = "<br>.*",
         replace = "",
         x = calc_locus
       )
-    ) |> 
+    ) |>
     dplyr::mutate(
       conservation = gsub(
         pattern = "%",
         replacement = "",
         x = conservation
       )
-    ) |> 
+    ) |>
     dplyr::mutate(
       patientphenotype = stringr::str_wrap(
         stringr::str_to_sentence(string = patientphenotype),
         width = 10
       )
-    ) |> 
-    dplyr::mutate(conservation = as.numeric(conservation)) |> 
+    ) |>
+    dplyr::mutate(conservation = as.numeric(conservation)) |>
     dplyr::select(
       Ntchange = ntchange,
       Locus = calc_locus,
@@ -604,7 +604,7 @@ variant_annotation <- if(status == 200) {
 
 
 cell_raw_ch_af_depth <- fn_heatmap(
-  .forplot = cell_raw_cluster_forplot, 
+  .forplot = cell_raw_cluster_forplot,
   .cell_variants = cell_cluster_forplot$forplot$variant,
   .variant_annotation = variant_annotation
   )
@@ -612,15 +612,15 @@ cell_raw_ch_af_depth <- fn_heatmap(
 {
   pdf(
     file = "cluster_cell_af_heatmap.pdf",
-    width = 14, 
+    width = 14,
     height = 7
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
   dev.off()
-  
+
   pdf(
     file = "cluster_cell_depth_heatmap.pdf",
-    width = 14, 
+    width = 14,
     height = 7
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)

@@ -502,8 +502,19 @@ ggsave(
   path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
 )
 
+
+
+# Normal ------------------------------------------------------------------
+
+metadata_anno_depth |> 
+  readr::write_rds(
+    file = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/metadata_anno_depth.rds"
+  )
+
+
 # footer ------------------------------------------------------------------
 
 future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
+save.image("/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/05-integrate-analysis.rda")
