@@ -212,7 +212,9 @@ metadata_clean |>
 cor.test(
   formula = ~ nmut + Age,
   data = metadata_anno |> 
-    dplyr::filter(source_name == "Normal_PBMC")
+    # dplyr::filter(source_name == "Normal_PBMC"),
+    dplyr::filter(source_name == "nCoV_PBMC(severe)"),
+  method = "spearman"
 )
 
 
@@ -242,16 +244,16 @@ metadata_anno |>
   ggsci::scale_color_jama(
     name = "Source"
   ) +
-  ggthemes::theme_base() +
+  # ggthemes::theme_base() +
+  theme_bw() +
   theme(
-    axis.title = element_text(size = 32),
-    legend.position = "top"
+    axis.title = element_text(size = 16, face = "bold", colour = "black"),
   ) +
   labs(
     x = "Age",
     y = "# of variants"
   ) ->
-  age_cor_plot
+  age_cor_plot;age_cor_plot
 
 ggsave(
   filename = "Age_nmut_cor.pdf",
@@ -261,6 +263,119 @@ ggsave(
   height = 6,
   path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
 )
+
+metadata_anno |> 
+  ggplot(
+    aes(
+      x = `number of cells after filtering`,
+      y = nmut,
+      color = source_name
+    )
+  ) +
+  geom_point() +
+  geom_smooth(method = "glm", se = FALSE) +
+  # geom_line() +
+  ggsci::scale_color_jama(
+    name = "Source"
+  ) +
+  # ggthemes::theme_base() +
+  theme_bw() +
+  theme(
+    axis.title = element_text(size = 16, face = "bold", colour = "black")
+  ) +
+  labs(
+    x = "# of cells",
+    y = "# of variants"
+  ) ->
+  ncells_cor_plot
+
+ggsave(
+  filename = "Ncells_nmut_cor.pdf",
+  plo = ncells_cor_plot,
+  device = "pdf",
+  width = 9,
+  height = 6,
+  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+)
+
+
+
+
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno |> 
+    # dplyr::filter(source_name == "Normal_PBMC"),
+    dplyr::filter(source_name == "nCoV_PBMC(severe)"),
+  method = "spearman"
+)
+
+
+
+wilcox.test(
+  formula = nmut ~ gender ,
+  data = metadata_anno |> 
+    dplyr::filter(!is.na(linkfile)) |> 
+    dplyr::mutate(gender = factor(gender))
+)
+
+t.test(
+  formula = nmut ~ gender ,
+  data = metadata_anno |> 
+    dplyr::filter(!is.na(linkfile)) |> 
+    dplyr::mutate(gender = factor(gender))
+) |> broom::tidy()
+
+
+metadata_anno |> 
+  ggplot(aes(
+    x = gender,
+    y = nmut,
+  )) +
+  # geom_violin() +
+  geom_boxplot(
+    aes(fill = gender),
+    width = 0.5,
+    show.legend = FALSE
+  ) +
+  geom_point(position = position_jitter(width = 0.3)) +
+  theme_bw() +
+  ggsci::scale_fill_aaas() +
+  scale_x_discrete(
+    limits = c("male", "female"),
+    labels = c("Male", "Female")
+  ) +
+  theme(
+    axis.title = element_text(size = 16, face = "bold", colour = "black"),
+    axis.text.x = element_text(size = 14, face = "bold", colour = "black"),
+    axis.title.x = element_blank()
+  ) +
+  labs(
+    x = "Gender",
+    y = "# of variants"
+  ) ->
+  gender_cor_plot
+
+
+(age_cor_plot / ncells_cor_plot | gender_cor_plot) +
+  plot_layout(
+    width = c(3, 1),
+    guides = "collect"
+  ) +
+  plot_annotation(
+    tag_levels = "A"
+  ) &
+  theme(legend.position = "bottom") ->
+  age_ncells_p;age_ncells_p
+
+ggsave(
+  filename = "Ncells_age_nmut_cor.pdf",
+  plo = age_ncells_p,
+  device = "pdf",
+  width = 10,
+  height = 6,
+  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+)
+
 
 
 # cell ratio --------------------------------------------------------------
@@ -518,3 +633,5 @@ future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
 save.image("/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/05-integrate-analysis.rda")
+
+# load(file = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/05-integrate-analysis.rda")
