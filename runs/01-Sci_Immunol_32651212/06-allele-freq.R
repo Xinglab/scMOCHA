@@ -211,3 +211,7 @@ ggplot() +
 future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
+
+save.image(
+  file = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/06-allele-freq.rda"
+)
