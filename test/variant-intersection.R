@@ -11,7 +11,7 @@ library(magrittr)
 library(ggplot2)
 library(patchwork)
 library(rlang)
-pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
   dplyr::arrange(cancer_types)
 
 # src ---------------------------------------------------------------------
@@ -29,9 +29,9 @@ fn_load_hetero <- function(.filename) {
   #   "mgatk_out/final",
   #   "sc.cell_heteroplasmic_df.tsv.gz"
   # )
-  
-  data.table::fread(input = .filename) |> 
-    dplyr::rename(barcode = "V1") |> 
+
+  data.table::fread(input = .filename) |>
+    dplyr::rename(barcode = "V1") |>
     tidyr::pivot_longer(
       cols = -barcode,
       names_to = "variant",
@@ -40,12 +40,12 @@ fn_load_hetero <- function(.filename) {
 }
 
 fn_load_coverage <- function(.filename) {
-  
+
   data.table::fread(
     input = .filename,
     sep = ",",
     col.names = c("pos", "barcode", "depth")
-  ) |> 
+  ) |>
     dplyr::mutate(depth = log2(depth + 1))
 }
 
@@ -53,39 +53,39 @@ fn_load_cluster <- function(.filename) {
   data.table::fread(
     input = .filename,
     sep = "\t"
-  ) |> 
-    dplyr::mutate(cluster = factor(cluster)) |> 
-    dplyr::mutate(sctype = glue::glue("{cluster}, {sctype}")) |> 
+  ) |>
+    dplyr::mutate(cluster = factor(cluster)) |>
+    dplyr::mutate(sctype = glue::glue("{cluster}, {sctype}")) |>
     dplyr::mutate(sctype = factor(sctype))
 }
 
 fn_af <- function(.cluster, .hetero) {
   .cluster |>
-    dplyr::select(-cluster) |> 
-    dplyr::rename(cluster = sctype) |> 
+    dplyr::select(-cluster) |>
+    dplyr::rename(cluster = sctype) |>
     dplyr::left_join(
       .hetero |> tidyr::pivot_wider(
-        names_from  = variant, 
+        names_from  = variant,
         values_from = af
-      ), 
+      ),
       by = "barcode"
-    ) 
+    )
 }
 
 fn_forplot <- function(.af, .coverage) {
-  .af |> 
-    dplyr::select(barcode, cluster, dplyr::contains(">")) |> 
+  .af |>
+    dplyr::select(barcode, cluster, dplyr::contains(">")) |>
     tidyr::pivot_longer(
       cols = -c(barcode, cluster),
       names_to = "variant",
       values_to = "af"
-    ) |> 
-    dplyr::group_by(barcode, cluster) |> 
-    dplyr::summarise(s_af = sum(af, na.rm = T)) |> 
-    dplyr::ungroup() |> 
+    ) |>
+    dplyr::group_by(barcode, cluster) |>
+    dplyr::summarise(s_af = sum(af, na.rm = T)) |>
+    dplyr::ungroup() |>
     dplyr::arrange(cluster, -s_af) ->
     .rank
-  
+
   .af |>
     dplyr::select(barcode, dplyr::contains(">")) |>
     tidyr::pivot_longer(
@@ -96,7 +96,7 @@ fn_forplot <- function(.af, .coverage) {
     dplyr::mutate(
       pos = gsub(pattern = "([[:digit:]]*).*", "\\1", variant) |>
         as.numeric()
-    ) |> 
+    ) |>
     dplyr::left_join(
       .coverage,
       by = c("barcode", "pos")
@@ -109,7 +109,7 @@ fn_forplot <- function(.af, .coverage) {
     dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
     dplyr::arrange(pos) ->
     .forplot
-  
+
   list(
     rank = .rank,
     forplot = .forplot
@@ -128,7 +128,7 @@ flu2_coverage <- fn_load_coverage(
     sc_dir,
     "mgatk_out/final",
     "sc.coverage.txt.gz"
-  ) 
+  )
 )
 flu2_hetero_raw <- fn_load_hetero(
   .filename = file.path(
@@ -143,36 +143,36 @@ flu2_hetero_cluster <- fn_load_hetero(
     "mgatk_cluster/final",
     "mgatk_cluster.cell_heteroplasmic_df.tsv.gz"
   )
-) |> 
+) |>
   dplyr::mutate(
     barcode = gsub(
       pattern = "cluster|-1",
       replacement = "",
       x = barcode
     )
-  ) |> 
-  dplyr::mutate(barcode = as.integer(barcode) -1) |> 
-  dplyr::mutate(cluster = barcode) |> 
-  dplyr::mutate(cluster = factor(cluster)) |> 
+  ) |>
+  dplyr::mutate(barcode = as.integer(barcode) -1) |>
+  dplyr::mutate(cluster = barcode) |>
+  dplyr::mutate(cluster = factor(cluster)) |>
   dplyr::left_join(
-    flu2_cluster_umap |> 
-      dplyr::select(cluster, sctype) |> 
+    flu2_cluster_umap |>
+      dplyr::select(cluster, sctype) |>
       dplyr::distinct(),
     by = "cluster"
-  ) |> 
-  dplyr::select(-cluster) |> 
+  ) |>
+  dplyr::select(-cluster) |>
   dplyr::rename(cluster = sctype)
-flu2_cell_raw_cluster_af <- flu2_cluster_umap |> 
-  dplyr::left_join(flu2_hetero_raw, by = "barcode") |> 
-  dplyr::select(-cluster) |> 
-  dplyr::rename(cluster = sctype) |> 
-  dplyr::filter(variant %in% flu2_hetero_cluster$variant) |> 
+flu2_cell_raw_cluster_af <- flu2_cluster_umap |>
+  dplyr::left_join(flu2_hetero_raw, by = "barcode") |>
+  dplyr::select(-cluster) |>
+  dplyr::rename(cluster = sctype) |>
+  dplyr::filter(variant %in% flu2_hetero_cluster$variant) |>
   tidyr::pivot_wider(
     names_from = variant,
     values_from = af
   )
 flu2_cell_raw_cluster_forplot <- fn_forplot(
-  .af = flu2_cell_raw_cluster_af, 
+  .af = flu2_cell_raw_cluster_af,
   .coverage = flu2_coverage
 )
 
@@ -192,7 +192,7 @@ flu5_coverage <- fn_load_coverage(
     sc_dir,
     "mgatk_out/final",
     "sc.coverage.txt.gz"
-  ) 
+  )
 )
 flu5_hetero_raw <- fn_load_hetero(
   .filename = file.path(
@@ -207,65 +207,65 @@ flu5_hetero_cluster <- fn_load_hetero(
     "mgatk_cluster/final",
     "mgatk_cluster.cell_heteroplasmic_df.tsv.gz"
   )
-) |> 
+) |>
   dplyr::mutate(
     barcode = gsub(
       pattern = "cluster|-1",
       replacement = "",
       x = barcode
     )
-  ) |> 
-  dplyr::mutate(barcode = as.integer(barcode) -1) |> 
-  dplyr::mutate(cluster = barcode) |> 
-  dplyr::mutate(cluster = factor(cluster)) |> 
+  ) |>
+  dplyr::mutate(barcode = as.integer(barcode) -1) |>
+  dplyr::mutate(cluster = barcode) |>
+  dplyr::mutate(cluster = factor(cluster)) |>
   dplyr::left_join(
-    flu5_cluster_umap |> 
-      dplyr::select(cluster, sctype) |> 
+    flu5_cluster_umap |>
+      dplyr::select(cluster, sctype) |>
       dplyr::distinct(),
     by = "cluster"
-  ) |> 
-  dplyr::select(-cluster) |> 
+  ) |>
+  dplyr::select(-cluster) |>
   dplyr::rename(cluster = sctype)
-flu5_cell_raw_cluster_af <- flu5_cluster_umap |> 
-  dplyr::left_join(flu5_hetero_raw, by = "barcode") |> 
-  dplyr::select(-cluster) |> 
-  dplyr::rename(cluster = sctype) |> 
-  dplyr::filter(variant %in% flu5_hetero_cluster$variant) |> 
+flu5_cell_raw_cluster_af <- flu5_cluster_umap |>
+  dplyr::left_join(flu5_hetero_raw, by = "barcode") |>
+  dplyr::select(-cluster) |>
+  dplyr::rename(cluster = sctype) |>
+  dplyr::filter(variant %in% flu5_hetero_cluster$variant) |>
   tidyr::pivot_wider(
     names_from = variant,
     values_from = af
   )
 flu5_cell_raw_cluster_forplot <- fn_forplot(
-  .af = flu5_cell_raw_cluster_af, 
+  .af = flu5_cell_raw_cluster_af,
   .coverage = flu5_coverage
 )
 
 # body --------------------------------------------------------------------
 
 
-flu2_cell_raw_cluster_forplot$forplot |> 
-  dplyr::select(barcode, variant, af, depth) |> 
+flu2_cell_raw_cluster_forplot$forplot |>
+  dplyr::select(barcode, variant, af, depth) |>
   dplyr::left_join(
-    flu2_cell_raw_cluster_forplot$rank |> 
+    flu2_cell_raw_cluster_forplot$rank |>
       dplyr::select(barcode, cluster),
     by = "barcode"
-  ) |> 
+  ) |>
   tidyr::separate_wider_delim(
     cols = cluster,
     delim = ", ",
     names = c("cluster", "sctype")
   ) ->
   flu2_variant
-  
 
 
-flu5_cell_raw_cluster_forplot$forplot |> 
-  dplyr::select(barcode, variant, af, depth) |> 
+
+flu5_cell_raw_cluster_forplot$forplot |>
+  dplyr::select(barcode, variant, af, depth) |>
   dplyr::left_join(
-    flu5_cell_raw_cluster_forplot$rank |> 
+    flu5_cell_raw_cluster_forplot$rank |>
       dplyr::select(barcode, cluster),
     by = "barcode"
-  ) |> 
+  ) |>
   tidyr::separate_wider_delim(
     cols = cluster,
     delim = ", ",
@@ -292,7 +292,7 @@ ggvenn::ggvenn(
 
 
 
-ggplot() +  
+ggplot() +
   annotate(
     "text", x = 1, y = 1,
     size = 6,
@@ -303,13 +303,13 @@ ggplot() +
       ) |> paste0(collapse = ", "),
       width = 30
     )
-    ) + 
+    ) +
   theme_void()
 
-intersect(unique(flu2_variant$variant), unique(flu5_variant$variant)) |> 
+intersect(unique(flu2_variant$variant), unique(flu5_variant$variant)) |>
   paste0(collapse = ",")
 
-ggplot() +  
+ggplot() +
   annotate(
     "text", x = 1, y = 1,
     size = 6,
@@ -321,7 +321,7 @@ ggplot() +
       ) |> paste0(collapse = ", "),
       width = 30
     )
-  ) + 
+  ) +
   theme_void()
 
 setdiff(
@@ -329,7 +329,7 @@ setdiff(
   unique(flu5_variant$variant)
 ) |> paste0(collapse = ", ")
 
-ggplot() +  
+ggplot() +
   annotate(
     "text", x = 1, y = 1,
     size = 6,
@@ -341,7 +341,7 @@ ggplot() +
       ) |> paste0(collapse = ", "),
       width = 30
     )
-  ) + 
+  ) +
   theme_void()
 
 setdiff(
@@ -356,58 +356,58 @@ inter_celltype <- intersect(
   unique(flu5_variant$sctype)
 )
 
-flu2_variant |> 
-  dplyr::filter(sctype %in% inter_celltype) |> 
-  dplyr::select(variant, af, sctype) |> 
-  dplyr::group_by(variant) |> 
-  tidyr::nest() |> 
-  dplyr::ungroup() |> 
+flu2_variant |>
+  dplyr::filter(sctype %in% inter_celltype) |>
+  dplyr::select(variant, af, sctype) |>
+  dplyr::group_by(variant) |>
+  tidyr::nest() |>
+  dplyr::ungroup() |>
   dplyr::mutate(
     .ratio = purrr::map_dbl(
       .x = data,
       .f = function(.x) {
         .ncell <- nrow(.x)
-        .x |> 
-          dplyr::filter(!is.na(af)) |> 
-          dplyr::filter(af != 0) |> 
+        .x |>
+          dplyr::filter(!is.na(af)) |>
+          dplyr::filter(af != 0) |>
           nrow() ->
           .n_detected
-        
+
         .ratio <-  .n_detected / .ncell
         .ratio
       }
-      
+
     )
-  ) |> 
-  dplyr::select(-data) |>  
+  ) |>
+  dplyr::select(-data) |>
   dplyr::filter(.ratio > 0.5) ->
   flu2_variant_celltype
 
 
-flu5_variant |> 
-  dplyr::filter(sctype %in% inter_celltype) |> 
-  dplyr::select(variant, af, sctype) |> 
-  dplyr::group_by(variant) |> 
-  tidyr::nest() |> 
-  dplyr::ungroup() |> 
+flu5_variant |>
+  dplyr::filter(sctype %in% inter_celltype) |>
+  dplyr::select(variant, af, sctype) |>
+  dplyr::group_by(variant) |>
+  tidyr::nest() |>
+  dplyr::ungroup() |>
   dplyr::mutate(
     .ratio = purrr::map_dbl(
       .x = data,
       .f = function(.x) {
         .ncell <- nrow(.x)
-        .x |> 
-          dplyr::filter(!is.na(af)) |> 
-          dplyr::filter(af != 0) |> 
+        .x |>
+          dplyr::filter(!is.na(af)) |>
+          dplyr::filter(af != 0) |>
           nrow() ->
           .n_detected
-        
+
         .ratio <-  .n_detected / .ncell
         .ratio
       }
-      
+
     )
-  ) |> 
-  dplyr::select(-data) |>  
+  ) |>
+  dplyr::select(-data) |>
   dplyr::filter(.ratio > 0.5) ->
   flu5_variant_celltype
 
@@ -425,7 +425,7 @@ ggvenn::ggvenn(
   text_size = 8
 )
 
-ggplot() +  
+ggplot() +
   annotate(
     "text", x = 1, y = 1,
     size = 6,
@@ -436,7 +436,7 @@ ggplot() +
       ) |> paste0(collapse = ", "),
       width = 30
     )
-  ) + 
+  ) +
   theme_void()
 
 intersect(
@@ -444,7 +444,7 @@ intersect(
   unique(flu5_variant_celltype$variant)
 ) |> paste0(collapse = ", ")
 
-ggplot() +  
+ggplot() +
   annotate(
     "text", x = 1, y = 1,
     size = 6,
@@ -456,7 +456,7 @@ ggplot() +
       ) |> paste0(collapse = ", "),
       width = 30
     )
-  ) + 
+  ) +
   theme_void()
 
 setdiff(
@@ -464,7 +464,7 @@ setdiff(
   unique(flu5_variant_celltype$variant)
 ) |> paste0(collapse = ", ")
 
-ggplot() +  
+ggplot() +
   annotate(
     "text", x = 1, y = 1,
     size = 6,
@@ -476,7 +476,7 @@ ggplot() +
       ) |> paste0(collapse = ", "),
       width = 30
     )
-  ) + 
+  ) +
   theme_void()
 
 setdiff(
