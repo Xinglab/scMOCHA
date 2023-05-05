@@ -67,17 +67,6 @@ metadata_anno_depth_variant |>
   for_variant
 
 
-for_variant |> 
-  dplyr::select(srrid, variant) |> 
-  tibble::deframe() |> 
-  purrr::reduce(.f = union) -> all_variants
-
-for_variant |> 
-  dplyr::select(srrid, variant) |> 
-  tibble::deframe() |> 
-  purrr::reduce(.f = intersect) -> common_variants
-
-
 fn_upset_plot <- function(.x) {
   # .x <- "nCoV_PBMC(severe)"
   library(ggupset)
@@ -158,19 +147,64 @@ fn_upset_plot <- function(.x) {
     plot = .p_up,
     filename = "upset-{.x}.pdf" |> glue::glue(),
     path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs",
-    width = 8, 
+    width = 9, 
     height = 6,
     device = "pdf"
   )
+  
+  .p_up
 }
 
 metadata_anno_depth_variant$source_name |> 
   unique() |> 
   purrr::map(
     .f = fn_upset_plot
-  )
+  ) ->
+  p_ups
+
+(p_ups[[2]] | p_ups[[1]]) / (p_ups[[3]] | p_ups[[4]]) +
+  plot_annotation(tag_levels = "A") ->
+  p_ups_together;p_ups_together
+  
+ggsave(
+  plot = p_ups_together,
+  filename = "upset-all.pdf" |> glue::glue(),
+  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs",
+  width = 16, 
+  height = 10,
+  device = "pdf"
+)
 
 
+# for_variant |> 
+#   dplyr::select(srrid, variant) |> 
+#   tibble::deframe() |> 
+#   purrr::reduce(.f = union) -> all_variants
+
+for_variant |> 
+  dplyr::select(srrid, variant) |> 
+  dplyr::mutate(
+    variant = purrr::map(
+      .x = variant,
+      .f = function(.x) {
+        .x |> dplyr::pull(variant)
+      }
+    )
+  ) |> 
+  tibble::deframe() |> 
+  purrr::reduce(.f = intersect) -> common_variants
+
+ggplot() +  
+  annotate(
+    "text", x = 1, y = 1,
+    size = 6,
+    color = "black", #ggsci::pal_aaas()(1),
+    label = stringr::str_wrap(
+      string = common_variants |> paste0(collapse = ", "),
+      width = 30
+    )
+  ) + 
+  theme_void()
 
 # footer ------------------------------------------------------------------
 
