@@ -20,7 +20,11 @@
   },
   "peacock.remoteColor": "#61dafb",
   "search.exclude": {
-    "data": true
+    "data": true,
+    ".vscode": true,
+    ".Rproj.user": true,
+    ".git": true,
+    "0*/": true
   },
   "files.watcherExclude": {
     "data": true
