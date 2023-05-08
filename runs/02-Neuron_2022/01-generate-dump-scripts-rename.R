@@ -3,7 +3,7 @@
 # @AUTHOR: Chun-Jie Liu
 # @CONTACT: chunjie.sam.liu.at.gmail.com
 # @DATE: Thu Apr 27 14:47:37 2023
-# @DESCRIPTION: 
+# @DESCRIPTION:
 
 
 # Library -----------------------------------------------------------------
@@ -35,52 +35,52 @@ sratable <- readr::read_csv(
 
 # body --------------------------------------------------------------------
 
-sratable |> 
-  dplyr::select(srrid = Run) |> 
+sratable |>
+  dplyr::select(srrid = Run) |>
   dplyr::mutate(
     srrdir = file.path(datadir, srrid)
-  ) |> 
+  ) |>
   dplyr::mutate(
     srrdir_exist = file.exists(srrdir)
-  ) |> 
+  ) |>
   dplyr::mutate(
     srafile = file.path(srrdir, glue::glue("{srrid}.sra"))
-  ) |> 
+  ) |>
   dplyr::mutate(
     srafile_exist = file.exists(srafile)
   ) ->
   srafiles
 
 
-srafiles |> 
+srafiles |>
   dplyr::mutate(
     conf_json = purrr::map_chr(
       .x = srrdir,
       .f = function(.x) {
         .srrid <- basename(.x)
-        
+
         conf <- list(
           "SCMTAH.output_id" = "{.srrid}" |> glue::glue(),
           "SCMTAH.fastqs" = "{.x}" |> glue::glue(),
           "SCMTAH.sample_id" = "{.srrid}" |> glue::glue(),
           "SCMTAH.transcriptome" = "/home/liuc9/data/refdata/mgatk_index/Human",
-          "SCMTAH.rCRS" = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta",
+          "SCMTAH.rCRS" = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta",
           "SCMTAH.output_dir" = "{.srrid}" |> glue::glue(),
           "SCMTAH.cellrefname" = "humancortexref",
           "SCMTAH.celllevel" = "subclass"
         )
-        
+
         conf_file <- file.path(
           .x,
           "{.srrid}.json" |> glue::glue()
         )
-        
+
         jsonlite::write_json(
           x = conf,
           path = conf_file,
           auto_unbox = TRUE
         )
-        
+
         conf_file
       }
     )
@@ -89,7 +89,7 @@ srafiles |>
 
 
 
-srafiles_conf |> 
+srafiles_conf |>
   dplyr::mutate(
     scmtah_sh = purrr::map_chr(
       .x = srrdir,
@@ -104,11 +104,11 @@ srafiles_conf |>
         .logfile <- file.path(
           .x, "{.srrid}.log" |> glue::glue()
         )
-        
+
         runwdl_sh_file <- file.path(
           .x, "runwdl_{.srrid}.sh" |> glue::glue()
         )
-        
+
         runwdl_cmd <- c(
           "#!/usr/bin/env bash",
           "# @AUTHOR: Chun-Jie Liu",
@@ -116,31 +116,31 @@ srafiles_conf |>
           "# @DATE: {lubridate::now()}" |> glue::glue(),
           "",
           "module load Java/15.0.1",
-          "nohup java -Dconfig.file=/home/liuc9/github/scRNAseq-MitoVariant/config/ref.conf \\",
+          "nohup java -Dconfig.file=/home/liuc9/github/scMOCHA/config/ref.conf \\",
           "-jar /home/liuc9/tools/cromwell-78.jar \\",
-          "run /home/liuc9/github/scRNAseq-MitoVariant/scmtah.wdl \\",
+          "run /home/liuc9/github/scMOCHA/scmtah.wdl \\",
           "-i {.jsonfile} 1>{.logfile} 2>{.errfile} &" |> glue::glue()
         )
-        
+
         # readr::write_lines(
         #   x = runwdl_cmd,
         #   file = runwdl_sh_file
         # )
-        
+
         runwdl_sh_file
       }
     )
   ) ->
   srafiles_conf_scmtah
 
-srafiles_conf_scmtah |> 
+srafiles_conf_scmtah |>
   dplyr::mutate(
     dump_slrm = purrr::map2_chr(
       .x = srrdir,
       .y = srafile,
       .f = function(.x, .y) {
         .srrid <- basename(.x)
-        
+
         cmd_slrm <- c(
           "#!/usr/bin/env bash",
           "# @AUTHOR: Chun-Jie Liu",
@@ -163,7 +163,7 @@ srafiles_conf_scmtah |>
           "mv {.x}/{.srrid}_S1_L001_R2_001.fastq {.x}/{.srrid}_S1_L001_R1_001.fastq" |> glue::glue(),
           "mv {.x}/{.srrid}_3.fastq {.x}/{.srrid}_S1_L001_R2_001.fastq" |> glue::glue()
         )
-        
+
         cmd_runwdl <- c(
           "bash {.x}/runwdl_{.srrid}.sh" |> glue::glue()
         )
@@ -176,13 +176,13 @@ srafiles_conf_scmtah |>
           ""
           # cmd_runwdl
         )
-        
-        
+
+
         dump_slrm_file <-  file.path(
           .x,
           "dump_{.srrid}_rename.slrm" |> glue::glue()
         )
-        
+
         readr::write_lines(
           cmd,
           file = dump_slrm_file

@@ -43,7 +43,7 @@ mgatk bcall -i /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_clus
   --mito-genome /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/fasta/rCRS.fasta \
   --keep-temp-files
 
-python /home/liuc9/github/scRNAseq-MitoVariant/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/mgatk_cluster/final/ mgatk_cluster 16569 10 MT
+python /home/liuc9/github/scMOCHA/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/mgatk_cluster/final/ mgatk_cluster 16569 10 MT
 
 # for bulk cell clustering
 
@@ -63,8 +63,8 @@ mgatk bcall -i /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_clus
   --mito-genome /scr1/users/liuc9/mitochondrial/PBMC_10k_v3_10x/MTbam/fasta/rCRS.fasta \
   --keep-temp-files
 
-python /home/liuc9/github/scRNAseq-MitoVariant/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/mgatk_bulk/final/ mgatk_bulk 16569 10 MT
+python /home/liuc9/github/scMOCHA/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/mgatkmtbam_cluster/mgatk_bulk/final/ mgatk_bulk 16569 10 MT
 
 
 # test
-python /home/liuc9/github/scRNAseq-MitoVariant/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/mgatk/final mgatk_bulk 16569 10 MT
+python /home/liuc9/github/scMOCHA/test/variant_calling.py /home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/mgatk/final mgatk_bulk 16569 10 MT

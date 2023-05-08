@@ -19,7 +19,7 @@ library(ggtranscript)
 
 # src ---------------------------------------------------------------------
 
-pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
   dplyr::arrange(cancer_types)
 
 # header ------------------------------------------------------------------
@@ -47,7 +47,7 @@ fn_plot_coverage <- function(.filename, .celltype) {
   .coverage_a
 
   mt_features <- readr::read_rds(
-    "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_features.grange.gmoviz.rds.gz"
+    "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz"
   )
 
 
@@ -59,10 +59,10 @@ fn_plot_coverage <- function(.filename, .celltype) {
   mt_features_npc
 
   mt_ideogram <- gmoviz::getIdeogramData(
-    fasta_file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta"
+    fasta_file = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
   )
 
-  
+
 
   gmoviz::gmovizPlot(
     file_name = glue::glue("gmoviz.{.celltype}.svg"),
@@ -85,15 +85,15 @@ fn_plot_coverage <- function(.filename, .celltype) {
         mt_features_pc,
         feature_label_cutoff = 80000,
       )
-    }, 
-    # legends = legend, 
-    title = glue::glue("{.celltype} coverage"), 
+    },
+    # legends = legend,
+    title = glue::glue("{.celltype} coverage"),
     background_colour = "white",
-    width = 10, 
-    height = 10, 
+    width = 10,
+    height = 10,
     units = "in"
   )
-  
+
   .coverage_a
 }
 
@@ -128,16 +128,16 @@ celltype_bams |>
 
 
 
-celltype_bams_cov |> 
+celltype_bams_cov |>
   dplyr::mutate(
     coverage = purrr::map(
       .x = coverage,
       .f = data.table::as.data.table
     )
-  ) |> 
-  dplyr::select(-filename) |> 
-  dplyr::mutate(celltype = factor(celltype)) |> 
-  tidyr::unnest(cols = coverage) |> 
+  ) |>
+  dplyr::select(-filename) |>
+  dplyr::mutate(celltype = factor(celltype)) |>
+  tidyr::unnest(cols = coverage) |>
   dplyr::select(
     celltype, pos = end, depth = coverage
   ) ->
@@ -189,9 +189,9 @@ coverage %>%
   p1
 
 
-gtf_gene_df <- 
+gtf_gene_df <-
   readr::read_rds(
-    file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
+    file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
   )
 
 

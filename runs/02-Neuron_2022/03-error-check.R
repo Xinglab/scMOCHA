@@ -30,12 +30,12 @@ library(rlang)
 
 # body --------------------------------------------------------------------
 runwdl <- readr::read_lines(
-  file = "/home/liuc9/github/scRNAseq-MitoVariant/02-Neuron_2022/runwdl.sh"
+  file = "/home/liuc9/github/scMOCHA/02-Neuron_2022/runwdl.sh"
 )
 
 tibble::tibble(
   runwdl = runwdl
-) |> 
+) |>
   dplyr::mutate(
     sh = gsub(
       pattern = "bash | &",
@@ -46,12 +46,12 @@ tibble::tibble(
   runwdl_sh
 
 
-runwdl_sh |> 
+runwdl_sh |>
   dplyr::mutate(
     job = purrr::map_chr(
       .x = sh,
       .f = function(.x) {
-        
+
         .srr <- gsub(
           pattern = "runwdl_|.sh",
           replacement = "",
@@ -63,23 +63,23 @@ runwdl_sh |>
   ) ->
   runwdl_sh_log
 
-runwdl_sh_log |> 
+runwdl_sh_log |>
   dplyr::mutate(
     tf = purrr::map_lgl(
       .x = job,
       .f = function(.x) {
         .xx <- readr::read_lines(file = .x)
-        
+
         tryCatch(
           expr = {
             .xxx <- which(grepl(
               pattern = "SCMTAH.output_dir_tar_gz",
               x = .xx
             ))[[2]]
-            
+
             .a <- strsplit(.xx[.xxx], ":")[[1]][[2]]
-            
-            
+
+
             .aa <- gsub(
               pattern = " |\"|,",
               replacement = "",
@@ -91,20 +91,20 @@ runwdl_sh_log |>
             FALSE
           }
         )
-        
+
       }
     )
   ) ->
   runwdl_sh_log_tf
 
-runwdl_sh_log_tf |> 
-  dplyr::filter(!tf) |> 
+runwdl_sh_log_tf |>
+  dplyr::filter(!tf) |>
   dplyr::select(runwdl) ->
   torun
 
 readr::write_lines(
   x = torun$runwdl,
-  file = "/home/liuc9/github/scRNAseq-MitoVariant/02-Neuron_2022/new_runwdl.sh"
+  file = "/home/liuc9/github/scMOCHA/02-Neuron_2022/new_runwdl.sh"
 )
 
 # footer ------------------------------------------------------------------

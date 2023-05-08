@@ -41,25 +41,25 @@ coverage <- data.table::fread(
 #   duckdb::duckdb(),
 #   "/mnt/isilon/xing_lab/liuc9/refdata/ensembl/Homo_sapiens.GRCh38.107.gtf.plyranges.duckdb"
 # )
-# 
+#
 # gtf_gene <- dplyr::tbl(conn, "grch38_107_plyranges") |>
 #   dplyr::filter(seqnames == "MT") |>
 #   data.table::as.data.table()
-# 
+#
 # DBI::dbDisconnect(conn,  shutdown=TRUE)
-# 
-# 
+#
+#
 # gtf_gene |>
 #   dplyr::filter(type == "exon") |>
 #   as.data.frame() ->
 #   gtf_gene_df
 # readr::write_rds(
-#   x = gtf_gene_df,file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
+#   x = gtf_gene_df,file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
 # )
 
-gtf_gene_df <- 
+gtf_gene_df <-
   readr::read_rds(
-    file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
+    file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
   )
 
 coverage %>%

@@ -130,7 +130,7 @@ task cell_cluster_annotation {
   File h5file
 
   command {
-    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/cellcluster_10x.R ${h5file}
+    Rscript /home/liuc9/github/scMOCHA/bin/cellcluster_10x.R ${h5file}
   }
   output {
     File barcode_cluster = "barcode_cluster.tsv"
@@ -204,7 +204,7 @@ task call_variant_on_cell_cluster_level {
       --mito-genome ${rCRS} \
       --keep-temp-files
 
-    python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 MT
+    python /home/liuc9/github/scMOCHA/bin/variant_calling.py mgatk_cluster/final/ mgatk_cluster 16569 10 MT
 
 
     # cell bulk
@@ -225,7 +225,7 @@ task call_variant_on_cell_cluster_level {
       --mito-genome ${rCRS} \
       --keep-temp-files
 
-    python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling.py mgatk_bulk/final/ mgatk_bulk 16569 10 MT
+    python /home/liuc9/github/scMOCHA/bin/variant_calling.py mgatk_bulk/final/ mgatk_bulk 16569 10 MT
   }
 
 }
@@ -236,6 +236,6 @@ task heteroplasmy_heatmap {
   File cluster_umap_file
 
   command {
-    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/heteroplasmy_heatmap.R ${hetero_file} ${coverage_file} ${cluster_umap_file}
+    Rscript /home/liuc9/github/scMOCHA/bin/heteroplasmy_heatmap.R ${hetero_file} ${coverage_file} ${cluster_umap_file}
   }
 }

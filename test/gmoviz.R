@@ -21,7 +21,7 @@ fly_ideogram_chr4_only <- getIdeogramData(
 )
 
 mt_ideogram <- getIdeogramData(
-  fasta_file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta"
+  fasta_file = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
 )
 
 
@@ -43,7 +43,7 @@ gmovizInitialise(
 )
 
 mt_ideogram <- getIdeogramData(
-  fasta_file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta"
+  fasta_file = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
 )
 gmovizInitialise(
   mt_ideogram,
@@ -172,7 +172,7 @@ drawFeatureTrack(features, feature_label_cutoff = 80000, track_height = 0.15)
 
 
 mt_ideogram <- getIdeogramData(
-  fasta_file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta"
+  fasta_file = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
 )
 gmovizInitialise(
   mt_ideogram,
@@ -236,7 +236,7 @@ mt_mono_a
 #       "rectangle",
 #       "forward_arrow"
 #     )
-#   ) |> 
+#   ) |>
 #   dplyr::select(
 #     seqnames, start, end, width, strand,
 #     label, track, type, shape, colour
@@ -247,26 +247,26 @@ mt_mono_a
 
 # readr::write_rds(
 #   mt_features,
-#   "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_features.grange.gmoviz.rds.gz",
+#   "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz",
 #   compress = "gz"
 # )
 mt_features <- readr::read_rds(
-  "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_features.grange.gmoviz.rds.gz"
+  "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz"
 )
 
 
-mt_features |> 
+mt_features |>
   plyranges::filter(type == "Mt_tRNA") ->
   mt_features_pc
-mt_features |> 
+mt_features |>
   plyranges::filter(type != "Mt_tRNA") ->
   mt_features_npc
 
 gmovizInitialise(
   mt_ideogram,
   space_between_sectors = 25,
-  start_degree = 78, 
-  xaxis_spacing = 30, 
+  start_degree = 78,
+  xaxis_spacing = 30,
   sector_label_size = 1,
   coverage_data = mt_mono_a,
   coverage_rectangle = "MT"

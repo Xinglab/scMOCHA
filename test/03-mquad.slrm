@@ -8,4 +8,4 @@
 
 
 conda activate
-bash /home/liuc9/github/scRNAseq-MitoVariant/test/03-mquad.sh
+bash /home/liuc9/github/scMOCHA/test/03-mquad.sh

@@ -31,10 +31,10 @@ future::plan(future::multisession, workers = 10)
 # body --------------------------------------------------------------------
 
 runfiles <- readr::read_tsv(
-  file = "/home/liuc9/github/scRNAseq-MitoVariant/runs/01-Sci_Immunol_32651212/runfiles.tsv"
+  file = "/home/liuc9/github/scMOCHA/runs/01-Sci_Immunol_32651212/runfiles.tsv"
 )
 
-runfiles |> 
+runfiles |>
   dplyr::mutate(
     logfile = purrr::map_chr(
       .x = conf_json,
@@ -46,32 +46,32 @@ runfiles |>
         )
       }
     )
-  ) |> 
+  ) |>
   dplyr::select(
     srrid, logfile
-  ) |> 
+  ) |>
   dplyr::mutate(
     logfile_exists = file.exists(logfile)
   ) ->
   logfiles
 
-logfiles |> 
+logfiles |>
   dplyr::mutate(
     outfile = furrr::future_map_chr(
       .x = logfile,
       .f = function(.x) {
         .xx <- readr::read_lines(file = .x)
-        
+
         tryCatch(
           expr = {
             .xxx <- which(grepl(
               pattern = "SCMTAH.output_dir_tar_gz",
               x = .xx
             ))[[2]]
-            
+
             .a <- strsplit(.xx[.xxx], ":")[[1]][[2]]
-            
-            
+
+
             .aa <- gsub(
               pattern = " |\"|,",
               replacement = "",
@@ -87,7 +87,7 @@ logfiles |>
             FALSE
           }
         )
-        
+
       }
     )
   ) ->
@@ -98,19 +98,19 @@ logfiles |>
 
 
 
-logfiles_outfile |> 
+logfiles_outfile |>
   dplyr::mutate(
     linkfile = purrr::map_chr(
       .x = outfile,
       .f = function(.x) {
         .xx <- basename(.x)
-        
+
         if (.x == "FALSE") {
           return(NA)
         }
-        
-        .to <- "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/{.xx}" |> glue::glue()
-        
+
+        .to <- "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs/{.xx}" |> glue::glue()
+
         if(!file.exists(.to)) {
           file.symlink(
             from = .x,
@@ -118,13 +118,13 @@ logfiles_outfile |>
           )
         }
         .to
-        
+
       }
     )
   ) ->
   logfiles_outfile_linkfile
 
-logfiles_outfile_linkfile |> 
+logfiles_outfile_linkfile |>
   dplyr::mutate(
     tardir = purrr::map_chr(
       .x = linkfile,
@@ -136,11 +136,11 @@ logfiles_outfile_linkfile |>
         )
       }
     )
-  ) |> 
+  ) |>
   dplyr::select(srrid, outfile, linkfile, tardir) ->
   outfiles
 
-outfiles |> 
+outfiles |>
   readr::write_tsv(
     file = "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/outputs/outfiles.tsv"
   )

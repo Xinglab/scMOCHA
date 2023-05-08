@@ -10,7 +10,7 @@ workflow SCMTAH {
   String output_dir
 
   String chrM = "MT"
-  File rCRS = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta"
+  File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
 
   String cellrefname = "pbmcref"
   String celllevel = "celltype.l1"
@@ -288,7 +288,7 @@ task cellranger_count {
       samtools depth -a -r ${chrM} --threads=${cpu} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
 
       # Depth plot
-      Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf
+      Rscript /home/liuc9/github/scMOCHA/bin/depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf
 
     }
 
@@ -326,7 +326,7 @@ task cell_cluster_annotation {
     # module load R/4.1.0
     module load R/4.2.3
     # cell cluster annotation
-    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/azimuth.R ${h5file} ${refname} ${celllevel}
+    Rscript /home/liuc9/github/scMOCHA/bin/azimuth.R ${h5file} ${refname} ${celllevel}
 
     # addtags for cluster
     sinto addtags \
@@ -347,7 +347,7 @@ task cell_cluster_annotation {
     # split MT bam by cluster
     bamtools split -in MT_cluster.bam -tag CJ
     # gmoviz plot of cluster coverage
-    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/depth_cluster_gmoviz.R
+    Rscript /home/liuc9/github/scMOCHA/bin/depth_cluster_gmoviz.R
 
   }
   output {
@@ -405,7 +405,7 @@ task call_mt_variants {
       -ub UB
 
     # the cell/final/ last "/" is important
-    python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling_cell_raw.py \
+    python /home/liuc9/github/scMOCHA/bin/variant_calling_cell_raw.py \
       cell/final/ \
       cell \
       16569 \
@@ -420,7 +420,7 @@ task call_mt_variants {
       -c ${cpu} \
       -bt CJ
 
-    python /home/liuc9/github/scRNAseq-MitoVariant/bin/variant_calling_cluster.py \
+    python /home/liuc9/github/scMOCHA/bin/variant_calling_cluster.py \
       cluster/final/ \
       cluster \
       16569 \
@@ -475,7 +475,7 @@ task plot_scmtah {
   command {
     # module load R/4.1.0
     module load R/4.2.3
-    Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/scmtah.R \
+    Rscript /home/liuc9/github/scMOCHA/bin/scmtah.R \
       ${barcode_cluster_file} \
       ${cell_hetero_file} \
       ${cell_coverage_file} \

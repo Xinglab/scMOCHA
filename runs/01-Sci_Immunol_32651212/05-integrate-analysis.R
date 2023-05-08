@@ -17,7 +17,7 @@ library(rlang)
 
 # src ---------------------------------------------------------------------
 
-pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> 
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
   dplyr::arrange(cancer_types)
 
 
@@ -36,34 +36,34 @@ outfiles <- readr::read_tsv(
 
 srarun <- readr::read_csv(
   file = "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/SraRunTable.txt"
-) |> 
+) |>
   dplyr::rename(
     srrid = Run
   )
 
-outfiles |> 
+outfiles |>
   dplyr::left_join(
-    srarun, 
+    srarun,
     by = "srrid"
   ) ->
   outfiles_sra
 
 
-outfiles_sra |> 
+outfiles_sra |>
   dplyr::select(
-    srrid, outfile, linkfile, tardir, Age, gender, 
+    srrid, outfile, linkfile, tardir, Age, gender,
     samplename = `Sample Name`,
     source_name,
     subject_group,
     subject_status
-  ) |> 
-  dplyr::arrange(source_name, subject_status) |> 
+  ) |>
+  dplyr::arrange(source_name, subject_status) |>
   dplyr::mutate(
     a = purrr::map(
       .x = tardir,
       .f = function(.x) {
         if(is.na(.x)) {return(NA)}
-        
+
         readxl::read_excel(
           path = file.path(
             .x,
@@ -72,8 +72,8 @@ outfiles_sra |>
         )
       }
     )
-  ) |> 
-  tidyr::unnest(cols = a) |> 
+  ) |>
+  tidyr::unnest(cols = a) |>
   dplyr::mutate(
     source_name = purrr::map2_chr(
       .x = source_name,
@@ -96,33 +96,33 @@ outfiles_sra |>
   ) ->
   metadata
 
-metadata |> 
+metadata |>
   readr::write_csv(
-    file = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/metadata.csv"
+    file = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs/metadata.csv"
   )
 
 
 # body --------------------------------------------------------------------
 
-metadata |> 
+metadata |>
   dplyr::mutate(
     anno = purrr::map(
       .x = outfile,
       .f = function(.x) {
         if(.x == "FALSE") {return(NA)}
-        
+
         .uuid <- dirname(dirname(dirname(.x)))
-        
+
         .cva <- file.path(
           .uuid,
           "call-plot_scmtah/execution",
           "cell_variant_annotation.tsv"
         )
-        
+
         readr::read_tsv(.cva, show_col_types = FALSE)
       }
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
     nmut = purrr::map_int(
       .x = anno,
@@ -131,7 +131,7 @@ metadata |>
         nrow(.x)
       }
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
     haplogroup = purrr::map(
       .x = anno,
@@ -143,37 +143,37 @@ metadata |>
               verbose_haplogroup = NA_character_
             )
           )
-          
+
         }
-        .x |> 
-          dplyr::select(haplogroup, verbose_haplogroup) |> 
+        .x |>
+          dplyr::select(haplogroup, verbose_haplogroup) |>
           dplyr::distinct()
       }
     )
-  ) |> 
+  ) |>
   tidyr::unnest(cols = haplogroup) ->
   metadata_anno
 
 
-metadata_anno |> 
+metadata_anno |>
   dplyr::mutate(
     pass = ifelse(
       test = is.na(tardir),
       yes = "Fail",
       no = "Pass"
     )
-  )|> 
-  dplyr::select(srrid, Age, gender, source_name, subject_status, pass, `estimated number of cells`, `median UMI counts per cell`, `median genes per cell`, `number of cells after filtering`, haplogroup, verbose_haplogroup, nmut) |> 
+  )|>
+  dplyr::select(srrid, Age, gender, source_name, subject_status, pass, `estimated number of cells`, `median UMI counts per cell`, `median genes per cell`, `number of cells after filtering`, haplogroup, verbose_haplogroup, nmut) |>
   dplyr::arrange(
-    source_name, 
+    source_name,
     subject_status,
     pass,
     Age
-  ) |> 
+  ) |>
   dplyr::mutate(
     ratio = round(`number of cells after filtering`/ `estimated number of cells`,2)
-  ) |> 
-  dplyr::select(-pass) |> 
+  ) |>
+  dplyr::select(-pass) |>
   dplyr::select(
     SRRID = srrid,
     Age,
@@ -186,22 +186,22 @@ metadata_anno |>
     `# cells after filter` = `number of cells after filtering`,
     `Cell ratio` = ratio,
     `# of variants` = nmut,
-    Haplogroup = haplogroup, 
+    Haplogroup = haplogroup,
     Haplogroup_v = verbose_haplogroup
-  ) |> 
+  ) |>
   dplyr::mutate(
     Status = gsub(
       pattern = " patient",
       replacement = "",
       x = Status
     )
-  )  |> 
+  )  |>
   dplyr::slice(
     6:9, 1:5, 10:20
   ) ->
   metadata_clean
 
-metadata_clean |> 
+metadata_clean |>
   writexl::write_xlsx(
     path = "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/outputs/metadata_clean.xlsx"
   )
@@ -211,7 +211,7 @@ metadata_clean |>
 
 cor.test(
   formula = ~ nmut + Age,
-  data = metadata_anno |> 
+  data = metadata_anno |>
     # dplyr::filter(source_name == "Normal_PBMC"),
     dplyr::filter(source_name == "nCoV_PBMC(severe)"),
   method = "spearman"
@@ -220,7 +220,7 @@ cor.test(
 
 cor.test(
   formula = ~ nmut + genderx,
-  data = metadata_anno |> 
+  data = metadata_anno |>
     dplyr::mutate(
       genderx = ifelse(
         gender == "male",
@@ -230,7 +230,7 @@ cor.test(
     )
 )
 
-metadata_anno |> 
+metadata_anno |>
   ggplot(
     aes(
       x = Age,
@@ -261,10 +261,10 @@ ggsave(
   device = "pdf",
   width = 9,
   height = 6,
-  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+  path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs"
 )
 
-metadata_anno |> 
+metadata_anno |>
   ggplot(
     aes(
       x = `number of cells after filtering`,
@@ -295,7 +295,7 @@ ggsave(
   device = "pdf",
   width = 9,
   height = 6,
-  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+  path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs"
 )
 
 
@@ -303,7 +303,7 @@ ggsave(
 
 cor.test(
   formula = ~ nmut + Age,
-  data = metadata_anno |> 
+  data = metadata_anno |>
     # dplyr::filter(source_name == "Normal_PBMC"),
     dplyr::filter(source_name == "nCoV_PBMC(severe)"),
   method = "spearman"
@@ -313,20 +313,20 @@ cor.test(
 
 wilcox.test(
   formula = nmut ~ gender ,
-  data = metadata_anno |> 
-    dplyr::filter(!is.na(linkfile)) |> 
+  data = metadata_anno |>
+    dplyr::filter(!is.na(linkfile)) |>
     dplyr::mutate(gender = factor(gender))
 )
 
 t.test(
   formula = nmut ~ gender ,
-  data = metadata_anno |> 
-    dplyr::filter(!is.na(linkfile)) |> 
+  data = metadata_anno |>
+    dplyr::filter(!is.na(linkfile)) |>
     dplyr::mutate(gender = factor(gender))
 ) |> broom::tidy()
 
 
-metadata_anno |> 
+metadata_anno |>
   ggplot(aes(
     x = gender,
     y = nmut,
@@ -373,14 +373,14 @@ ggsave(
   device = "pdf",
   width = 10,
   height = 6,
-  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+  path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs"
 )
 
 
 
 # cell ratio --------------------------------------------------------------
 
-metadata_anno |> 
+metadata_anno |>
   dplyr::mutate(
     cellratio = purrr::map(
       .x = tardir,
@@ -399,24 +399,24 @@ metadata_anno |>
   metadata_anno_cellratio
 
 
-metadata_anno_cellratio |> 
-  dplyr::filter(!purrr::map_lgl(.x = cellratio, .f = is.null)) |> 
-  dplyr::select(srrid, source_name, cellratio) |> 
+metadata_anno_cellratio |>
+  dplyr::filter(!purrr::map_lgl(.x = cellratio, .f = is.null)) |>
+  dplyr::select(srrid, source_name, cellratio) |>
   dplyr::mutate(color = dplyr::case_match(
     source_name,
     "Flu_PBMC" ~ggsci::pal_jama()(4)[[1]],
     "Normal_PBMC" ~ ggsci::pal_jama()(4)[[2]],
     "nCoV_PBMC(mild)" ~ ggsci::pal_jama()(4)[[3]],
     "nCoV_PBMC(severe)" ~ ggsci::pal_jama()(4)[[4]]
-  )) |> 
+  )) |>
   dplyr::slice(
     5:8, 1:4, 9:19
-  ) |> 
+  ) |>
   dplyr::arrange(dplyr::desc(dplyr::row_number())) ->
   for_ratio_plot
 
-for_ratio_plot |> 
-  tidyr::unnest(cellratio) |> 
+for_ratio_plot |>
+  tidyr::unnest(cellratio) |>
   ggplot(aes(
     x = ratio,
     y = srrid,
@@ -429,7 +429,7 @@ for_ratio_plot |>
     labels = scales::percent_format()
   ) +
   scale_y_discrete(
-    limits = for_ratio_plot$srrid 
+    limits = for_ratio_plot$srrid
   ) +
   theme(
     panel.background = element_blank(),
@@ -454,15 +454,15 @@ ggsave(
   device = "pdf",
   width = 11,
   height = 5,
-  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+  path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs"
 )
 
 
 # Depth -------------------------------------------------------------------
 
-gtf_gene_df <- 
+gtf_gene_df <-
   readr::read_rds(
-    file = "/home/liuc9/github/scRNAseq-MitoVariant/fasta/mt_exons.df.rds.gz"
+    file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
   )
 
 library(ggtranscript)
@@ -510,7 +510,7 @@ gtf_gene_df %>%
   ) ->
   p_mt_chrom
 
-metadata_anno_cellratio |> 
+metadata_anno_cellratio |>
   dplyr::mutate(
     depth = purrr::map(
       .x = tardir,
@@ -522,29 +522,29 @@ metadata_anno_cellratio |>
           ),
           col.names =  c("chr", "pos", "depth")
         )
-        
+
       }
     )
   ) ->
   metadata_anno_depth
 
-metadata_anno_depth |> 
-  dplyr::filter(!purrr::map_lgl(.x = depth, .f = is.null)) |> 
-  dplyr::select(srrid, source_name, depth) |> 
+metadata_anno_depth |>
+  dplyr::filter(!purrr::map_lgl(.x = depth, .f = is.null)) |>
+  dplyr::select(srrid, source_name, depth) |>
   dplyr::mutate(color = dplyr::case_match(
     source_name,
     "Flu_PBMC" ~ggsci::pal_jama()(4)[[1]],
     "Normal_PBMC" ~ ggsci::pal_jama()(4)[[2]],
     "nCoV_PBMC(mild)" ~ ggsci::pal_jama()(4)[[3]],
     "nCoV_PBMC(severe)" ~ ggsci::pal_jama()(4)[[4]]
-  )) |> 
+  )) |>
   dplyr::slice(
     5:8, 1:4, 9:19
-  ) |> 
+  ) |>
   dplyr::mutate(srrid = factor(srrid, levels = srrid)) ->
   for_depth_plot
 
-for_depth_plot |> 
+for_depth_plot |>
   tidyr::unnest(cols = depth) |>
   ggplot(aes(x=pos, y = depth, fill = srrid)) +
   geom_bar(stat = "identity") +
@@ -598,7 +598,7 @@ ggsave(
   device = "pdf",
   width = 15,
   height = 10,
-  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+  path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs"
 )
 
 p_depth <- cowplot::plot_grid(
@@ -614,16 +614,16 @@ ggsave(
   device = "pdf",
   width = 15,
   height = 15,
-  path = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs"
+  path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs"
 )
 
 
 
 # Normal ------------------------------------------------------------------
 
-metadata_anno_depth |> 
+metadata_anno_depth |>
   readr::write_rds(
-    file = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/metadata_anno_depth.rds"
+    file = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs/metadata_anno_depth.rds"
   )
 
 
@@ -632,6 +632,6 @@ metadata_anno_depth |>
 future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
-save.image("/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/05-integrate-analysis.rda")
+save.image("/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs/05-integrate-analysis.rda")
 
-# load(file = "/home/liuc9/github/scRNAseq-MitoVariant/01-Sci_Immunol_32651212/outputs/05-integrate-analysis.rda")
+# load(file = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs/05-integrate-analysis.rda")

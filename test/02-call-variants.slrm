@@ -6,4 +6,4 @@
 #SBATCH --time=720:00:00
 #SBATCH --output=/home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/cellsnp.job.%j
 
-bash /home/liuc9/github/scRNAseq-MitoVariant/test/02-call-variants.sh
+bash /home/liuc9/github/scMOCHA/test/02-call-variants.sh

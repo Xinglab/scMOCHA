@@ -3,7 +3,7 @@
   "SCMTAH.fastqs": "/home/liuc9/tmp/mito/mm068",
   "SCMTAH.sample_id": "SRR17022244",
   "SCMTAH.transcriptome": "/home/liuc9/data/refdata/mgatk_index/Human",
-  "SCMTAH.rCRS": "/home/liuc9/github/scRNAseq-MitoVariant/fasta/rCRS.MT.fasta",
+  "SCMTAH.rCRS": "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta",
   "SCMTAH.output_dir": "a",
   "SCMTAH.cellrefname": "bonemarrowref",
   "SCMTAH.celllevel": "celltype.l1"

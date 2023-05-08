@@ -8,9 +8,9 @@
 param=$#
 
 # /home/liuc9/tools/cellsnp-lite-1.2.2/bin/bin/cellsnp-lite \
-#   -s /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_possorted_genome_bam.bam \
-#   -b /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/pbmc_10k_v3_filtered_feature_bc_matrix/barcodes.tsv.gz \
-#   -O /home/liuc9/github/scRNAseq-MitoVariant/data/PBMC_10k_v3_10x/test/cellsnp \
+#   -s /home/liuc9/github/scMOCHA/data/PBMC_10k_v3_10x/pbmc_10k_v3_possorted_genome_bam.bam \
+#   -b /home/liuc9/github/scMOCHA/data/PBMC_10k_v3_10x/pbmc_10k_v3_filtered_feature_bc_matrix/barcodes.tsv.gz \
+#   -O /home/liuc9/github/scMOCHA/data/PBMC_10k_v3_10x/test/cellsnp \
 #   --chrom chrMT \
 #   --UMItag Auto \
 #   --minMAF 0.1 \
