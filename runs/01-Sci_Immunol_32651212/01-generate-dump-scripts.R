@@ -60,12 +60,12 @@ srafiles |>
         .srrid <- basename(.x)
 
         conf <- list(
-          "SCMTAH.output_id" = "{.srrid}" |> glue::glue(),
-          "SCMTAH.fastqs" = "{.x}" |> glue::glue(),
-          "SCMTAH.sample_id" = "{.srrid}" |> glue::glue(),
-          "SCMTAH.transcriptome" = "/home/liuc9/data/refdata/mgatk_index/Human",
-          "SCMTAH.rCRS" = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta",
-          "SCMTAH.output_dir" = "{.srrid}" |> glue::glue()
+          "scMOCHA.output_id" = "{.srrid}" |> glue::glue(),
+          "scMOCHA.fastqs" = "{.x}" |> glue::glue(),
+          "scMOCHA.sample_id" = "{.srrid}" |> glue::glue(),
+          "scMOCHA.transcriptome" = "/home/liuc9/data/refdata/mgatk_index/Human",
+          "scMOCHA.rCRS" = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta",
+          "scMOCHA.output_dir" = "{.srrid}" |> glue::glue()
         )
 
         conf_file <- file.path(
@@ -116,7 +116,7 @@ srafiles_conf |>
           "module load Java/15.0.1",
           "nohup java -Dconfig.file=/home/liuc9/github/scMOCHA/config/ref.conf \\",
           "-jar /home/liuc9/tools/cromwell-78.jar \\",
-          "run /home/liuc9/github/scMOCHA/scmtah.wdl \\",
+          "run /home/liuc9/github/scMOCHA/scMOCHA.wdl \\",
           "-i {.jsonfile} 1>{.logfile} 2>{.errfile} &" |> glue::glue()
         )
 

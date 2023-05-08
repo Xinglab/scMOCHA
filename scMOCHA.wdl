@@ -1,5 +1,5 @@
 
-workflow SCMTAH {
+workflow scMOCHA {
   # version of this pipeline
   String version = "CellRanger v7.0.1"
 
@@ -79,7 +79,7 @@ workflow SCMTAH {
       cpu = cpu
   }
 
-  call plot_scmtah {
+  call plot_scMOCHA {
     input:
       barcode_cluster_file = cell_cluster_annotation.barcode_cluster,
       cell_hetero_file = call_mt_variants.cell_cell_heteroplasmic_df_tsv_gz,
@@ -93,15 +93,15 @@ workflow SCMTAH {
     input:
       output_dir = output_dir,
       # plot_scmth
-      scmtah_rda = plot_scmtah.scmtah_rda,
-      cell_af_heatmap = plot_scmtah.cell_af_heatmap,
-      cell_depth_heatmap = plot_scmtah.cell_depth_heatmap,
-      cluster_af_heatmap = plot_scmtah.cluster_af_heatmap,
-      cluster_depth_heatmap = plot_scmtah.cluster_depth_heatmap,
-      cluster_cell_af_heatmap = plot_scmtah.cluster_cell_af_heatmap,
-      cluster_cell_depth_heatmap = plot_scmtah.cluster_cell_depth_heatmap,
-      cell_variant_annotation_tsv = plot_scmtah.cell_variant_annotation_tsv,
-      cell_variant_annotation_xlsx = plot_scmtah.cell_variant_annotation_xlsx,
+      scMOCHA_rda = plot_scMOCHA.scMOCHA_rda,
+      cell_af_heatmap = plot_scMOCHA.cell_af_heatmap,
+      cell_depth_heatmap = plot_scMOCHA.cell_depth_heatmap,
+      cluster_af_heatmap = plot_scMOCHA.cluster_af_heatmap,
+      cluster_depth_heatmap = plot_scMOCHA.cluster_depth_heatmap,
+      cluster_cell_af_heatmap = plot_scMOCHA.cluster_cell_af_heatmap,
+      cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap,
+      cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv,
+      cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx,
       # call_mt_variants
       # cell level
       cell_A_txt_gz = call_mt_variants.cell_A_txt_gz,
@@ -226,16 +226,16 @@ workflow SCMTAH {
       File cluster_vmr_strand_plot_png = call_mt_variants.cluster_vmr_strand_plot_png
       File passingBarcodes_tsv = call_mt_variants.passingBarcodes_tsv
 
-      # plot scmtah
-      File scmtah_rda = plot_scmtah.scmtah_rda
-      File cell_af_heatmap = plot_scmtah.cell_af_heatmap
-      File cell_depth_heatmap = plot_scmtah.cell_depth_heatmap
-      File cluster_af_heatmap = plot_scmtah.cluster_af_heatmap
-      File cluster_depth_heatmap = plot_scmtah.cluster_depth_heatmap
-      File cluster_cell_af_heatmap = plot_scmtah.cluster_cell_af_heatmap
-      File cluster_cell_depth_heatmap = plot_scmtah.cluster_cell_depth_heatmap
-      File cell_variant_annotation_tsv = plot_scmtah.cell_variant_annotation_tsv
-      File cell_variant_annotation_xlsx = plot_scmtah.cell_variant_annotation_xlsx
+      # plot scMOCHA
+      File scMOCHA_rda = plot_scMOCHA.scMOCHA_rda
+      File cell_af_heatmap = plot_scMOCHA.cell_af_heatmap
+      File cell_depth_heatmap = plot_scMOCHA.cell_depth_heatmap
+      File cluster_af_heatmap = plot_scMOCHA.cluster_af_heatmap
+      File cluster_depth_heatmap = plot_scMOCHA.cluster_depth_heatmap
+      File cluster_cell_af_heatmap = plot_scMOCHA.cluster_cell_af_heatmap
+      File cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap
+      File cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv
+      File cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx
 
       # gather_outputfiles
       File output_dir_tar_gz = gather_outputfiles.output_dir_tar_gz
@@ -461,7 +461,7 @@ task call_mt_variants {
   }
 }
 
-task plot_scmtah {
+task plot_scMOCHA {
 
   File barcode_cluster_file
   File cell_hetero_file
@@ -475,7 +475,7 @@ task plot_scmtah {
   command {
     # module load R/4.1.0
     module load R/4.2.3
-    Rscript /home/liuc9/github/scMOCHA/bin/scmtah.R \
+    Rscript /home/liuc9/github/scMOCHA/bin/scMOCHA.R \
       ${barcode_cluster_file} \
       ${cell_hetero_file} \
       ${cell_coverage_file} \
@@ -485,7 +485,7 @@ task plot_scmtah {
   }
 
   output {
-    File scmtah_rda = "scmtah.rda"
+    File scMOCHA_rda = "scMOCHA.rda"
     File cell_af_heatmap = "cell_af_heatmap.pdf"
     File cell_depth_heatmap = "cell_depth_heatmap.pdf"
     File cluster_af_heatmap = "cluster_af_heatmap.pdf"
@@ -501,8 +501,8 @@ task plot_scmtah {
 task gather_outputfiles {
   String output_dir
 
-  # plot_scmtah
-  File scmtah_rda
+  # plot_scMOCHA
+  File scMOCHA_rda
   File cell_af_heatmap
   File cell_depth_heatmap
   File cluster_af_heatmap
@@ -572,8 +572,8 @@ task gather_outputfiles {
 
   command {
     mkdir -p ${output_dir}
-    # plot_scmtah
-    cp ${scmtah_rda} ${output_dir}
+    # plot_scMOCHA
+    cp ${scMOCHA_rda} ${output_dir}
     cp ${cell_af_heatmap} ${output_dir}
     cp ${cell_depth_heatmap} ${output_dir}
     cp ${cluster_af_heatmap} ${output_dir}
