@@ -264,7 +264,8 @@ task cellranger_count {
 
     command {
 
-      module load R/4.1.0
+      # module load R/4.1.0
+      module load R/4.2.3
 
       # cell ranger output to get bams and h5 files
       cellranger count \
@@ -322,7 +323,8 @@ task cell_cluster_annotation {
   Int cpu
 
   command {
-    module load R/4.1.0
+    # module load R/4.1.0
+    module load R/4.2.3
     # cell cluster annotation
     Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/azimuth.R ${h5file} ${refname} ${celllevel}
 
@@ -390,7 +392,8 @@ task call_mt_variants {
 
   command {
 
-    module load R/4.1.0
+    # module load R/4.1.0
+    module load R/4.2.3
     # call variants on single cell level
     mgatk tenx -i ${sorted_bam} \
       -o cell \
@@ -470,7 +473,8 @@ task plot_scmtah {
   File cell_hetero_raw_file
 
   command {
-    module load R/4.1.0
+    # module load R/4.1.0
+    module load R/4.2.3
     Rscript /home/liuc9/github/scRNAseq-MitoVariant/bin/scmtah.R \
       ${barcode_cluster_file} \
       ${cell_hetero_file} \
