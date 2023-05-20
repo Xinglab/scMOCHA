@@ -612,8 +612,8 @@ cell_raw_ch_af_depth <- fn_heatmap(
 {
   pdf(
     file = "cluster_cell_af_heatmap.pdf",
-    width = 14,
-    height = 7
+    width = 15,
+    height = 10
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
   dev.off()
