@@ -7,5 +7,6 @@
 # Number of input parameters
 param=$#
 # Input parameters
-conda env create --file=environment.yaml
+conda create -n scmocha python==3.10.9 -y
 conda activate scmocha
+conda env create --file=environment.yaml
