@@ -426,8 +426,26 @@ fn_plot_azimuth_umap <- function(.x) {
   
 }
 
+fn_check_cellref <- function(.refname) {
+  
+  SeuratData::InstalledData() |> dplyr::glimpse()
+  
+  .ref <- SeuratData::InstalledData() |> 
+    dplyr::filter(Dataset == .refname)
+  
+  if(.ref$Installed) {
+    message(glue::glue("Azimuth reference {.refname} installed"))
+  } else {
+    SeuratData::InstallData(
+      ds = .refname
+    )
+  }
+}
+
 
 # load data ---------------------------------------------------------------
+
+fn_check_cellref()
 
 sc <- fn_load_sc_10x(h5file)
 
