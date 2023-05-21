@@ -4,16 +4,16 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - python=3.10.9
-  - samtools=1.17
-  - bcftools=1.17
-  - sinto
-  - pip=22.3.0
-  - r-base=4.3.0
+  - python
+  - samtools
+  - bcftools
+  - pip
+  - r-base
   - r-tidyverse
   - r-seurat
   - bioconductor-gmoviz
   - r-biocmanager
   - pip:
-    - flake8==6.0.0
-    - black==23.3.0
+    - flake8
+    - black
+    - sinto

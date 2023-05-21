@@ -9,4 +9,4 @@ param=$#
 # Input parameters
 conda create -n scmocha python==3.10.9 -y
 conda activate scmocha
-conda env create --file=environment.yaml
+conda env update -n scmocha --file environment.yaml
