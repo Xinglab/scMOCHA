@@ -13,6 +13,7 @@ dependencies:
   - r-seurat
   - bioconductor-gmoviz
   - r-biocmanager
+  - r-devtools
   - pip:
     - flake8
     - black
