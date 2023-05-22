@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 .Rproj.user
 *.pdf
+cell_snvlist.tsv
+cell_variant_annotation.tsv
+cell_variant_annotation.xlsx
