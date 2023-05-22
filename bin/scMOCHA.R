@@ -589,7 +589,7 @@ variant_annotation <- if(status == 200) {
     dplyr::mutate(
       patientphenotype = stringr::str_wrap(
         stringr::str_to_sentence(string = patientphenotype),
-        width = 10
+        width = 30
       )
     ) |>
     dplyr::mutate(conservation = as.numeric(conservation)) |>
@@ -612,7 +612,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
 {
   pdf(
     file = "cluster_cell_af_heatmap.pdf",
-    width = 15,
+    width = 17,
     height = 10
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
