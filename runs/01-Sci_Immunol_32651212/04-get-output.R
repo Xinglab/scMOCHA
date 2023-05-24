@@ -94,7 +94,85 @@ logfiles |>
   logfiles_outfile
 
 
+logfiles_outfile |>
+  dplyr::mutate(
+    a = furrr::future_map2_chr(
+      .x = logfile,
+      .y = srrid,
+      .f = function(.x, .y) {
+        .xx <- readr::read_lines(file = .x)
+        
+        tryCatch(
+          expr = {
+            .xxx <- which(grepl(
+              pattern = "SCMTAH.cluster_cell_af_heatmap",
+              x = .xx
+            ))[[2]]
+            
+            .a <- strsplit(.xx[.xxx], ":")[[1]][[2]]
+            
+            
+            .aa <- gsub(
+              pattern = " |\"|,",
+              replacement = "",
+              x = .a
+            )
+            .aaa <- file.path(dirname(.aa), "cell_snvlist.tsv")
+            
+            if(file.exists(.aaa)) {
+              .aaa
+            } else {
+              FALSE
+            }
+          },
+          error = function(err) {
+            FALSE
+          }
+        )
+        
+      }
+    )
+  ) ->
+  logfiles_outfile_a
 
+logfiles_outfile_a |> 
+  dplyr::mutate(
+    b = purrr::map2(
+      .x = srrid,
+      .y = a,
+      .f = function(.x, .y) {
+        # .x <- logfiles_outfile_a$srrid[[1]]
+        # .y <- logfiles_outfile_a$a[[1]]
+        if(isFALSE(.y)) {
+          return(NA)
+        }
+        
+        .dir <- dirname(.y)
+        .sfile <- file.path(
+          .dir,
+          "cell_snvlist.tsv"
+        )
+        .tfile <- file.path(
+          "/home/liuc9/tmp/snvlist",
+          glue::glue("{.x}_cell_snvlist.tsv")
+        )
+        
+        file.copy(.sfile,.tfile)
+        
+        .sfile <- file.path(
+          .dir,
+          "cell_variant_annotation.xlsx"
+        )
+        .tfile <- file.path(
+          "/home/liuc9/tmp/snvlist",
+          glue::glue("{.x}_cell_variant_annotation.xlsx")
+        )
+        
+        file.copy(.sfile,.tfile)
+        
+      }
+    )
+  )
 
 
 
