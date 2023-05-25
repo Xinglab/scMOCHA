@@ -145,6 +145,52 @@ htmlwidgets::saveWidget(
 )
 
 
+# scRNA -------------------------------------------------------------------
+
+
+meta_sel_fil_ind_r |> 
+  dplyr::count(dataType, assay) |> 
+  dplyr::arrange(-n)
+
+meta_sel_fil_ind_r |> 
+  dplyr::filter(grepl(
+    pattern = "geneExpression",
+    x = dataType
+  )) |> 
+  dplyr::count(assay) |> 
+  dplyr::arrange(-n)
+
+meta_sel_fil_ind_r |> 
+  dplyr::filter(assay == "scrnaSeq") |> 
+  dplyr::count(
+    consortium, study, organ
+  ) 
+  dplyr::mutate(
+    organ_r = n / sum(n)
+  ) |> 
+  dplyr::group_by(dataType) |> 
+  dplyr::mutate(
+    dataType_r = sum(organ_r)
+  ) |> 
+  dplyr::ungroup() |> 
+  dplyr::group_by(study) |> 
+  dplyr::mutate(
+    study_r = sum(organ_r)
+  ) |> 
+  dplyr::ungroup() |> 
+  dplyr::group_by(consortium) |> 
+  dplyr::mutate(
+    consortium_r = sum(organ_r)
+  ) |> 
+  dplyr::ungroup() |> 
+  dplyr::mutate(
+    consortium = glue::glue("{consortium} {round(consortium_r * 100, 2)}%"),
+    study = glue::glue("{study} {round(study_r * 100, 2)}%"),
+    dataType = glue::glue("{dataType} {round(dataType_r * 100, 2)}%"),
+    organ = glue::glue("{organ} {round(organ_r * 100, 2)}%")
+  ) |> 
+  dplyr::select(1,2,3,4,5) |> 
+  plotme::count_to_sunburst()
 
 # footer ------------------------------------------------------------------
 
