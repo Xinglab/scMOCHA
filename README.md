@@ -19,3 +19,41 @@ First test PBMC data was source from [Stuart el al., Cell, 2019](https://www.sci
 
 ## Pipeline
 ![](img/workflow.png)
+
+
+## Requrements
+
+```
+name: scmocha
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python
+  - samtools
+  - bcftools
+  - pip
+  - r-base
+  - r-tidyverse
+  - r-seurat
+  - bioconductor-gmoviz
+  - r-biocmanager
+  - r-devtools
+  - perl
+  - perl-dbi
+  - sqlite
+  - perl-app-cpanminus
+  - pip:
+    - flake8
+    - black
+    - sinto
+
+```
+
+### Annotation software
+> For variant annotation, we need use `cpanm` to install `perl` module `DBD:SQLite`.
+```
+cpanm DBD::SQLite
+```
+> Install `haplogrep3` from [here](https://haplogrep.readthedocs.io/en/latest/installation/)

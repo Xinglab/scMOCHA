@@ -14,6 +14,10 @@ dependencies:
   - bioconductor-gmoviz
   - r-biocmanager
   - r-devtools
+  - perl
+  - perl-dbi
+  - sqlite
+  - perl-app-cpanminus
   - pip:
     - flake8
     - black
