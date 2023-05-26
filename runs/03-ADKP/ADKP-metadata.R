@@ -218,17 +218,26 @@ htmlwidgets::saveWidget(
 # Save selected data ------------------------------------------------------
 
 meta_sel_fil |>
-  dplyr::mutate(
-    assay = purrr::map_chr(
-      .x = assay, 
-      .f = function(.x) {
-        gsub(
-          pattern = '"|\\[|\\]',
-          replacement = "",
-          x = .x
-        )
-      }
-    )
+  # dplyr::mutate(
+  #   assay = purrr::map_chr(
+  #     .x = assay, 
+  #     .f = function(.x) {
+  #       gsub(
+  #         pattern = '"|\\[|\\]',
+  #         replacement = "",
+  #         x = .x
+  #       )
+  #     }
+  #   )
+  # ) |> 
+  dplyr::mutate_all(
+    .funs = function(.x) {
+      gsub(
+        pattern = '"|\\[|\\]',
+        replacement = "",
+        x = .x
+      )
+    }
   ) |> 
   dplyr::filter(assay == "scrnaSeq") |> 
   dplyr::filter(

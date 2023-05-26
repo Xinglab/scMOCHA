@@ -500,105 +500,192 @@ cell_raw_cluster_forplot$forplot |>
     pos = pos,
     ref = ref,
     var = var
+  ) |> 
+  dplyr::mutate(
+    v = glue::glue("{pos}{ref}>{var}")
+  ) |> 
+  dplyr::select(sample, v) |> 
+  tibble::rowid_to_column() |> 
+  tidyr::pivot_wider(
+    names_from = rowid,
+    values_from = v
   ) ->
   cell_variants
 
-readr::write_tsv(
+readr::write_delim(
   x = cell_variants,
-  file = "cell_snvlist.tsv"
+  file = "cell_snvlist.tsv",
+  delim = " ",
+  col_names = F
 )
+# readr::write_tsv(
+#   x = cell_variants,
+#   file = "cell_snvlist.tsv"
+# )
 
-cell_variant_response <- tryCatch(
-  {
-    POST(
-      "https://mitomap.org/mitomaster/websrvc.cgi",
-      body = list(
-        file = upload_file("cell_snvlist.tsv"),
-        fileType = "snvlist",
-        output = "detail"
-      ),
-      encode = "multipart"
-    )
-  },
-  error = function(err) {
-    print(paste("HTTP error:", err$message))
-    # "error"
-  },
-  warning = function(w) {
-    print(paste("Warning:", w$message))
-  },
-  finally = {
-    print("Done.")
-  }
-)
-
-status <- tryCatch(
-  expr = {
-    httr::status_code(cell_variant_response)
-  },
-  error = function(err) {
-    0
-  }
-)
-
-
-
-variant_annotation <- if(status == 200) {
-  cell_anno <- content(
-    x = cell_variant_response,
-    as = "text",
-    encoding = "UTF-8"
-  ) |>
-    data.table::fread(
-      sep = "\t"
-    )
-
-  readr::write_tsv(
-    x = cell_anno,
-    file = "cell_variant_annotation.tsv"
+fn_http_request <- function() {
+  cell_variant_response <- tryCatch(
+    {
+      POST(
+        "https://mitomap.org/mitomaster/websrvc.cgi",
+        body = list(
+          file = upload_file("cell_snvlist.tsv"),
+          fileType = "snvlist",
+          output = "detail"
+        ),
+        encode = "multipart"
+      )
+    },
+    error = function(err) {
+      print(paste("HTTP error:", err$message))
+      # "error"
+    },
+    warning = function(w) {
+      print(paste("Warning:", w$message))
+    },
+    finally = {
+      print("Done.")
+    }
   )
+  
+  status <- tryCatch(
+    expr = {
+      httr::status_code(cell_variant_response)
+    },
+    error = function(err) {
+      0
+    }
+  )
+  
+  
+  
+  variant_annotation <- if(status == 200) {
+    cell_anno <- content(
+      x = cell_variant_response,
+      as = "text",
+      encoding = "UTF-8"
+    ) |>
+      data.table::fread(
+        sep = "\t"
+      )
+    
+    readr::write_tsv(
+      x = cell_anno,
+      file = "cell_variant_annotation.tsv"
+    )
+    
+    writexl::write_xlsx(
+      x = cell_anno,
+      path = "cell_variant_annotation.xlsx"
+    )
+    
+    
+    cell_anno |>
+      dplyr::mutate(
+        variant = glue::glue("{tpos}{tnt}>{qnt}")
+      ) |>
+      dplyr::select(
+        variant, ntchange, calc_locus, patientphenotype,
+        conservation, verbose_haplogroup
+      ) |>
+      dplyr::mutate(
+        calc_locus = gsub(
+          pattern = "<br>.*",
+          replace = "",
+          x = calc_locus
+        )
+      ) |>
+      dplyr::mutate(
+        conservation = gsub(
+          pattern = "%",
+          replacement = "",
+          x = conservation
+        )
+      ) |>
+      dplyr::mutate(
+        patientphenotype = stringr::str_wrap(
+          stringr::str_to_sentence(string = patientphenotype),
+          width = 30
+        )
+      ) |>
+      dplyr::mutate(conservation = as.numeric(conservation)) |>
+      dplyr::select(
+        Ntchange = ntchange,
+        Locus = calc_locus,
+        Conservation = conservation,
+        Haplogroup = verbose_haplogroup,
+        Phenotype = patientphenotype
+      )
+  } else {NULL}
+}
 
+# cmd <- "perl /mnt/isilon/xing_lab/liuc9/refdata/mitomaster/get_variants_info.pl /mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.db cell_snvlist.tsv > cell_variant_annotation.tsv"
+# system(command = cmd)
+
+variant_annotation <- if(file.exists("cell_variant_annotation.tsv")) {
+  cell_anno <- readr::read_tsv("cell_variant_annotation.tsv")
   writexl::write_xlsx(
     x = cell_anno,
     path = "cell_variant_annotation.xlsx"
   )
-
-
+  
+  
   cell_anno |>
     dplyr::mutate(
-      variant = glue::glue("{tpos}{tnt}>{qnt}")
-    ) |>
+      variant = glue::glue("{Position}{Ref}>{Alt}")
+    ) |> 
+    dplyr::mutate(
+      Status = ifelse(
+        !is.na(Status),
+        "Reported",
+        Status
+      )
+    ) |> 
     dplyr::select(
-      variant, ntchange, calc_locus, patientphenotype,
-      conservation, verbose_haplogroup
-    ) |>
+      variant, ntchange, 
+      calc_locus = Locus, 
+      Haplogroup,
+      Verbose_haplogroup,
+      Disease, 
+      Status,
+      Conservation, 
+      mito_freq = `Mitomap Frequency`,
+      gnomad_freq = `Gnomad Frequency`
+    ) |> 
     dplyr::mutate(
       calc_locus = gsub(
         pattern = "<br>.*",
         replace = "",
         x = calc_locus
       )
-    ) |>
+    ) |>  
     dplyr::mutate(
-      conservation = gsub(
+      Conservation = gsub(
         pattern = "%",
         replacement = "",
-        x = conservation
+        x = Conservation
       )
-    ) |>
+    ) |>  
     dplyr::mutate(
-      patientphenotype = stringr::str_wrap(
-        stringr::str_to_sentence(string = patientphenotype),
+      Disease = stringr::str_wrap(
+        stringr::str_to_sentence(string = Disease),
         width = 30
       )
-    ) |>
-    dplyr::mutate(conservation = as.numeric(conservation)) |>
+    ) |> 
+    dplyr::mutate(Conservation = as.numeric(Conservation)) |> 
+    dplyr::mutate(
+      mito_ref = mito_freq / 100,
+      gnomad_freq = gnomad_freq / 100
+    ) |> 
     dplyr::select(
       Ntchange = ntchange,
       Locus = calc_locus,
-      Conservation = conservation,
-      Haplogroup = verbose_haplogroup,
-      Phenotype = patientphenotype
+      Haplogroup = Verbose_haplogroup,
+      Disease = Disease,
+      Status,
+      Conservation,
+      `Mitomap freq` = mito_freq,
+      `Gnomad freq` = gnomad_freq
     )
 } else {NULL}
 
@@ -612,7 +699,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
 {
   pdf(
     file = "cluster_cell_af_heatmap.pdf",
-    width = 17,
+    width = 20,
     height = 10
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
