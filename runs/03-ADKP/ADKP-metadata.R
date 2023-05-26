@@ -213,6 +213,35 @@ htmlwidgets::saveWidget(
   )
 )
 
+
+
+# Save selected data ------------------------------------------------------
+
+meta_sel_fil |>
+  dplyr::mutate(
+    assay = purrr::map_chr(
+      .x = assay, 
+      .f = function(.x) {
+        gsub(
+          pattern = '"|\\[|\\]',
+          replacement = "",
+          x = .x
+        )
+      }
+    )
+  ) |> 
+  dplyr::filter(assay == "scrnaSeq") |> 
+  dplyr::filter(
+    fileFormat == "fastq"
+  ) |> 
+  dplyr::filter(
+    nucleicAcidSource == "single cell"
+  ) |> 
+  readr::write_csv(
+    file = "/home/liuc9/github/scMOCHA/03-ADKP/output/selected-ad-samples.csv"
+  )
+
+
 # footer ------------------------------------------------------------------
 
 
