@@ -34,7 +34,7 @@ synLogin("chunjie.sam.liu", "!Uu201012670")
 # body --------------------------------------------------------------------
 query <- synTableQuery("SELECT * FROM syn11346063.37")
 query$filepath
-csv_filepath <- "/scr1/users/liuc9/mitochondrial/realdata/ADKP/syn11346063.37.csv"
+csv_filepath <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/syn11346063.37.csv"
 # file.copy(query$filepath, csv_filepath, overwrite = T)
 
 
@@ -89,6 +89,8 @@ meta_sel_fil_ind |>
     }
   ) ->
   meta_sel_fil_ind_r
+
+meta_sel_fil_ind_r
 
 
 meta_sel_fil_ind_r |> 
