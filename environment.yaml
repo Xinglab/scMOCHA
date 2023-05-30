@@ -18,6 +18,7 @@ dependencies:
   - perl-dbi
   - sqlite
   - perl-app-cpanminus
+  - gxx_linux-64
   - pip:
     - flake8
     - black
