@@ -43,7 +43,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
   # .x <- feature_path
   # .x <- h5file
   # .x
-  
+
   .counts <- tryCatch(
     expr = {
       Seurat::Read10X_h5(filename = .x)
@@ -54,35 +54,35 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     }
   )
   # .counts <- Seurat::Read10X_h5(filename = .x)
-  
+
   .sc <- Seurat::CreateSeuratObject(
     counts = .counts,
     project = .project,
     # min.cells = 3,
     # min.features = 200
   )
-  
+
   .sc <- Seurat::PercentageFeatureSet(
     object = .sc,
     pattern = "^MT-",
     col.name = "percent.mt"
   )
-  
+
   .sc <- Seurat::PercentageFeatureSet(
     object = .sc,
     pattern = "^RP[SL][[:digit:]]|^RPLP[[:digit:]]|^RPSA",
     # pattern = "^Rp[sl][[:digit:]]|^Rplp[[:digit:]]|^Rpsa",
     col.name = "percent.ribo"
   )
-  
+
   apply(
     .sc@assays$RNA@counts,
     2,
     function(x) (100 * max(x)) / sum(x)
   ) ->
     .sc$Percent.Largest.Gene
-  
-  
+
+
   .sc@meta.data %>%
     dplyr::arrange(percent.mt) %>%
     ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.mt)) +
@@ -93,7 +93,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     geom_hline(yintercept = 6000, color = "red") +
     theme_bw() ->
     .metrics_mito
-  
+
   # ggsave(
   #   plot = .metrics_mito,
   #   filename = "{.project}-metrics-mt.pdf" %>% glue::glue(),
@@ -101,7 +101,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
   #   width = 7,
   #   height = 5
   # )
-  
+
   .sc@meta.data %>%
     dplyr::arrange(percent.ribo) %>%
     ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.ribo)) +
@@ -112,7 +112,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     geom_hline(yintercept = 6000, color = "red") +
     theme_bw() ->
     .metrics_ribo
-  
+
   # ggsave(
   #   plot = .metrics_ribo,
   #   filename = "{.project}-metrics-ribo.pdf" %>% glue::glue(),
@@ -120,13 +120,13 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
   #   width = 7,
   #   height = 5
   # )
-  
+
   .plot_2 <- (.metrics_mito + .metrics_ribo) +
     plot_annotation(
       title = glue::glue("Quality control {.project}"),
       tag_levels = "A"
     )
-  
+
   # ggsave(
   #   plot = .plot,
   #   filename = "{.project}-metrics-mt-ribo.pdf" %>% glue::glue(),
@@ -134,7 +134,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
   #   width = 14,
   #   height = 5
   # )
-  
+
   .sc@meta.data %>%
     ggplot(aes(percent.mt)) +
     geom_histogram(binwidth = 0.5, fill="red") +
@@ -142,7 +142,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     geom_vline(xintercept = 75) +
     theme_bw() ->
     .percent_mt
-  
+
   .sc@meta.data %>%
     ggplot(aes(percent.ribo)) +
     geom_histogram(binwidth = 0.5, fill="green") +
@@ -150,7 +150,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     geom_vline(xintercept = 50) +
     theme_bw() ->
     .percent_ribo
-  
+
   .sc@meta.data %>%
     ggplot(aes(Percent.Largest.Gene)) +
     geom_histogram(binwidth = 0.7, fill="blue") +
@@ -158,13 +158,13 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     geom_vline(xintercept = 50) +
     theme_bw() ->
     .percent_largest_gene
-  
+
   .plot_3 <- (.percent_mt | .percent_ribo | .percent_largest_gene) +
     plot_annotation(
       title = glue::glue("Quality control {.project}"),
       tag_levels = "A"
     )
-  
+
   # ggsave(
   #   plot = .plot,
   #   filename = "{.project}-qc-mt-ribo-largest.pdf" %>% glue::glue(),
@@ -172,7 +172,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
   #   width = 15,
   #   height = 5
   # )
-  
+
   .sc_sub <- subset(
     x = .sc,
     subset = nFeature_RNA > 500 &
@@ -181,7 +181,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
       percent.ribo < 50 &
       Percent.Largest.Gene < 50
   )
-  
+
   list(
     sc = .sc,
     sc_filter = .sc_sub,
@@ -193,15 +193,15 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
 fn_stat_cell <- function(.x, .y) {
   # .x <- project_sct$sc[[1]]
   # .y <- project_sct$sct[[1]]
-  
+
   .xd <- .x@meta.data
   .yd <- .y@meta.data
-  
+
   .n_x_cells <- nrow(.xd)
   .median_umicount_per_cell <- median(.xd$nCount_RNA)
   .median_gene_per_cell <- median(.xd$nFeature_RNA)
   .n_y_cells <- nrow(.yd)
-  
+
   tibble::tibble(
     `estimated number of cells` = .n_x_cells,
     # `mean reads per cell` = .mean_reads_per_cell,
@@ -213,12 +213,12 @@ fn_stat_cell <- function(.x, .y) {
 
 fn_azimuth <- function(.sc, .ref, .celllevel) {
   # .x <- sc$sc_filter
-  
+
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
     reference = .ref
   )
-  
+
   .celltype <-  .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
 
   .celltype_collapse <- gsub(
@@ -226,42 +226,42 @@ fn_azimuth <- function(.sc, .ref, .celllevel) {
     replacement = "_",
     x = .celltype
   ) |> factor()
-  
+
   .sca[["celltype"]] <- .celltype
   .sca[["celltype_name"]] <- .celltype_collapse
-  
+
   .sca
-  
+
 }
 
 fn_plot_azimuth_umap <- function(.x) {
-  
+
   .umap <- .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
   colnames(.umap) <- c("UMAP_1", "UMAP_2")
-  
+
   # .umap
-  .x@meta.data |> 
+  .x@meta.data |>
     dplyr::select(
       celltype
-    ) |> 
+    ) |>
     data.table::as.data.table() ->
     .xx
-  
+
   .xxx <- dplyr::bind_cols(.umap, .xx)
-  
-  .xxx |> 
-    dplyr::group_by(celltype) |> 
-    dplyr::count() |> 
-    dplyr::ungroup() |> 
+
+  .xxx |>
+    dplyr::group_by(celltype) |>
+    dplyr::count() |>
+    dplyr::ungroup() |>
     dplyr::mutate(ratio = n / sum(n)) ->
     .xxx_celltype
-  
+
   .xxx_celltype |>
-    dplyr::ungroup() %>% 
-    dplyr::mutate(csum = rev(cumsum(rev(n)))) %>% 
-    dplyr::mutate(pos = n/2 + dplyr::lead(csum, 1)) %>% 
-    dplyr::mutate(pos = dplyr::if_else(is.na(pos), n/2, pos)) %>% 
-    dplyr::mutate(percentage = n/sum(n)) %>% 
+    dplyr::ungroup() %>%
+    dplyr::mutate(csum = rev(cumsum(rev(n)))) %>%
+    dplyr::mutate(pos = n/2 + dplyr::lead(csum, 1)) %>%
+    dplyr::mutate(pos = dplyr::if_else(is.na(pos), n/2, pos)) %>%
+    dplyr::mutate(percentage = n/sum(n)) %>%
     ggplot(aes(x = "", y = n, fill = celltype)) +
     geom_bar(stat = "identity", width = 1, color = "white") +
     # scale_fill_brewer(palette = "Dark2", name = NULL) +
@@ -276,7 +276,7 @@ fn_plot_azimuth_umap <- function(.x) {
     ggrepel::geom_label_repel(
       aes(
         y = pos,
-        label = glue::glue("{celltype}\n{n} ({scales::percent(percentage)})"), 
+        label = glue::glue("{celltype}\n{n} ({scales::percent(percentage)})"),
         fill = celltype,
         # color = celltype
       ),
@@ -296,45 +296,45 @@ fn_plot_azimuth_umap <- function(.x) {
       legend.position = "none"
     ) ->
     .p_pie
-  
-  
-  .xxx |> 
-    dplyr::group_by(celltype) |> 
-    tidyr::nest() |> 
-    dplyr::ungroup() |> 
+
+
+  .xxx |>
+    dplyr::group_by(celltype) |>
+    tidyr::nest() |>
+    dplyr::ungroup() |>
     dplyr::mutate(u = purrr::map(.x = data, .f = function(.m) {
       # d |>
       #   dplyr::filter(cluster == 14) |>
       #   dplyr::pull(data) |>
       #   .[[1]] ->
       #   .m
-      
+
       .m |>
         dplyr::summarise(u1 = mean(UMAP_1), u2 = mean(UMAP_2)) ->
         .mm
-      
+
       .m |>
         dplyr::mutate(u1 = UMAP_1 > .mm$u1, u2 = UMAP_2 > .mm$u2) ->
         .mmd
-      
+
       .mmd |>
         dplyr::group_by(u1, u2) |>
         dplyr::count() |>
         dplyr::ungroup() |>
         dplyr::arrange(-n) ->
         .mmm
-      
+
       if(nrow(.mmm) == 1) {
         return(
           .mmd |>
             # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
             dplyr::summarise(UMAP_1  = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
         )
-        
+
       }
-      
+
       .fc <- .mmm$n[[1]] / .mmm$n[[2]] # 1.1
-      
+
       if(.fc > 1.1) {
         .mmd |>
           dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
@@ -344,13 +344,13 @@ fn_plot_azimuth_umap <- function(.x) {
           # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
           dplyr::summarise(UMAP_1  = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
       }
-      
-    })) |> 
-    dplyr::select(-data) |> 
-    tidyr::unnest(cols = u) |> 
+
+    })) |>
+    dplyr::select(-data) |>
+    tidyr::unnest(cols = u) |>
     dplyr::arrange(celltype) ->
     .xxx_label
-  
+
   ggplot() +
     geom_point(
       data = .xxx,
@@ -416,23 +416,23 @@ fn_plot_azimuth_umap <- function(.x) {
       ratio = 1
     ) ->
     .p
-  
-  
+
+
   list(
     plot_umap = .p,
     plot_celltype_pie = .p_pie,
     cell_ratio = .xxx_celltype
   )
-  
+
 }
 
 fn_check_cellref <- function(.refname) {
-  
+
   SeuratData::InstalledData() |> dplyr::glimpse()
-  
-  .ref <- SeuratData::InstalledData() |> 
+
+  .ref <- SeuratData::InstalledData() |>
     dplyr::filter(Dataset == .refname)
-  
+
   if(.ref$Installed) {
     message(glue::glue("Azimuth reference {.refname} installed"))
   } else {
@@ -472,24 +472,24 @@ sc$sc_azimuth <- fn_azimuth(
 
 # Cell barcode ------------------------------------------------------------
 
-sc$sc_azimuth@meta.data |> 
+sc$sc_azimuth@meta.data |>
   tibble::rownames_to_column(
     var = "cellbarcode"
-  ) |> 
-  data.table::as.data.table() |> 
+  ) |>
+  data.table::as.data.table() |>
   dplyr::select(
     cellbarcode,
     celltype_name
-  ) |> 
+  ) |>
   dplyr::mutate(
     tag = "CJ",
     cluster = celltype_name
-  ) |> 
+  ) |>
   dplyr::select(1, 3, 4) ->
   sc$cellbarcode_cluster
 
 
-sc$cellbarcode_bulk <- sc$cellbarcode_cluster |> 
+sc$cellbarcode_bulk <- sc$cellbarcode_cluster |>
   dplyr::mutate(cluster = "Bulk")
 
 

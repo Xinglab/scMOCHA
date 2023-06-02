@@ -23,7 +23,6 @@ library(synapser)
 
 # header ------------------------------------------------------------------
 
-# future::plan(future::multisession, workers = 10)
 
 # function ----------------------------------------------------------------
 
@@ -169,6 +168,12 @@ meta_sel_fil_ind_r |>
 meta_sel_fil_ind_r |> 
   dplyr::filter(assay == "scrnaSeq") |> 
   dplyr::count(
+    consortium, study
+  ) 
+
+meta_sel_fil_ind_r |> 
+  dplyr::filter(assay == "scrnaSeq") |> 
+  dplyr::count(
     consortium, study, organ
   ) |> 
   dplyr::mutate(
@@ -193,7 +198,7 @@ meta_sel_fil_ind_r |>
   ) |>  
   dplyr::select(1,2,3,4) |> 
   plotme::count_to_sunburst() ->
-  psun_filter
+  psun_filter;psun_filter
 
 reticulate::py_run_string("import sys")
 plotly::save_image(

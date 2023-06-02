@@ -88,7 +88,11 @@ fn_upset_plot <- function(.x) {
         }
       )
     ) |>
-    dplyr::select(-data) |>
+    dplyr::select(-data) ->
+    dd
+  
+  
+  dd |> 
     ggplot(aes(x = srrid)) +
     geom_bar(width = 0.6, fill = d$color[1]) +
     geom_text(
@@ -151,8 +155,28 @@ fn_upset_plot <- function(.x) {
     height = 6,
     device = "pdf"
   )
+  
+  dd |> 
+    dplyr::mutate(n = purrr::map_int(
+      .x = srrid, 
+      .f = length
+    )) |> 
+    dplyr::mutate(
+      sharing = purrr::map_chr(
+        .x = srrid,
+        .f = paste0,
+        collapse = ","
+      )
+    ) |> 
+    dplyr::arrange(n) |> 
+    dplyr::select(-srrid) -> 
+    .v
+  
+  list(
+    v = .v,
+    p_up = .p_up
+  )
 
-  .p_up
 }
 
 metadata_anno_depth_variant$source_name |>
@@ -162,7 +186,7 @@ metadata_anno_depth_variant$source_name |>
   ) ->
   p_ups
 
-(p_ups[[2]] | p_ups[[1]]) / (p_ups[[3]] | p_ups[[4]]) +
+(p_ups[[2]]$p_up | p_ups[[1]]$p_up) / (p_ups[[3]]$p_up | p_ups[[4]]$p_up) +
   plot_annotation(tag_levels = "A") ->
   p_ups_together;p_ups_together
 
@@ -176,6 +200,14 @@ ggsave(
 )
 
 
+names(p_ups) <- unique(metadata_anno_depth_variant$source_name)
+
+
+p_ups |> 
+  purrr::map("v") |> 
+  writexl::write_xlsx(
+    path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs/upset-variants.xlsx"
+  )
 # for_variant |>
 #   dplyr::select(srrid, variant) |>
 #   tibble::deframe() |>
