@@ -61,6 +61,18 @@
       "driver": "SQLite",
       "name": "MITOMAP",
       "database": "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.db"
+    },
+    {
+      "previewLimit": 50,
+      "driver": "DuckDB",
+      "database": "/mnt/isilon/xing_lab/liuc9/refdata/locuscompare/locuscompare.duckdb",
+      "name": "loduckdb"
+    },
+    {
+      "previewLimit": 50,
+      "driver": "DuckDB",
+      "database": "/scr1/users/liuc9/tmp/chinook.duckdb",
+      "name": "a"
     }
   ]
 }

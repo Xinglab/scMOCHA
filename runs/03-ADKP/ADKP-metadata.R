@@ -35,6 +35,7 @@ query <- synTableQuery("SELECT * FROM syn11346063.37")
 query$filepath
 csv_filepath <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/syn11346063.37.csv"
 # file.copy(query$filepath, csv_filepath, overwrite = T)
+file.exists(csv_filepath)
 
 
 meta <- vroom::vroom(
