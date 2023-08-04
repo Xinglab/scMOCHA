@@ -265,7 +265,8 @@ task cellranger_count {
     command {
 
       # module load R/4.1.0
-      module load R/4.2.3
+      # module load R/4.2.3
+      conda activate scmocha
 
       # cell ranger output to get bams and h5 files
       cellranger count \
@@ -324,7 +325,9 @@ task cell_cluster_annotation {
 
   command {
     # module load R/4.1.0
-    module load R/4.2.3
+    # module load R/4.2.3
+    conda activate scmocha
+
     # cell cluster annotation
     Rscript /home/liuc9/github/scMOCHA/bin/azimuth.R ${h5file} ${refname} ${celllevel}
 
@@ -393,7 +396,9 @@ task call_mt_variants {
   command {
 
     # module load R/4.1.0
-    module load R/4.2.3
+    # module load R/4.2.3
+
+    conda activate scmocha
     # call variants on single cell level
     mgatk tenx -i ${sorted_bam} \
       -o cell \
@@ -474,7 +479,8 @@ task plot_scMOCHA {
 
   command {
     # module load R/4.1.0
-    module load R/4.2.3
+    # module load R/4.2.3
+    conda activate scmocha
     Rscript /home/liuc9/github/scMOCHA/bin/scMOCHA.R \
       ${barcode_cluster_file} \
       ${cell_hetero_file} \

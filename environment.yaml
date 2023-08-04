@@ -4,16 +4,17 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - python
-  - samtools
-  - bcftools
-  - pip
   - r-base
   - r-tidyverse
   - r-seurat
   - bioconductor-gmoviz
   - r-biocmanager
   - r-devtools
+  - r-ggsci
+  - python
+  - samtools==1.17
+  - bcftools
+  - pip
   - perl
   - perl-dbi
   - sqlite
