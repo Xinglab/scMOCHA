@@ -58,13 +58,18 @@ metadata |>
   dplyr::select(path, name, specimenID, diagnosis, individualID) |> 
   dplyr::group_by(diagnosis,specimenID, individualID) |> 
   tidyr::nest() |> 
-  dplyr::ungroup() |> 
+  dplyr::ungroup() ->
+  metadata_d
+
+metadata_d |> 
   dplyr::mutate(
     a = purrr::map2(
       .x = data,
       .y = individualID,
       .f = \(.x, .y) {
-        # .y
+        # .y <- metadata_d$individualID[[1]]
+        # .x <- metadata_d$data[[1]]
+        
         .ydir <- file.path(torundir, .y)
         print(.y)
         dir.create(.ydir, showWarnings = F, recursive = T)
@@ -129,8 +134,8 @@ metadata |>
         .x |>
           dplyr::mutate(
             bname = gsub(
-              pattern = "(.*)_L003_(.*)_001.fastq.gz",
-              replacement = "\\2",
+              pattern = "(.*)_L00(.*)_(.*)_001.fastq.gz",
+              replacement = "\\3",
               x = name
             )
           ) |> 
@@ -141,7 +146,8 @@ metadata |>
             targetpath = file.path(.ydir, targetname)
           ) ->
           .xd
-        
+        # .xd$path
+        # .xd$targetpath
         .xd |> 
           dplyr::mutate(
             a = purrr::map2(
