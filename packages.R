@@ -14,8 +14,8 @@ BiocManager::install(pkgs_to_install, update=FALSE, ask=FALSE)
 # From github
 
 options(buildtools.check = function(action) TRUE )
-devtools::install_github('immunogenomics/presto', ref = 'master', upgrade = "never", force = TRUE)
-devtools::install_github('satijalab/azimuth', ref = 'master', upgrade = "never", force = TRUE)
+# devtools::install_github('immunogenomics/presto', ref = 'master', upgrade = "never", force = TRUE)
+# devtools::install_github('satijalab/azimuth', ref = 'master', upgrade = "never", force = TRUE)
 devtools::install_github('satijalab/seurat-data', ref = 'master', upgrade = "never", force = TRUE)
 devtools::install_github("dzhang32/ggtranscript", ref = 'master', upgrade = "never", force = TRUE)
 
