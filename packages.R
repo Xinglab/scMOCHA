@@ -1,25 +1,23 @@
-pkgs <- c(
-  "glmGamPoi"
-)
+# pkgs <- c()
 
 
-pkgs <- unique(pkgs)
-ap.db <- available.packages(contrib.url(BiocManager::repositories()))
-ap <- rownames(ap.db)
-installed_packages <- rownames(installed.packages())
-pkgs_to_install <- setdiff(pkgs[pkgs %in% ap], installed_packages)
-pkgs_to_install
+# pkgs <- unique(pkgs)
+# ap.db <- available.packages(contrib.url(BiocManager::repositories()))
+# ap <- rownames(ap.db)
+# installed_packages <- rownames(installed.packages())
+# pkgs_to_install <- setdiff(pkgs[pkgs %in% ap], installed_packages)
+# pkgs_to_install
 
-BiocManager::install(pkgs_to_install, update=FALSE, ask=FALSE)
+# BiocManager::install(pkgs_to_install, update=FALSE, ask=FALSE)
 # From github
 
-options(buildtools.check = function(action) TRUE )
+# options(buildtools.check = function(action) TRUE )
 # devtools::install_github('immunogenomics/presto', ref = 'master', upgrade = "never", force = TRUE)
 # devtools::install_github('satijalab/azimuth', ref = 'master', upgrade = "never", force = TRUE)
-devtools::install_github('satijalab/seurat-data', ref = 'master', upgrade = "never", force = TRUE)
-devtools::install_github("dzhang32/ggtranscript", ref = 'master', upgrade = "never", force = TRUE)
+# devtools::install_github('satijalab/seurat-data', ref = 'master', upgrade = "never", force = TRUE)
+# devtools::install_github("dzhang32/ggtranscript", ref = 'master', upgrade = "never", force = TRUE)
 
-suppressWarnings(BiocManager::install(update=TRUE, ask=FALSE))
+# suppressWarnings(BiocManager::install(update=TRUE, ask=FALSE))
 # Remove tmp directory
 #  SeuratData
 
@@ -42,10 +40,12 @@ purrr::map(
 # without having to scroll up:
 warnings()
 
+
 if (!is.null(warnings()))
 {
   w <- capture.output(warnings())
   if (length(grep("is not available|had non-zero exit status", w))) quit(save="no", status=0L, runLast = FALSE)
 }
 
-unlink(x = '/tmp/*', recursive=T)
+
+# unlink(x = '/tmp/*', recursive=T)
