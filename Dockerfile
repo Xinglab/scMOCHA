@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
   && ln -s /usr/bin/python3 /usr/bin/python
 
 COPY . /opt/scMOCHA
-RUN R -f /opt/scMOCHA/packages.R
+# RUN R -f /opt/scMOCHA/packages.R
 ENV PATH /opt/scMOCHA/bin:$PATH
 
 WORKDIR /scMOCHA
