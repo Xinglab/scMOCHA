@@ -1,5 +1,5 @@
 pkgs <- c(
-  ""
+  "glmGamPoi"
 )
 
 
@@ -13,7 +13,9 @@ pkgs_to_install
 BiocManager::install(pkgs_to_install, update=FALSE, ask=FALSE)
 # From github
 
-remotes::install_github('satijalab/azimuth', ref = 'master', upgrade = "never", force = TRUE)
+options(buildtools.check = function(action) TRUE )
+devtools::install_github('immunogenomics/presto', ref = 'master', upgrade = "never", force = TRUE)
+devtools::install_github('satijalab/azimuth', ref = 'master', upgrade = "never", force = TRUE)
 devtools::install_github('satijalab/seurat-data', ref = 'master', upgrade = "never", force = TRUE)
 devtools::install_github("dzhang32/ggtranscript", ref = 'master', upgrade = "never", force = TRUE)
 
@@ -22,14 +24,17 @@ suppressWarnings(BiocManager::install(update=TRUE, ask=FALSE))
 #  SeuratData
 
 sd <- SeuratData::AvailableData() |>
+  dplyr::filter(grepl("Azimuth Reference", x = Summary)) |>
   dplyr::filter(species == "human") |>
   dplyr::filter(!Installed)
 
 purrr::map(
   sd$Dataset,
-  \(.x) {
-    SeuratData::InstallData(.x)
-  }
+  purrr::safely(
+      \(.x) {
+      SeuratData::InstallData(.x)
+    }
+  )
 )
 
 

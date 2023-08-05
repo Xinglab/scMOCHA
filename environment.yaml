@@ -2,6 +2,7 @@ name: scmocha
 channels:
   - conda-forge
   - bioconda
+  - anaconda
   - defaults
 dependencies:
   - r-base
@@ -11,6 +12,15 @@ dependencies:
   - r-biocmanager
   - r-devtools
   - r-ggsci
+  - r-signac
+  - r-hdf5r
+  - r-v8
+  - r-rcpp
+  - r-rcpparmadillo
+  - boost-cpp
+  - r-bh
+  - r-brms
+  - bioconductor-glmgampoi
   - python
   - samtools==1.17
   - bcftools
@@ -20,6 +30,15 @@ dependencies:
   - sqlite
   - perl-app-cpanminus
   - gxx_linux-64
+  - gcc_linux-64
+  - libcurl
+  - libv8
+  - libgcc-ng  # gcc c
+  - libgfortran-ng # gcc fortran
+  - libgfortran4   # gcc fortran
+  - libglib        # also needed for gcc (I could be wrong)
+  - libstdcxx-ng
+  - wheel
   - pip:
     - flake8
     - black
