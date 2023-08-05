@@ -29,3 +29,4 @@ jobs:
         with:
           push: true
           tags: chunjiesamliu/scmocha:latest
+          repo-token: ${{secrets.TOKEN}}
