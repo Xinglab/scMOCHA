@@ -17,7 +17,7 @@
 # devtools::install_github('satijalab/seurat-data', ref = 'master', upgrade = "never", force = TRUE)
 # devtools::install_github("dzhang32/ggtranscript", ref = 'master', upgrade = "never", force = TRUE)
 
-suppressWarnings(BiocManager::install(update=TRUE, ask=FALSE))
+# suppressWarnings(BiocManager::install(update=TRUE, ask=FALSE))
 # Remove tmp directory
 #  SeuratData
 
