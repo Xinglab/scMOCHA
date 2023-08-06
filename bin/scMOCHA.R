@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 # Metainfo ----------------------------------------------------------------
 
 # @AUTHOR: Chun-Jie Liu
@@ -31,8 +32,8 @@ cluster_hetero_file <- args[4]
 cluster_coverage_file <- args[5]
 
 cell_hetero_raw_file <- args[6]
-# 
-# 
+#
+#
 # barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
 # cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
 # cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
@@ -459,8 +460,8 @@ cluster_ch_af_depth <- fn_heatmap(
 
 cell_hetero_raw <- fn_load_hetero(
   .filename = cell_hetero_raw_file
-) |> 
-  dplyr::filter(variant %in% cluster_hetero$variant) 
+) |>
+  dplyr::filter(variant %in% cluster_hetero$variant)
 
 cell_raw_cluster_af <- cluster_umap |>
   dplyr::left_join(cell_hetero_raw, by = "barcode") |>
@@ -500,12 +501,12 @@ cell_raw_cluster_forplot$forplot |>
     pos = pos,
     ref = ref,
     var = var
-  ) |> 
+  ) |>
   dplyr::mutate(
     v = glue::glue("{pos}{ref}>{var}")
-  ) |> 
-  dplyr::select(sample, v) |> 
-  tibble::rowid_to_column() |> 
+  ) |>
+  dplyr::select(sample, v) |>
+  tibble::rowid_to_column() |>
   tidyr::pivot_wider(
     names_from = rowid,
     values_from = v
@@ -547,7 +548,7 @@ fn_http_request <- function() {
       print("Done.")
     }
   )
-  
+
   status <- tryCatch(
     expr = {
       httr::status_code(cell_variant_response)
@@ -556,9 +557,9 @@ fn_http_request <- function() {
       0
     }
   )
-  
-  
-  
+
+
+
   variant_annotation <- if(status == 200) {
     cell_anno <- content(
       x = cell_variant_response,
@@ -568,18 +569,18 @@ fn_http_request <- function() {
       data.table::fread(
         sep = "\t"
       )
-    
+
     readr::write_tsv(
       x = cell_anno,
       file = "cell_variant_annotation.tsv"
     )
-    
+
     writexl::write_xlsx(
       x = cell_anno,
       path = "cell_variant_annotation.xlsx"
     )
-    
-    
+
+
     cell_anno |>
       dplyr::mutate(
         variant = glue::glue("{tpos}{tnt}>{qnt}")
@@ -628,55 +629,55 @@ variant_annotation <- if(file.exists("cell_variant_annotation.tsv")) {
     x = cell_anno,
     path = "cell_variant_annotation.xlsx"
   )
-  
-  
+
+
   cell_anno |>
     dplyr::mutate(
       variant = glue::glue("{Position}{Ref}>{Alt}")
-    ) |> 
+    ) |>
     dplyr::mutate(
       Status = ifelse(
         !is.na(Status),
         "Reported",
         Status
       )
-    ) |> 
+    ) |>
     dplyr::select(
-      variant, ntchange, 
-      calc_locus = Locus, 
+      variant, ntchange,
+      calc_locus = Locus,
       Haplogroup,
       Verbose_haplogroup,
-      Disease, 
+      Disease,
       Status,
-      Conservation, 
+      Conservation,
       mito_freq = `Mitomap Frequency`,
       gnomad_freq = `Gnomad Frequency`
-    ) |> 
+    ) |>
     dplyr::mutate(
       calc_locus = gsub(
         pattern = "<br>.*",
         replace = "",
         x = calc_locus
       )
-    ) |>  
+    ) |>
     dplyr::mutate(
       Conservation = gsub(
         pattern = "%",
         replacement = "",
         x = Conservation
       )
-    ) |>  
+    ) |>
     dplyr::mutate(
       Disease = stringr::str_wrap(
         stringr::str_to_sentence(string = Disease),
         width = 30
       )
-    ) |> 
-    dplyr::mutate(Conservation = as.numeric(Conservation)) |> 
+    ) |>
+    dplyr::mutate(Conservation = as.numeric(Conservation)) |>
     dplyr::mutate(
       mito_ref = mito_freq / 100,
       gnomad_freq = gnomad_freq / 100
-    ) |> 
+    ) |>
     dplyr::select(
       Ntchange = ntchange,
       Locus = calc_locus,

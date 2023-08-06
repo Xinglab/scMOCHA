@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/* \
   && pip install sinto \
   && pip install mgatk \
+  && pip install matplotlib \
   && mkdir -p /scMOCHA \
   && mkdir -p /opt/ \
   && cd /opt/ \
@@ -16,7 +17,7 @@ RUN apt-get update && apt-get install -y \
   && ln -s /usr/bin/python3 /usr/bin/python
 
 COPY . /opt/scMOCHA
-# RUN R -f /opt/scMOCHA/packages.R
+RUN R -f /opt/scMOCHA/packages.R
 ENV PATH /opt/scMOCHA/bin:$PATH
 
 WORKDIR /scMOCHA
