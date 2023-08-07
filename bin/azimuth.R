@@ -23,7 +23,7 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/02-Neuron_2022/cromwell-executions/SCMTAH/1358664f-9939-40bb-80b9-0a1374ea6942/call-cell_cluster_annotation/inputs/1425813162/filtered_feature_bc_matrix.h5"
+# h5file <- "/home/liuc9/github/scMOCHA/03-ADKP/cromwell-executions/scMOCHA/651ada64-d702-467e-9950-873aca42b4f2/call-cell_cluster_annotation/inputs/-1017450213/filtered_feature_bc_matrix.h5"
 # refname <- "humancortexref"
 # celllevel <- "subclass"
 
@@ -446,7 +446,7 @@ fn_check_cellref <- function(.refname) {
 
 # load data ---------------------------------------------------------------
 
-fn_check_cellref()
+fn_check_cellref(refname)
 
 sc <- fn_load_sc_10x(h5file)
 

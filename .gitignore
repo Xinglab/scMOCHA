@@ -132,3 +132,5 @@ dmypy.json
 cell_snvlist.tsv
 cell_variant_annotation.tsv
 cell_variant_annotation.xlsx
+cromwell-executions/
+cromwell-workflow-logs/

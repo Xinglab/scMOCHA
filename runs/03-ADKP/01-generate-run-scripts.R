@@ -176,7 +176,7 @@ metadata_d |>
         tibble::tibble(
           srrid = .y,
           srrdir = .ydir,
-          conf_json = .jsonfile,
+
           scmocha_sh = runwdl_sh_file
         )
       }
