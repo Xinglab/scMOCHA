@@ -3,14 +3,14 @@ workflow scMOCHA {
   # version of this pipeline
   String version = "CellRanger v7.0.1"
 
-  String output_id = "cellranger"
+  String output_id
   String fastqs
   String sample_id
   String transcriptome = "/home/liuc9/data/refdata/mgatk_index/Human"
+  File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
   String output_dir
 
   String chrM = "MT"
-  File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
 
   String cellrefname = "pbmcref"
   String celllevel = "celltype.l1"
@@ -20,7 +20,15 @@ workflow scMOCHA {
   String memory = "50 GB"
   Int boot_disk_size_gb = 12
   String disk_space = "50"
-  Int cpu = 20
+  Int cpu = 10
+
+  String scmocha_version = "latest"
+  String docker = "chunjiesamliu/scmocha"
+  String partition = "defq"
+  String account = "liuc9"
+  File IMAGE = "/scr1/users/liuc9/sif/scmocha_latest.sif"
+
+  Boolean use_ssd = false
 
   parameter_meta {
       output_id: "Output ID"
@@ -44,7 +52,12 @@ workflow scMOCHA {
         memory = memory,
         boot_disk_size_gb = boot_disk_size_gb,
         disk_space = disk_space,
-        cpu = cpu
+        cpu = cpu,
+        scmocha_version = scmocha_version,
+        docker = docker,
+        partition = partition,
+        account = account,
+        IMAGE = IMAGE
   }
 
   call cell_cluster_annotation {
@@ -57,7 +70,12 @@ workflow scMOCHA {
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
-      cpu = cpu
+      cpu = cpu,
+      scmocha_version = scmocha_version,
+      docker = docker,
+      partition = partition,
+      account = account,
+      IMAGE = IMAGE
   }
 
   call call_mt_variants {
@@ -76,7 +94,12 @@ workflow scMOCHA {
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
-      cpu = cpu
+      cpu = cpu,
+      scmocha_version = scmocha_version,
+      docker = docker,
+      partition = partition,
+      account = account,
+      IMAGE = IMAGE
   }
 
   call plot_scMOCHA {
@@ -87,6 +110,15 @@ workflow scMOCHA {
       cluster_hetero_file = call_mt_variants.cluster_cell_heteroplasmic_df_tsv_gz,
       cluster_coverage_file = call_mt_variants.cluster_coverage_txt_gz,
       cell_hetero_raw_file = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz,
+      memory = memory,
+      boot_disk_size_gb = boot_disk_size_gb,
+      disk_space = disk_space,
+      cpu = cpu,
+      scmocha_version = scmocha_version,
+      docker = docker,
+      partition = partition,
+      account = account,
+      IMAGE = IMAGE
   }
 
   call gather_outputfiles {
@@ -155,7 +187,16 @@ workflow scMOCHA {
       mt_depth = cellranger_count.mt_depth,
       mt_depth_plot = cellranger_count.mt_depth_plot,
       mt_bam = cellranger_count.mt_bam,
-      mt_bam_index = cellranger_count.mt_bam_index
+      mt_bam_index = cellranger_count.mt_bam_index,
+      memory = memory,
+      boot_disk_size_gb = boot_disk_size_gb,
+      disk_space = disk_space,
+      cpu = cpu,
+      scmocha_version = scmocha_version,
+      docker = docker,
+      partition = partition,
+      account = account,
+      IMAGE = IMAGE
 
 
   }
@@ -261,6 +302,11 @@ task cellranger_count {
     Int boot_disk_size_gb
     String disk_space
     Int cpu
+    String scmocha_version
+    String docker
+    String partition
+    String account
+    File IMAGE
 
     command {
 
@@ -309,6 +355,16 @@ task cellranger_count {
         File mt_bam = "${output_id}/outs/possorted_genome_bam.MT.bam"
         File mt_bam_index = "${output_id}/outs/possorted_genome_bam.MT.bam.bai"
     }
+
+    runtime {
+      memory: "${memory}"
+      disks: "local-disk ${disk_space}"
+      cpu: "${cpu}"
+      docker: "chunjiesamliu/scmocha:${scmocha_version}"
+      partition: "${partition}"
+      account: "${account}"
+      IMAGE: "${IMAGE}"
+    }
 }
 
 task cell_cluster_annotation {
@@ -316,13 +372,18 @@ task cell_cluster_annotation {
   File mt_bam
   File mt_bam_index
 
-  String refname = "pbmcref"
-  String celllevel = "celltype.l1"
+  String refname
+  String celllevel
 
   String memory
   Int boot_disk_size_gb
   String disk_space
   Int cpu
+  String scmocha_version
+  String docker
+  String partition
+  String account
+  File IMAGE
 
   command {
     # module load R/4.1.0
@@ -373,6 +434,16 @@ task cell_cluster_annotation {
     File mt_bulk_bam_index = "MT_bulk.bam.bai"
     File plot_mt_cluster_depth = "plot-mt-cluster-depth.pdf"
   }
+
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
+  }
 }
 
 task call_mt_variants {
@@ -395,6 +466,11 @@ task call_mt_variants {
   Int boot_disk_size_gb
   String disk_space
   Int cpu
+  String scmocha_version
+  String docker
+  String partition
+  String account
+  File IMAGE
 
   command {
 
@@ -467,6 +543,16 @@ task call_mt_variants {
     File passingBarcodes_tsv = "cluster/final/passingBarcodes.tsv"
 
   }
+
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
+  }
 }
 
 task plot_scMOCHA {
@@ -479,6 +565,16 @@ task plot_scMOCHA {
   File cluster_coverage_file
 
   File cell_hetero_raw_file
+
+  String memory
+  Int boot_disk_size_gb
+  String disk_space
+  Int cpu
+  String scmocha_version
+  String docker
+  String partition
+  String account
+  File IMAGE
 
   command {
     # module load R/4.1.0
@@ -505,6 +601,16 @@ task plot_scMOCHA {
     File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
     File cell_variant_annotation_tsv = "cell_variant_annotation.tsv"
     File cell_variant_annotation_xlsx = "cell_variant_annotation.xlsx"
+  }
+
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
   }
 
 }
@@ -580,6 +686,15 @@ task gather_outputfiles {
   File cell_variant_annotation_tsv
   File cell_variant_annotation_xlsx
 
+  String memory
+  Int boot_disk_size_gb
+  String disk_space
+  Int cpu
+  String scmocha_version
+  String docker
+  String partition
+  String account
+  File IMAGE
 
   command {
     mkdir -p ${output_dir}
@@ -657,5 +772,15 @@ task gather_outputfiles {
 
   output {
     File output_dir_tar_gz = "${output_dir}.tar.gz"
+  }
+
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
   }
 }
