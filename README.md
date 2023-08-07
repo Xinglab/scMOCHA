@@ -57,3 +57,10 @@ dependencies:
 cpanm DBD::SQLite
 ```
 > Install `haplogrep3` from [here](https://haplogrep.readthedocs.io/en/latest/installation/)
+
+## Singularity or docker image
+```bash
+
+singularity pull docker://chunjiesamliu/scmocha:latest
+
+```
