@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 # pkgs <- c()
 
 
@@ -28,24 +29,43 @@ sd <- SeuratData::AvailableData() |>
 
 purrr::map(
   sd$Dataset,
-  purrr::safely(
-      \(.x) {
-      SeuratData::InstallData(.x)
-    }
-  )
+  \(.x) {
+      tryCatch(
+        expr = {
+          SeuratData::InstallData(.x)
+        },
+        error = function(e) {
+          1
+        }
+      )
+  }
+)
+
+purrr::map(
+  c("tonsilref"),
+  \(.x) {
+      tryCatch(
+        expr = {
+          SeuratData::InstallData(.x)
+        },
+        error = function(e) {
+          1
+        }
+      )
+  }
 )
 
 
 # just in case there were warnings, we want to see them
 # without having to scroll up:
-warnings()
+# warnings()
 
 
-if (!is.null(warnings()))
-{
-  w <- capture.output(warnings())
-  if (length(grep("is not available|had non-zero exit status", w))) quit(save="no", status=0L, runLast = FALSE)
-}
+# if (!is.null(warnings()))
+# {
+#   w <- capture.output(warnings())
+#   if (length(grep("is not available|had non-zero exit status", w))) quit(save="no", status=0L, runLast = FALSE)
+# }
 
 
 # unlink(x = '/tmp/*', recursive=T)

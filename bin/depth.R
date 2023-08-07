@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 # Metainfo ----------------------------------------------------------------
 
 # @AUTHOR: Chun-Jie Liu

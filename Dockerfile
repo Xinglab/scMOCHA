@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/* \
   && pip install sinto \
   && pip install mgatk \
+  && pip install matplotlib \
   && mkdir -p /scMOCHA \
   && mkdir -p /opt/ \
   && cd /opt/ \

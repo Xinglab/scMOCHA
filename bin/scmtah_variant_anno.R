@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 # Metainfo ----------------------------------------------------------------
 
 # @AUTHOR: Chun-Jie Liu
@@ -34,26 +35,26 @@ future::plan(future::multisession, workers = 10)
 
 # Get variants ------------------------------------------------------------
 
-cell_raw_cluster_forplot$forplot |> 
-  dplyr::filter(depth > 3) |> 
+cell_raw_cluster_forplot$forplot |>
+  dplyr::filter(depth > 3) |>
   dplyr::mutate(variant = gsub(
     pattern = "[0-9]*",
     replacement = "",
     x = variant
-  )) |> 
+  )) |>
   tidyr::separate(
     col = variant,
     into = c("ref", "var")
-  ) |> 
+  ) |>
   dplyr::select(
-    sample = barcode, 
-    pos = pos, 
+    sample = barcode,
+    pos = pos,
     ref = ref,
     var = var
   ) ->
   cell_variants
 
-# 
+#
 readr::write_tsv(
   x = cell_variants,
   file = "cell_snvlist.tsv"
@@ -85,23 +86,23 @@ tryCatch(
 )
 
 
-cluster_cluster_forplot$forplot |> 
-  dplyr::filter(depth > 3) |>  
-  dplyr::select(pos, variant) |>  
-  dplyr::distinct() |> 
+cluster_cluster_forplot$forplot |>
+  dplyr::filter(depth > 3) |>
+  dplyr::select(pos, variant) |>
+  dplyr::distinct() |>
   dplyr::mutate(variant = gsub(
     pattern = "[0-9]*",
     replacement = "",
     x = variant
-  )) |> 
+  )) |>
   tidyr::separate(
     col = variant,
     into = c("ref", "var")
-  ) |> 
-  dplyr::mutate(sample = "Sample1") |> 
+  ) |>
+  dplyr::mutate(sample = "Sample1") |>
   dplyr::select(
-    sample = sample, 
-    pos = pos, 
+    sample = sample,
+    pos = pos,
     ref = ref,
     var = var
   ) ->
@@ -139,7 +140,7 @@ a <- content(
   x = response,
   as = "text",
   encoding = "UTF-8"
-) |> 
+) |>
   data.table::fread(
     sep = "\t"
   )
