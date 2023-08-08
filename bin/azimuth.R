@@ -23,7 +23,7 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/45c00f84-5e47-48cd-a591-a2df1f56de43/call-cell_cluster_annotation/inputs/1759343536/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/3f6489de-0ff8-4745-8a36-d77dddf02314/call-cell_cluster_annotation/inputs/-872654894/filtered_feature_bc_matrix.h5"
 # refname <- "humancortexref"
 # celllevel <- "subclass"
 
@@ -436,7 +436,7 @@ fn_check_cellref <- function(.refname) {
   .ref <- SeuratData::InstalledData() |>
     dplyr::filter(Dataset == .refname)
 
-  if(.ref$Installed) {
+  if(length(.ref$Installed)!=0 && .ref$Installed) {
     message(glue::glue("Azimuth reference {.refname} installed"))
   } else {
     SeuratData::InstallData(
