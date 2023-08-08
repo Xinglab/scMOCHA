@@ -23,9 +23,9 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/home/liuc9/github/scMOCHA/03-ADKP/cromwell-executions/scMOCHA/651ada64-d702-467e-9950-873aca42b4f2/call-cell_cluster_annotation/inputs/-1017450213/filtered_feature_bc_matrix.h5"
-# refname <- "humancortexref"
-# celllevel <- "subclass"
+# h5file <- "/home/liuc9/github/scMOCHA/03-ADKP/cromwell-executions/scMOCHA/b0e9447d-910b-4509-8404-fb63b67ba1b8/call-cellranger_count/execution/R3728445/outs/filtered_feature_bc_matrix.h5"
+# refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
+# celllevel <- "annotation.l1"
 
 
 # src ---------------------------------------------------------------------
@@ -213,7 +213,8 @@ fn_stat_cell <- function(.x, .y) {
 }
 
 fn_azimuth <- function(.sc, .ref, .celllevel) {
-  # .x <- sc$sc_filter
+  # .sc <- sc$sc_filter
+  # .sc <- sc$sc
 
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
@@ -429,12 +430,23 @@ fn_plot_azimuth_umap <- function(.x) {
 
 fn_check_cellref <- function(.refname) {
 
-  SeuratData::InstalledData() |> dplyr::glimpse()
+  # SeuratData::InstalledData() |> dplyr::glimpse()
+  if(dir.exists(.refname)) {
+    message(glue::glue("Azimuth reference {.refname} installed"))
+    return(1)
+  }
+  
+  .sd <- SeuratData::AvailableData() |>
+    dplyr::filter(
+      grepl("Azimuth Reference", x = Summary)
+      )
+  
 
-  .ref <- SeuratData::InstalledData() |>
-    dplyr::filter(Dataset == .refname)
+  .ref <- .sd |>
+    dplyr::filter(Dataset == .refname) 
+  
 
-  if(.ref$Installed) {
+  if(length(.ref$Installed)!=0 && .ref$Installed) {
     message(glue::glue("Azimuth reference {.refname} installed"))
   } else {
     SeuratData::InstallData(
