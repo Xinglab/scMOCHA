@@ -23,7 +23,7 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/home/liuc9/github/scMOCHA/03-ADKP/cromwell-executions/scMOCHA/651ada64-d702-467e-9950-873aca42b4f2/call-cell_cluster_annotation/inputs/-1017450213/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/45c00f84-5e47-48cd-a591-a2df1f56de43/call-cell_cluster_annotation/inputs/1759343536/filtered_feature_bc_matrix.h5"
 # refname <- "humancortexref"
 # celllevel <- "subclass"
 
@@ -214,10 +214,12 @@ fn_stat_cell <- function(.x, .y) {
 
 fn_azimuth <- function(.sc, .ref, .celllevel) {
   # .x <- sc$sc_filter
+  # .x <- sc$sc
 
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
-    reference = .ref
+    # reference = .ref
+    reference = "mousecortexref"
   )
 
   .celltype <-  .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
@@ -429,7 +431,7 @@ fn_plot_azimuth_umap <- function(.x) {
 
 fn_check_cellref <- function(.refname) {
 
-  SeuratData::InstalledData() |> dplyr::glimpse()
+  # SeuratData::InstalledData() |> dplyr::glimpse()
 
   .ref <- SeuratData::InstalledData() |>
     dplyr::filter(Dataset == .refname)

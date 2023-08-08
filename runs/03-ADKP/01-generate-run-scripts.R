@@ -84,7 +84,7 @@ metadata_d |>
           "scMOCHA.transcriptome" = "/home/liuc9/data/refdata/mgatk_index/Human",
           "scMOCHA.rCRS" = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta",
           "scMOCHA.output_dir" = "{.srrid}" |> glue::glue(),
-          "scMOCHA.cellrefname" = "humancortexref",
+          "scMOCHA.cellrefname" = "mousecortexref",
           "scMOCHA.celllevel" = "subclass",
           "scMOCHA.memory" = "50 GB",
           "scMOCHA.boot_disk_size_gb" = "12",
