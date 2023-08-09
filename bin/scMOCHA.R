@@ -45,9 +45,9 @@ sqlite_path <- args[9]
 # cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
 # cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
 
-perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
-jar_path <- "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"
-sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
+# perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
+# jar_path <- "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"
+# sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
 
 # header ------------------------------------------------------------------
