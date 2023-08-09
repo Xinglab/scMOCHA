@@ -2,7 +2,10 @@ FROM chunjiesamliu/jrocker:latest
 
 RUN apt-get update && apt-get install -y \
   wget \
+  curl \
   samtools \
+  sqlite3 \
+  libdbd-sqlite3-perl \
   && rm -rf /var/lib/apt/lists/* \
   && pip install sinto \
   && pip install mgatk \
@@ -14,6 +17,22 @@ RUN apt-get update && apt-get install -y \
   && tar -xzvf cellranger-7.1.0.tar.gz \
   && ln -s /opt/cellranger-7.1.0/bin/cellranger /usr/bin/cellranger \
   && rm cellranger-7.1.0.tar.gz \
+  && cd /opt/ \
+  && wget -O bamtools-2.5.2.tar.gz https://github.com/pezmaster31/bamtools/archive/refs/tags/v2.5.2.tar.gz \
+  && tar -xzvf bamtools-2.5.2.tar.gz \
+  && cd bamtools-2.5.2/ \
+  && mkdir build \
+  && cd build \
+  && cmake .. \
+  && make \
+  && make install \
+  && cd /opt/ \
+  && rm bamtools-2.5.2.tar.gz \
+  && mkdir haplogrep3 \
+  && cd haplogrep3 \
+  && wget -O haplogrep3-3.2.1-linux.zip https://github.com/genepi/haplogrep3/releases/download/v3.2.1/haplogrep3-3.2.1-linux.zip \
+  && unzip haplogrep3-3.2.1-linux.zip \
+  && rm haplogrep3-3.2.1-linux.zip \
   && ln -s /usr/bin/python3 /usr/bin/python
 
 COPY . /opt/scMOCHA
