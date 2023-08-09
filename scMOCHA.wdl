@@ -493,7 +493,8 @@ task call_mt_variants {
       -c ${cpu} \
       -bt CB \
       -b ${barcodes_tsv} \
-      -ub UB
+      -ub UB \
+      --snake-stdout
 
     # the cell/final/ last "/" is important
     python /home/liuc9/github/scMOCHA/bin/variant_calling_cell_raw.py \
@@ -509,7 +510,8 @@ task call_mt_variants {
       -n cluster \
       -g ${rCRS} \
       -c ${cpu} \
-      -bt CJ
+      -bt CJ \
+      --snake-stdout
 
     python /home/liuc9/github/scMOCHA/bin/variant_calling_cluster.py \
       cluster/final/ \
