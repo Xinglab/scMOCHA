@@ -41,20 +41,6 @@ purrr::map(
   }
 )
 
-purrr::map(
-  c("tonsilref"),
-  \(.x) {
-      tryCatch(
-        expr = {
-          SeuratData::InstallData(.x)
-        },
-        error = function(e) {
-          1
-        }
-      )
-  }
-)
-
 
 # just in case there were warnings, we want to see them
 # without having to scroll up:
