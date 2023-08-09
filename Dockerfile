@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/* \
   && pip install sinto \
   && pip install mgatk \
+  && pip install pysam \
   && pip install matplotlib \
+  && pip install numpy==1.23.5 \
   && mkdir -p /scMOCHA \
   && mkdir -p /opt/ \
   && cd /opt/ \
