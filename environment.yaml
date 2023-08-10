@@ -29,10 +29,11 @@ dependencies:
   - samtools==1.17
   - bcftools
   - pip
+  - sqlite
   - perl
   - perl-dbi
-  - sqlite
   - perl-app-cpanminus
+  - perl-dbd-sqlite
   - libcurl
   - libv8
   - libgcc-ng  # gcc c
