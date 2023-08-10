@@ -15,7 +15,9 @@ dependencies:
   - gxx_linux-64
   - gcc_linux-64
   - bioconductor-glmgampoi
+  - bioconductor-complexheatmap
   - r-hdf5r
+  - r-r.utils
 
   - r-v8
   - r-rcpp
