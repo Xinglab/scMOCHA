@@ -35,7 +35,9 @@ library(Azimuth)
 annotations <- readr::read_csv(
   file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/forrefs/annofile.csv"
 ) |> 
-  dplyr::select(sample_id, cluster_label) |> 
+  dplyr::mutate(cluster = glue::glue("cluster_{cluster_label}")) |> 
+  dplyr::mutate(cluster = forcats::fct_reorder(cluster, cluster_label)) |> 
+  dplyr::select(sample_id, cluster) |> 
   tibble::deframe()
 # countmatrix <- vroom::vroom(
 #   file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/forrefs/countmatrix.csv",
