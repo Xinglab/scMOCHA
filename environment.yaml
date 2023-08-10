@@ -18,6 +18,7 @@ dependencies:
   - bioconductor-complexheatmap
   - r-hdf5r
   - r-r.utils
+  - r-writexl
 
   - r-v8
   - r-rcpp
