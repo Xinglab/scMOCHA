@@ -53,7 +53,9 @@ if(! -s $jar)
     die "$jar doesn't exist!\n";
 }
 
-$cmd = "java -jar $jar classify --extend-report --in $tmpin --out $tmpout --tree phylotree-rcrs\@17.2 >& /dev/null";
+# $cmd = "java -jar $jar classify --extend-report --in $tmpin --out $tmpout --tree phylotree-rcrs\@17.2 >& /dev/null";
+
+$cmd = "java -jar $jar classify --extend-report --in $tmpin --out $tmpout --tree phylotree-rcrs\@17.2 > /dev/null 2>&1";
 
 $file = "/tmp/$0.log";
 open(LOG, ">$file") or die "Can't write $file\n";
