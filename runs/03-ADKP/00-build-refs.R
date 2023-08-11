@@ -92,6 +92,9 @@ sctu <- RenameCells(
   ))
 )
 
+
+
+
 ref <- sctu
 
 if ("remove" %in% levels(x = ref)) {
@@ -126,6 +129,83 @@ dir.create(
 SaveAnnoyIndex(object = ref[["refdr.annoy.neighbors"]], file = file.path(ref.dir, "idx.annoy"))
 saveRDS(object = ref, file = file.path(ref.dir, "ref.Rds"))
 saveRDS(object = full.ref, file = file.path(ref.dir, "fullref.Rds"))
+
+
+
+sctu_tsne <- sctu |> 
+  Seurat::RunTSNE(dims = 1:30, return.model = TRUE) 
+
+FeaturePlot(
+  object = sctu_tsne,
+  features = c("PTPRC"),
+  cols = c("grey", "gold", "#F02415"),
+  order = TRUE,
+  reduction = "tsne"
+) +
+  theme(
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank()
+  ) ->
+  p1
+
+FeaturePlot(
+  object = sctu_tsne,
+  features = c("ISG15"),
+  cols = c("grey", "gold", "#F02415"),
+  order = TRUE,
+  reduction = "tsne"
+) +
+  theme(
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank()
+  ) ->
+  p2
+
+FeaturePlot(
+  object = sctu_tsne,
+  features = c("CD83"),
+  cols = c("grey", "gold", "#F02415"),
+  order = TRUE,
+  reduction = "tsne"
+) +
+  theme(
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank()
+  ) ->
+  p3
+
+FeaturePlot(
+  object = sctu_tsne,
+  features = c("CD74"),
+  cols = c("grey", "gold", "#F02415"),
+  order = TRUE,
+  reduction = "tsne"
+) +
+  theme(
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank()
+  ) ->
+  p4
+
+
+p <- (p1|p2)/(p3|p4) +plot_layout(guides = 'collect')
+
+ggsave(
+  filename = "NatCommupaper-ref-dotplot.pdf",
+  plot = p,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/azimuth_motorcortex",
+  width = 8,
+  height = 7
+)
 
 # footer ------------------------------------------------------------------
 
