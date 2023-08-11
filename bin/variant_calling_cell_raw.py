@@ -176,7 +176,7 @@ variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage"
 heteroplasmic_df.to_csv(MGATK_OUT_DIR + sample_prefix + ".cell_heteroplasmic_df_raw.tsv.gz", sep="\t", compression="gzip")
 
 
-multi_cell_variants = variant_output[variant_output["n_cells_conf_detected"] >= 1]["variant"]
+multi_cell_variants = variant_output[variant_output["n_cells_conf_detected"] >= 0]["variant"] # default 3
 heteroplasmic_df = heteroplasmic_df[multi_cell_variants]
 
 # generate caleb plot
