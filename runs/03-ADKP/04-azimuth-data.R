@@ -111,6 +111,32 @@ azd_celltype_n |>
   )
 
 
+azd_celltype_n$a[[8]] |> 
+  dplyr::count(class, subclass, cross_species_cluster, cluster) |> 
+  plotme::count_to_sunburst() ->
+  plotme_motorcortex
+
+
+reticulate::py_run_string("import sys")
+plotly::save_image(
+  p = plotme_motorcortex,
+  file = file.path(
+    "/home/liuc9/github/scMOCHA/03-ADKP/azimuth_motorcortex",
+    glue::glue("azimuth_motorcortex.pdf")
+  ),
+  width = 800,
+  height = 800,
+  device = "pdf"
+)
+
+htmlwidgets::saveWidget(
+  plotme_motorcortex,
+  file = file.path(
+    "/home/liuc9/github/scMOCHA/03-ADKP/azimuth_motorcortex",
+    glue::glue("azimuth_motorcortex.html")
+  )
+)
+
 # footer ------------------------------------------------------------------
 
 
