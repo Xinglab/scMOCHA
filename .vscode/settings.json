@@ -74,5 +74,9 @@
       "database": "/scr1/users/liuc9/tmp/chinook.duckdb",
       "name": "a"
     }
-  ]
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none"
 }
