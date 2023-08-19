@@ -26,11 +26,13 @@ library(prismatic)
 # function ----------------------------------------------------------------
 
 # load data ---------------------------------------------------------------
-runwdl <- readr::read_lines(
-  file = "/home/liuc9/github/scMOCHA/03-ADKP/runwdl.sh"
+
+outfiles <- readr::read_tsv(
+  file = "/home/liuc9/github/scMOCHA/03-ADKP/output/outfiles.tsv"
 )
-
-
+srarun <- readr::read_tsv(
+  file = "/home/liuc9/github/scMOCHA/03-ADKP/SYNAPSE_METADATA_MANIFEST.tsv"
+)
 
 # body --------------------------------------------------------------------
 
