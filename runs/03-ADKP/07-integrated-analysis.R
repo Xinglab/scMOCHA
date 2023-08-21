@@ -12,6 +12,8 @@ library(magrittr)
 library(ggplot2)
 library(patchwork)
 library(prismatic)
+library(Seurat)
+
 #library(rlang)
 
 # args --------------------------------------------------------------------
@@ -221,9 +223,41 @@ metadata_anno |>
     Haplogroup = Haplogroup,
     Haplogroup_v = Verbose_haplogroup
   ) |> 
-  dplyr::arrange(Age) |> 
-  View()
+  dplyr::arrange(`Sample ID`) ->
+  metadata_clean
 
+metadata_clean |>
+  writexl::write_xlsx(
+    path = "/home/liuc9/github/scMOCHA/03-ADKP/output/metadata_clean.xlsx"
+  )
+
+
+# Single cell consistency -------------------------------------------------
+
+future::plan(future::multisession, workers = 10)
+metadata_anno |> 
+  dplyr::mutate(
+    sc_azimuth = furrr::future_map(
+      .x = tardir,
+      .f = \(.x) {
+        if(is.na(.x)) {return(NULL)}
+        
+        .sc_a <- file.path(.x, "sc_azimuth.rds.gz") |> 
+          readr::read_rds()
+        .sc_a
+      }
+    )
+  ) ->
+  metadata_anno_azimuth
+future::plan(future::sequential)
+
+raw_annotations <- readr::read_csv(
+  file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/forrefs/annofile.csv"
+) |> 
+  dplyr::mutate(cluster = glue::glue("cluster_{cluster_label}")) |> 
+  dplyr::mutate(cluster = forcats::fct_reorder(cluster, cluster_label))
+
+metadata_anno_azimuth
 
 # footer ------------------------------------------------------------------
 
