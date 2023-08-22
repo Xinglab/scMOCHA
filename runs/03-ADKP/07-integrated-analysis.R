@@ -255,12 +255,127 @@ raw_annotations <- readr::read_csv(
   file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/forrefs/annofile.csv"
 ) |> 
   dplyr::mutate(cluster = glue::glue("cluster_{cluster_label}")) |> 
-  dplyr::mutate(cluster = forcats::fct_reorder(cluster, cluster_label))
+  dplyr::mutate(cluster = forcats::fct_reorder(cluster, cluster_label)) |> 
+  dplyr::select(cellid = sample_id, cluster)
 
-metadata_anno_azimuth
+cell_barcodes <- readr::read_csv(
+  file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/forrefs/cell_barcodes.csv"
+) |> 
+  dplyr::select(-1, -batchname) |> 
+  dplyr::left_join(raw_annotations, by = "cellid") |> 
+  dplyr::mutate(
+    donor = gsub(
+      pattern = "_GM",
+      replacement = "",
+      x = donor
+    )
+  ) |> 
+  dplyr::rename(`Sample ID` = donor) |> 
+  dplyr::group_by(`Sample ID`) |> 
+  tidyr::nest() |> 
+  dplyr::ungroup()
+
+metadata_anno_azimuth |> 
+  dplyr::select(srrid, `Sample ID`, sc_azimuth) |> 
+  dplyr::left_join(cell_barcodes, by = "Sample ID") |> 
+  dplyr::mutate(
+    a = purrr::map2(
+      .x = sc_azimuth,
+      .y = data,
+      .f = \(.x, .y) {
+        # .x <- d$sc_azimuth[[2]]
+        # .y <- d$data[[2]]
+        
+        if(is.null(.x)) {
+          return(
+            tibble::tibble(
+              n_raw = NULL,
+              n_azi = NULL,
+              n_nc = nrow(.y),
+              azi_nc = NULL
+            )
+          )
+        }
+        
+        .xx <- .x$cellbarcode_cluster |> 
+          dplyr::select(bc = cellbarcode, azi_cluster = cluster)
+        
+        n_raw <- nrow(.x$sc@meta.data)
+        n_azi <- nrow(.xx)
+        n_nc <- nrow(.y)
+        
+        .xx |> 
+          dplyr::left_join(.y, by = "bc") |> 
+          dplyr::mutate(
+            azi_cluster = as.character(azi_cluster), 
+            cluster = as.character(cluster)
+          ) -> 
+          .xxx
+        
+        tibble::tibble(
+          n_raw = n_raw,
+          n_azi = n_azi,
+          n_nc = n_nc,
+          azi_nc = list(.xxx)
+        )
+      }
+    )
+  ) |> 
+  tidyr::unnest(cols = a) ->
+  metadata_anno_azimuth_nc
+
+metadata_anno_azimuth_nc |> 
+  dplyr::select(-sc_azimuth, -data) |> 
+  dplyr::mutate(
+    ratio1 = round(n_azi / n_raw, 2),
+    ratio2 = round(n_nc / n_raw, 2)
+  ) |>  
+  dplyr::select(
+    ID = srrid, 
+    `Sample ID`, 
+    `# Raw` = n_raw, 
+    `# scMOCHA` = n_azi, 
+    `# NC` = n_nc,
+    `Ratio of scMOCHA`= ratio1,
+    `Ratio of NC` = ratio2
+  ) |> 
+  dplyr::arrange(`Sample ID`) |> 
+  writexl::write_xlsx(
+    path = "/home/liuc9/github/scMOCHA/03-ADKP/output/cell_n_consistence.xlsx"
+  )
+
+
+# Cell consistence --------------------------------------------------------
+
+
+
+metadata_anno_azimuth_nc |> 
+  dplyr::select(srrid, `Sample ID`, azi_nc) |> 
+  tidyr::unnest(cols = azi_nc) |> 
+  dplyr::filter(!is.na(cellid)) |> 
+  dplyr::count(azi_cluster, cluster) ->
+  forplot
+
+
+forplot |> 
+  ggplot(aes(
+    x = azi_cluster,
+    y = cluster,
+    fill = n,
+    label = n
+  )) +
+  geom_label() +
+  geom_tile() +
+  scale_x_discrete(
+    limit = paste("cluster", c(1:11, 13), sep = "_")
+  ) +
+  scale_y_discrete(
+    limit = paste("cluster", c(1:11, 13), sep = "_")
+  )
 
 # footer ------------------------------------------------------------------
 
 future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
+save.image(file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/rda/07-integrated-analysis.rda")
