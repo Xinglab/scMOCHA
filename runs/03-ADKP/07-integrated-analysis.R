@@ -35,6 +35,8 @@ outfiles <- readr::read_tsv(
   file = "/home/liuc9/github/scMOCHA/03-ADKP/output/outfiles.tsv"
 )
 
+outfiles$outfile[[2]]
+
 supdata1_1 <- readxl::read_xls(
   path = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/OlhaEtAl-NatCommu-2020-supdata1.xls",
   sheet = 1,
@@ -190,6 +192,11 @@ metadata |>
   ) |> 
   tidyr::unnest(cols = haplogroup) ->
   metadata_anno
+
+readr::write_rds(
+  x = metadata_anno,
+  file = "/home/liuc9/github/scMOCHA/03-ADKP/output/metadata_anno.rds"
+)
 
 metadata_anno |> dplyr::glimpse()
 
@@ -352,30 +359,417 @@ metadata_anno_azimuth_nc |>
 metadata_anno_azimuth_nc |> 
   dplyr::select(srrid, `Sample ID`, azi_nc) |> 
   tidyr::unnest(cols = azi_nc) |> 
-  dplyr::filter(!is.na(cellid)) |> 
+  dplyr::filter(!is.na(cellid)) ->
+  metadata_anno_azimuth_nc_unnest
+
+metadata_anno_azimuth_nc_unnest |> 
   dplyr::count(azi_cluster, cluster) ->
   forplot
 
+forplot$n |> sum()
 
 forplot |> 
   ggplot(aes(
     x = azi_cluster,
     y = cluster,
-    fill = n,
-    label = n
   )) +
-  geom_label() +
-  geom_tile() +
+  geom_tile(aes(fill = n)) +
+  scale_fill_gradient2(
+    low = "grey",
+    mid = "gold",
+    high = "#F02415",
+    midpoint = 500,
+    space = "Lab",
+    na.value = "grey50",
+    guide = "colourbar",
+    aesthetics = "fill"
+  ) +
+  geom_text(
+    aes(label = n),
+    color = "white"
+  ) +
   scale_x_discrete(
-    limit = paste("cluster", c(1:11, 13), sep = "_")
+    limit = paste("cluster", c(1:11, 13), sep = "_"),
+    expand = expansion(mult = 0, add = 0)
   ) +
   scale_y_discrete(
-    limit = paste("cluster", c(1:11, 13), sep = "_")
+    limit = paste("cluster", c(1:11, 13), sep = "_"),
+    expand = expansion(mult = 0, add = 0)
+  ) +
+  geom_segment(
+    x = 1,
+    y = 0,
+    xend= 13,
+    yend = 12,
+    color = "grey"
+  ) +
+  geom_segment(
+    x = 0,
+    y = 1,
+    xend= 12,
+    yend = 13,
+    color = "grey"
+  ) +
+  theme(
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1,
+      vjust = 1
+    ),
+    # legend.position = "top",
+    aspect.ratio = 1,
+    axis.title = element_text(
+      color = "black",
+      size = 14
+    ),
+    plot.title = element_text(
+      color = "black",
+      size = 16
+    )
+  ) +
+  labs(
+    x = "scMOCHA cell cluster",
+    y = "Olha et al cell cluster",
+    title = "Total number of cells n = {sum(forplot$n)}" |> glue::glue()
+  ) ->
+  tileplot
+
+ggsave(
+  filename = "cell-consistence-tileplot.pdf",
+  plot = tileplot,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/output",
+  width = 8,
+  height = 7
+)
+
+# multi-class metrics -----------------------------------------------------
+
+
+true_labels <- as.factor(metadata_anno_azimuth_nc_unnest$cluster)
+
+predicted_labels <- factor(metadata_anno_azimuth_nc_unnest$azi_cluster, level = levels(true_labels))
+
+classifier_metrics <- mltest::ml_test(predicted_labels, true_labels, output.as.table = FALSE)
+
+# overall classification accuracy
+accuracy <- classifier_metrics$accuracy
+
+# F1-measures for classes "cat", "dog" and "rat"
+F1 <- classifier_metrics$F1
+
+# tabular view of the metrics (except for 'accuracy' and 'error.rate')
+classifier_metrics <- mltest::ml_test(predicted_labels, true_labels, output.as.table = TRUE)
+
+
+
+# Cell ratio --------------------------------------------------------------
+
+metadata_anno |>
+  dplyr::mutate(
+    cellratio = purrr::map(
+      .x = tardir,
+      .f = function(.x) {
+        if(is.na(.x)) {return(NULL)}
+        .ratio <- readr::read_tsv(
+          file = file.path(
+            .x, "celltype_ratio.tsv"
+          ),
+          show_col_types = FALSE
+        )
+        .ratio
+      }
+    )
+  ) ->
+  metadata_anno_cellratio
+
+metadata_anno_cellratio |>
+  dplyr::filter(!purrr::map_lgl(.x = cellratio, .f = is.null)) |>
+  dplyr::select(`Sample ID`, dia = `Diagnosis (neurology)`, cellratio) |> 
+  dplyr::arrange(dplyr::desc(`Sample ID`))  ->
+  for_ratio_plot
+
+for_ratio_plot |>
+  tidyr::unnest(cellratio) |> 
+  dplyr::mutate(celltype = factor(
+    celltype,
+    levels = paste("cluster", c(1:11, 13), sep = "_")
+  )) |> 
+  ggplot(aes(
+    x = `ratio`,
+    y = `Sample ID`,
+    fill = celltype
+  )) +
+  geom_col() +
+  scale_fill_manual(
+    values = paletteer::paletteer_d(
+      palette = "ggsci::springfield_simpsons",
+      direction = -1
+    ),
+    # limits = paste("cluster", c(1:11, 13), sep = "_"),
+    name = "Cell type"
+  ) +
+  scale_x_continuous(
+    expand = expansion(mult = 0, add = 0),
+    labels = scales::percent_format()
+  ) +
+  scale_y_discrete(
+    limits = for_ratio_plot$`Sample ID`
+  ) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.text = element_text(color = "black", size = 12, face = "bold"),
+    axis.text.y = element_text(
+      color = for_ratio_plot$color
+    ),
+    axis.ticks.y = element_blank(),
+    axis.line.x = element_line(color = "black", size = 0.5),
+    axis.title = element_text(color = "black", size = 14, face = "bold"),
+    axis.title.y = element_blank(),
+    legend.position = "right"
+  ) +
+  labs(x = "Cell ratio") ->
+  p_cellratio;p_cellratio
+ggsave(
+  filename = "Cell_ratio.pdf",
+  plo = p_cellratio,
+  device = "pdf",
+  width = 11,
+  height = 5,
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/output"
+)
+
+
+# Depth ----------------------------------------------------------------
+
+gtf_gene_df <-
+  readr::read_rds(
+    file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
   )
+
+library(ggtranscript)
+gtf_gene_df %>%
+  ggplot(aes(
+    xstart = start,
+    xend = end,
+    y = gene_name
+  )) +
+  geom_range( aes(fill = transcript_biotype)) +
+  geom_intron(
+    data = to_intron(gtf_gene_df, "transcript_name"),
+    aes(strand = strand)
+  ) +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.03)),
+    limits = c(1, 17000),
+    breaks = seq(1000, 17000, 1000),
+    labels = seq(1000, 17000, 1000)
+  ) +
+  # scale_fill_brewer(palette = "Set3")
+  ggsci::scale_fill_jama(
+    name = "Biotype",
+    labels = c("MT rRNA", "MT tRNA", "Protein coding")
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_line(colour = "grey", linetype = "dashed"),
+    panel.grid.major = element_line(
+      colour = "grey",
+      linetype = "dashed",
+      size = 0.2
+    ),
+    axis.line = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.title.x = element_blank(),
+    # axis.text.y = element_text(size = 12, color = "black"),
+    axis.title.y = element_blank(),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Position"
+  ) ->
+  p_mt_chrom;p_mt_chrom
+
+metadata_anno_cellratio |>
+  dplyr::mutate(
+    depth = purrr::map(
+      .x = tardir,
+      .f = function(.x) {
+        if(is.na(.x)) {return(NULL)}
+        data.table::fread(
+          input = file.path(
+            .x, "possorted_genome_bam.MT.depth"
+          ),
+          col.names =  c("chr", "pos", "depth")
+        )
+        
+      }
+    )
+  ) ->
+  metadata_anno_depth
+
+metadata_anno_depth |>
+  dplyr::filter(!purrr::map_lgl(.x = depth, .f = is.null)) |>
+  # dplyr::select(srrid, source_name, depth) |>
+  dplyr::select(`Sample ID`, dia = `Diagnosis (neurology)`, depth) |> 
+  dplyr::arrange(dplyr::desc(`Sample ID`)) |> 
+  dplyr::mutate(`Sample ID` = factor(`Sample ID`)) |> 
+  dplyr::mutate(color = dplyr::case_match(
+    dia,
+    "MCI" ~ggsci::pal_jama()(4)[[1]],
+    "AD" ~ ggsci::pal_jama()(4)[[2]],
+  )) ->
+  for_depth_plot
+
+
+for_depth_plot |>
+  tidyr::unnest(cols = depth) |>
+  ggplot(aes(x=pos, y = depth, fill = `color`)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.03)),
+    limits = c(1, 17000),
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0),
+  ) +
+  scale_fill_identity(
+    name = "Sample"
+  ) +
+  # scale_fill_manual(
+  #   name = "Sample",
+  #   values = for_depth_plot$color,
+  #   guide = guide_legend(nrow = 3)
+  # ) 
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    # axis.title.y = element_blank(),
+    axis.line.x.bottom = element_line(color = "black"),
+    # strip.background = element_rect(fill = NA, colour = "black"),
+    strip.background = element_blank(),
+    # strip.text = element_text(
+    #   color = "black",
+    #   face = "bold",
+    #   size = 8
+    # ),
+    # strip.text = element_text(
+    #   color = for_depth_plot$color
+    # ),
+    strip.text = element_blank(),
+    legend.position = "none"
+  ) +
+  facet_wrap(
+    facets = ~`Sample ID`,
+    ncol = 1,
+    strip.position = "right"
+  ) +
+  labs(y = "Depth") ->
+  p_mt_depth;p_mt_depth
+
+p_depth <- cowplot::plot_grid(
+  plotlist = list(p_mt_depth, p_mt_chrom),
+  ncol = 1,
+  align = "v",
+  rel_heights = c(0.7, 0.3)
+)
+
+ggsave(
+  filename = "Sample_depth_merge.pdf",
+  plo = p_depth,
+  device = "pdf",
+  width = 15,
+  height = 15,
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/output"
+)
+
+metadata_anno_depth$depth[[4]]$depth |> summary()
+
+
+
+metadata_anno_depth$`estimated number of cells`
+metadata_anno_depth$`number of cells after filtering`
+metadata_anno_depth$`median UMI counts per cell`
+metadata_anno_depth$nmut
+
+metadata_anno_depth |> 
+  dplyr::filter(!is.na(nmut)) |> 
+  ggplot(aes(
+    x = `number of cells after filtering`,
+    y = nmut
+  )) +
+  geom_point()
+
+metadata_anno_depth |> 
+  dplyr::filter(!is.na(nmut)) |> 
+  ggplot(aes(
+    x = `median UMI counts per cell`,
+    y = nmut
+  )) +
+  geom_point()
+
+library(plotly)
+plot_ly(
+  data = metadata_anno_depth |> 
+    dplyr::mutate(dia = `Diagnosis (neurology)`) |> 
+    dplyr::filter(!is.na(nmut)),
+  x = ~ `median UMI counts per cell`,
+  y = ~ `number of cells after filtering`,
+  z = ~ nmut,
+  # size = ~nmut,
+  color = ~dia,
+  colors = ggsci::pal_jama()(4)[c(2, 1)]
+) |> 
+  layout(
+    scene = list(
+      xaxis = list(
+        title = 'Median UMI counts per cell',
+        gridcolor = 'rgb(255, 255, 255)',
+        # range = c(2.003297660701705, 5.191505530708712),
+        # type = 'log',
+        zerolinewidth = 1,
+        ticklen = 5,
+        gridwidth = 2
+      ),
+      yaxis = list(
+        title = 'Number of cells after filtering',
+        gridcolor = 'rgb(255, 255, 255)', 
+        # range = c(36.12621671352166, 91.72921793264332),
+        zerolinewidth = 1,
+        ticklen = 5,
+        gridwith = 2
+      ),
+      zaxis = list(
+        title = 'Number of Mutations',
+        gridcolor = 'rgb(255, 255, 255)',
+        # type = 'log',
+        zerolinewidth = 1,
+        ticklen = 5,
+        gridwith = 2
+      )
+    ),
+    paper_bgcolor = 'rgb(243, 243, 243)',
+    plot_bgcolor = 'rgb(243, 243, 243)'
+  )->
+  p3d
+
 
 # footer ------------------------------------------------------------------
 
-future::plan(future::sequential)
+# future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
 save.image(file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/rda/07-integrated-analysis.rda")
+
+load(file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/rda/07-integrated-analysis.rda")
