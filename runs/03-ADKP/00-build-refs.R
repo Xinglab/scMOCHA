@@ -67,7 +67,7 @@ sct |>
   Seurat::RunPCA() |>
   Seurat::RunUMAP(dims = 1:30, return.model = TRUE) |>
   Seurat::FindNeighbors(dims = 1:30) |>
-  Seurat::FindClusters(resolution = c(0.8, 2)) ->
+  Seurat::FindClusters(resolution = 0.2) ->
   sctu
 
 annotations
@@ -198,6 +198,7 @@ FeaturePlot(
 
 p <- (p1|p2)/(p3|p4) +plot_layout(guides = 'collect')
 
+p
 ggsave(
   filename = "NatCommupaper-ref-dotplot.pdf",
   plot = p,
@@ -206,6 +207,84 @@ ggsave(
   width = 8,
   height = 7
 )
+
+sctu_tsne@assays
+DefaultAssay(sctu_tsne) <- "SCT"
+
+FeaturePlot(
+  object = sctu_tsne,
+  features = c("CD74"),
+  cols = c("grey", "gold", "#F02415"),
+  order = TRUE,
+  reduction = "tsne"
+) +
+  theme(
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank()
+  )
+
+
+sctu_tsne$seurat_clusters |> 
+  table() ->
+  cl
+
+ccl <- factor(glue::glue("{names(cl)} (n={cl})"), glue::glue("{names(cl)} (n={cl})"))
+
+sctu_tsne$seurat_clusters_n <- ccl[sctu_tsne$seurat_clusters]
+
+
+DimPlot(
+  object = sctu_tsne,
+  reduction = "tsne",
+  cols = paletteer::paletteer_d(
+    palette = "ggsci::springfield_simpsons",
+    direction = -1
+  ),
+  group.by = "seurat_clusters_n"
+) ->
+  pp
+
+ggsave(
+  filename = "NatCommupaper-ref-cluster.pdf",
+  plot = pp,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/azimuth_motorcortex",
+  width = 8,
+  height = 7
+)
+
+
+Idents(sctu_tsne) |> 
+  table() ->
+  cl
+
+ccl <- factor(glue::glue("{names(cl)} (n={cl})"), glue::glue("{names(cl)} (n={cl})"))
+
+sctu_tsne$Olha <- ccl[Idents(sctu_tsne)]
+
+DimPlot(
+  object = sctu_tsne,
+  reduction = "tsne",
+  cols = paletteer::paletteer_d(
+    palette = "ggsci::springfield_simpsons",
+    direction = -1
+  ),
+  group.by = "Olha"
+) ->
+  ppp
+
+ggsave(
+  filename = "NatCommupaper-ref-cluster-olha.pdf",
+  plot = ppp,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/azimuth_motorcortex",
+  width = 9,
+  height = 7
+)
+
+
 
 # footer ------------------------------------------------------------------
 
