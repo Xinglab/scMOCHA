@@ -534,6 +534,7 @@ for_ratio_plot |>
   ) +
   labs(x = "Cell ratio") ->
   p_cellratio;p_cellratio
+
 ggsave(
   filename = "Cell_ratio.pdf",
   plo = p_cellratio,
@@ -761,9 +762,52 @@ plot_ly(
     ),
     paper_bgcolor = 'rgb(243, 243, 243)',
     plot_bgcolor = 'rgb(243, 243, 243)'
-  )->
-  p3d
+  ) |> 
+  plotly::config(
+    displayModeBar = TRUE,
+    showEditInChartStudio = TRUE,
+    plotlyServerURL = 'https://chart-studio.plotly.com',
+    displaylogo= FALSE
+  ) ->
+  p3d;p3d
 
+# reticulate::py_run_string("import sys")
+
+htmlwidgets::saveWidget(
+  p3d,
+  file = file.path(
+    "/home/liuc9/github/scMOCHA/03-ADKP/output",
+    "nmut-vs-umi-ncell.html"
+  ),
+)
+
+d <- metadata_anno_depth |> 
+  dplyr::mutate(dia = `Diagnosis (neurology)`) |> 
+  dplyr::filter(!is.na(nmut))
+
+
+metadata_anno_depth$`number of cells after filtering`
+metadata_anno_depth$`median UMI counts per cell`
+metadata_anno_depth$nmut
+
+
+cor.test(
+  d$nmut,
+  d$`number of cells after filtering`
+) |> 
+  broom::tidy()
+
+cor.test(
+  d$nmut,
+  d$`median UMI counts per cell`
+) |> 
+  broom::tidy()
+
+glm(
+  formula = nmut ~ `number of cells after filtering` + `median UMI counts per cell`,
+  data = d
+) |> 
+  broom::glance()
 
 # footer ------------------------------------------------------------------
 
