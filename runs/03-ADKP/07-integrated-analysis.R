@@ -699,10 +699,17 @@ metadata_anno_depth$depth[[4]]$depth |> summary()
 
 
 
+# Correlation 3D -------------------------------------------------------------
+
+
+
 metadata_anno_depth$`estimated number of cells`
 metadata_anno_depth$`number of cells after filtering`
 metadata_anno_depth$`median UMI counts per cell`
 metadata_anno_depth$nmut
+
+
+
 
 metadata_anno_depth |> 
   dplyr::filter(!is.na(nmut)) |> 
@@ -781,9 +788,6 @@ htmlwidgets::saveWidget(
   ),
 )
 
-d <- metadata_anno_depth |> 
-  dplyr::mutate(dia = `Diagnosis (neurology)`) |> 
-  dplyr::filter(!is.na(nmut))
 
 
 metadata_anno_depth$`number of cells after filtering`
@@ -791,29 +795,382 @@ metadata_anno_depth$`median UMI counts per cell`
 metadata_anno_depth$nmut
 
 
-cor.test(
-  d$nmut,
-  d$`number of cells after filtering`
-) |> 
-  broom::tidy()
 
-cor.test(
-  d$nmut,
-  d$`median UMI counts per cell`
-) |> 
-  broom::tidy()
+
+
+# all factor correlations -------------------------------------------------
+
+
+metadata_anno_depth |> colnames()
+
+metadata_anno_depth |> 
+  dplyr::mutate(dia = `Diagnosis (neurology)`) |> 
+  dplyr::select(
+    srrid,
+    dia,
+    Age,
+    Sex,
+    nmut, 
+    `median UMI counts per cell`,
+    `number of cells after filtering`,
+    depth
+  ) |> 
+  dplyr::filter(!is.na(nmut)) |> 
+  dplyr::mutate(
+    n_na = purrr::map(
+      .x = depth,
+      .f = \(.d) {
+        .d |> 
+          dplyr::summarise(
+            dep_s = sum(depth),
+            dep_mea = mean(depth),
+            dep_med = median(depth)
+          )
+      }
+    )
+  ) |> 
+  dplyr::select(-depth) |> 
+  tidyr::unnest(cols = n_na) |> 
+  dplyr::mutate(
+    Sex = factor(Sex),
+    dia = factor(dia)
+  ) ->
+  metadata_anno_depth_dep
+
+
+
+metadata_anno_depth_dep
+
+t.test(nmut ~ dia, data = metadata_anno_depth_dep) |> report::report()
+t.test(nmut ~ Sex, data = metadata_anno_depth_dep) |> report::report()
 
 glm(
-  formula = nmut ~ `number of cells after filtering` + `median UMI counts per cell`,
-  data = d
+  nmut ~ dia + dep_med,
+  data = metadata_anno_depth_dep
 ) |> 
-  broom::glance()
+  report::report()
+
+correlation::correlation(
+  metadata_anno_depth_dep |> 
+    dplyr::select(-dep_s, -dep_mea),
+  p_adjust = "none"
+  )  |> 
+  summary(redundant = TRUE) ->
+  cor_summr
+
+plot(cor_summr)
+
+cor_summr |> 
+  as.data.frame() |> 
+  tidyr::pivot_longer(
+    cols = -Parameter,
+    names_to = "var2",
+    values_to = "pval"
+  ) |> 
+  dplyr::filter(!is.na(pval)) |> 
+  dplyr::filter(Parameter != var2) |>
+  ggplot(aes(
+    x = Parameter,
+    y = var2,
+    fill = pval
+  )) +
+  geom_tile() +
+  geom_text(aes(label = round(pval, 2))) +
+  scale_fill_gradient2(
+    name = "R",
+    low = "blue",
+    mid = "white",
+    high = "red",
+    midpoint = 0,
+    # space = "Lab",
+    # na.value = "grey50",
+    guide = "colourbar",
+    # aesthetics = "colour"
+  ) +
+  scale_x_discrete(
+    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age" ),
+    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age" ) |> stringr::str_to_sentence()
+  ) +
+  scale_y_discrete(
+    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age" ) |> rev(),
+    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age" ) |> rev() |>  stringr::str_to_sentence()
+  ) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(
+      color = "black",
+      size = 14
+    )
+  ) ->
+  p_cor
+ggsave(
+  filename = "All-factor-correlations.pdf",
+  plo = p_cor,
+  device = "pdf",
+  width = 9,
+  height = 6,
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/output"
+)
+
+
+cor.test(
+  formula = ~ nmut + dep_med,
+  data = metadata_anno_depth_dep
+) ->
+  ct
+
+
+metadata_anno_depth_dep |> 
+  # dplyr::filter(dep_med > 1000) |> 
+  dplyr::mutate(
+    dia = factor(dia, levels = c("MCI", "AD"))
+  ) |> 
+  ggplot(aes(
+    x = dep_med,
+    y = nmut,
+    color = dia
+  )) +
+  geom_point() +
+  geom_point(aes(color = dia), show.legend = FALSE) +
+  geom_smooth(method = "loess", se = FALSE, color = "black", linetype = 21) +
+  geom_smooth(aes(color = dia), method = "glm", se = FALSE) +
+  annotate(
+    geom = "text",
+    x = 500,
+    y = 30,
+    size = 6,
+    label = latex2exp::TeX(glue::glue("$\\rho$={round(ct$estimate, 2)}, $P$={round(ct$p.value,3)}")),
+    fontface = "bold"
+  ) +
+  ggsci::scale_color_jama(
+    name = "Disease type"
+  ) +
+  theme_bw() +
+  theme(
+    # panel.grid = element_blank(),
+    axis.text = element_text(size = 14, colour = "black"),
+    axis.title = element_text(size = 16, face = "bold", colour = "black"),
+    legend.position = "bottom",
+    plot.title = element_text(
+      hjust = 0.5,
+      size = 16,
+      face = "bold",
+      color = "black"
+    )
+  ) +
+  labs(
+    x = "Median depth",
+    y = "# of variants",
+    title = "Olah et al, Nat Commun, 2020"
+  ) ->
+  p_nmut_median_depth;p_nmut_median_depth
+
+ggsave(
+  filename = "All-factor-correlations-linear-depth-nvariant.pdf",
+  plo = p_nmut_median_depth,
+  device = "pdf",
+  width = 9,
+  height = 6,
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/output"
+)
+
+
+# Age mutation ------------------------------------------------------------
+
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno_depth_dep
+) ->
+  cta
+
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno_depth_dep |> 
+    dplyr::filter(dia == "MCI")
+) ->
+  cta_mci
+
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno_depth_dep |> 
+    dplyr::filter(dia == "AD")
+) ->
+  cta_ad
+
+metadata_anno_depth_dep |> 
+  # dplyr::filter(nmut >10) |> 
+  dplyr::mutate(
+    label = glue::glue(
+      "N variants = {nmut}\n Median depth = {dep_med}\n Gender = {Sex}"
+    )
+  ) |> 
+  dplyr::mutate(
+    dia = factor(dia, levels = c("MCI", "AD"))
+  ) |> 
+  ggplot(aes(
+    x = Age,
+    y = nmut
+  )) +
+  geom_point(aes(color = dia), show.legend = FALSE) +
+  geom_smooth(method = "loess", se = FALSE, color = "black", linetype = 21) +
+  geom_smooth(aes(color = dia), method = "glm", se = FALSE) +
+  ggrepel::geom_text_repel(
+    aes(label = label),
+    # box.padding = 0.5, 
+    max.overlaps = 10,
+    # max.overlaps = Inf
+    size = 3,
+    min.segment.length = 0, 
+    seed = 42, 
+    box.padding = 0.5
+  ) +
+  ggsci::scale_color_jama(
+    name = "Disease type"
+  ) +
+  annotate(
+    geom = "segment",
+    x = 80,
+    y = 30,
+    xend = 82,
+    yend = 30,
+    linetype = 21,
+    colour = "black",
+    linewidth = 1
+  ) +
+  annotate(
+    geom = "text",
+    x = 85,
+    y = 30,
+    size = 5,
+    label = latex2exp::TeX(glue::glue("$\\rho$={round(cta$estimate, 2)}, $P$={round(cta$p.value,3)}")),
+    fontface = "bold"
+  ) +
+  annotate(
+    geom = "segment",
+    x = 80,
+    y = 28,
+    xend = 82,
+    yend = 28,
+    linetype = 1,
+    colour = ggsci::pal_jama()(2)[1],
+    linewidth = 1
+  ) +
+  annotate(
+    geom = "text",
+    x = 85,
+    y = 28,
+    size = 5,
+    label = latex2exp::TeX(glue::glue("$\\rho$={round(cta_mci$estimate, 2)}, $P$={round(cta_mci$p.value,3)}")),
+    fontface = "bold",
+    color = ggsci::pal_jama()(2)[1]
+  ) +
+  annotate(
+    geom = "segment",
+    x = 80,
+    y = 26,
+    xend = 82,
+    yend = 26,
+    linetype = 1,
+    colour = ggsci::pal_jama()(2)[2],
+    linewidth = 1
+  ) +
+  annotate(
+    geom = "text",
+    x = 85,
+    y = 26,
+    size = 5,
+    label = latex2exp::TeX(glue::glue("$\\rho$={round(cta_ad$estimate, 2)}, $P$={round(cta_ad$p.value,3)}")),
+    fontface = "bold",
+    color = ggsci::pal_jama()(2)[1]
+  ) +
+  theme_bw() +
+  theme(
+    # panel.grid = element_blank(),
+    axis.text = element_text(size = 14, colour = "black"),
+    axis.title = element_text(size = 16, face = "bold", colour = "black"),
+    legend.position = "top"
+  ) +
+  labs(
+    x = "Age",
+    y = "# of variants"
+  ) ->
+  p_linear_1;p_linear_1
+
+ggsave(
+  filename = "All-factor-correlations-linear-age-nvariant.pdf",
+  plo = p_linear_1,
+  device = "pdf",
+  width = 9,
+  height = 6,
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/output"
+)
+
+
+
+metadata_anno_depth_dep |> 
+  dplyr::filter(dep_med >1000) |>
+  dplyr::mutate(
+    label = glue::glue(
+      "N variants = {nmut}\n Median depth = {dep_med}\n Gender = {Sex}"
+    )
+  ) |> 
+  dplyr::mutate(
+    dia = factor(dia, levels = c("MCI", "AD"))
+  ) |> 
+  ggplot(aes(
+    x = Age,
+    y = nmut
+  )) +
+  geom_point(aes(color = dia), show.legend = FALSE) +
+  geom_smooth(method = "loess", se = FALSE, color = "black", linetype = 21) +
+  geom_smooth(aes(color = dia), method = "glm", se = FALSE) +
+  ggrepel::geom_text_repel(
+    aes(label = label),
+    # box.padding = 0.5, 
+    max.overlaps = 10,
+    # max.overlaps = Inf
+    size = 3,
+    min.segment.length = 0, 
+    seed = 42, 
+    box.padding = 0.5
+  ) +
+  ggsci::scale_color_jama(
+    name = "Disease type"
+  ) +
+  theme_bw() +
+  theme(
+    # panel.grid = element_blank(),
+    axis.text = element_text(size = 14, colour = "black"),
+    axis.title = element_text(size = 16, face = "bold", colour = "black"),
+    legend.position = "top"
+  ) +
+  labs(
+    x = "Age",
+    y = "# of variants"
+  ) ->
+  p_linear_2;p_linear_2
+
+ggsave(
+  filename = "All-factor-correlations-linear-age-nvariant2.pdf",
+  plo = p_linear_2,
+  device = "pdf",
+  width = 9,
+  height = 6,
+  path = "/home/liuc9/github/scMOCHA/03-ADKP/output"
+)
+
+
+
+t.test(nmut ~ dia, data = metadata_anno_depth_dep) |> report::report()
+t.test(nmut ~ Sex, data = metadata_anno_depth_dep) |> report::report()
 
 # footer ------------------------------------------------------------------
-
 # future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
-save.image(file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/rda/07-integrated-analysis.rda")
+# save.image(file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/rda/07-integrated-analysis.rda")
 
-load(file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/rda/07-integrated-analysis.rda")
+# load(file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/rda/07-integrated-analysis.rda")
