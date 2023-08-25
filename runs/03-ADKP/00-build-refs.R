@@ -135,6 +135,11 @@ saveRDS(object = full.ref, file = file.path(ref.dir, "fullref.Rds"))
 sctu_tsne <- sctu |> 
   Seurat::RunTSNE(dims = 1:30, return.model = TRUE) 
 
+readr::write_rds(
+  sctu_tsne,
+  "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358/sctu_tsne.rds"
+)
+
 FeaturePlot(
   object = sctu_tsne,
   features = c("PTPRC"),

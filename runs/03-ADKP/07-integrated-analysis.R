@@ -697,7 +697,10 @@ ggsave(
 
 metadata_anno_depth$depth[[4]]$depth |> summary()
 
-
+readr::write_rds(
+  x = metadata_anno_depth,
+  file = "/home/liuc9/github/scMOCHA/03-ADKP/output/rda/metadata_anno_depth.rds"
+)
 
 # Correlation 3D -------------------------------------------------------------
 
@@ -802,6 +805,10 @@ metadata_anno_depth$nmut
 
 
 metadata_anno_depth |> colnames()
+readr::write_rds(
+  x = metadata_anno_depth,
+  file = "/home/liuc9/github/scMOCHA/03-ADKP/output/rda/metadata_anno_depth.rds"
+)
 
 metadata_anno_depth |> 
   dplyr::mutate(dia = `Diagnosis (neurology)`) |> 
@@ -1000,6 +1007,9 @@ cor.test(
 ) ->
   cta_ad
 
+yhight <- 32
+xwidth <- 78
+
 metadata_anno_depth_dep |> 
   # dplyr::filter(nmut >10) |> 
   dplyr::mutate(
@@ -1032,59 +1042,59 @@ metadata_anno_depth_dep |>
   ) +
   annotate(
     geom = "segment",
-    x = 80,
-    y = 30,
-    xend = 82,
-    yend = 30,
+    x = xwidth,
+    y = yhight,
+    xend = xwidth + 1,
+    yend = yhight,
     linetype = 21,
     colour = "black",
     linewidth = 1
   ) +
   annotate(
     geom = "text",
-    x = 85,
-    y = 30,
+    x = xwidth + 3,
+    y = yhight,
     size = 5,
     label = latex2exp::TeX(glue::glue("$\\rho$={round(cta$estimate, 2)}, $P$={round(cta$p.value,3)}")),
-    fontface = "bold"
+    fontface = "bold",
   ) +
   annotate(
     geom = "segment",
-    x = 80,
-    y = 28,
-    xend = 82,
-    yend = 28,
+    x = xwidth,
+    y = yhight - 2,
+    xend = xwidth + 1,
+    yend = yhight - 2,
     linetype = 1,
     colour = ggsci::pal_jama()(2)[1],
     linewidth = 1
   ) +
   annotate(
     geom = "text",
-    x = 85,
-    y = 28,
+    x = xwidth + 3,
+    y = yhight - 2,
     size = 5,
     label = latex2exp::TeX(glue::glue("$\\rho$={round(cta_mci$estimate, 2)}, $P$={round(cta_mci$p.value,3)}")),
     fontface = "bold",
-    color = ggsci::pal_jama()(2)[1]
+    color = ggsci::pal_jama()(2)[1],
   ) +
   annotate(
     geom = "segment",
-    x = 80,
-    y = 26,
-    xend = 82,
-    yend = 26,
+    x = xwidth,
+    y = yhight - 4,
+    xend = xwidth + 1,
+    yend = yhight - 4,
     linetype = 1,
     colour = ggsci::pal_jama()(2)[2],
     linewidth = 1
   ) +
   annotate(
     geom = "text",
-    x = 85,
-    y = 26,
+    x = xwidth + 3,
+    y = yhight - 4,
     size = 5,
     label = latex2exp::TeX(glue::glue("$\\rho$={round(cta_ad$estimate, 2)}, $P$={round(cta_ad$p.value,3)}")),
     fontface = "bold",
-    color = ggsci::pal_jama()(2)[1]
+    color = ggsci::pal_jama()(2)[2]
   ) +
   theme_bw() +
   theme(
@@ -1110,8 +1120,35 @@ ggsave(
 
 
 
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno_depth_dep |> 
+    dplyr::filter(dep_med >1000) 
+) ->
+  cta
+
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno_depth_dep |> 
+    dplyr::filter(dep_med >1000) |> 
+    dplyr::filter(dia == "MCI")
+) ->
+  cta_mci
+
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno_depth_dep |>
+    dplyr::filter(dep_med >1000) |> 
+    dplyr::filter(dia == "AD")
+) ->
+  cta_ad
+
+yhight <- 32
+xwidth <- 78
+
+
 metadata_anno_depth_dep |> 
-  dplyr::filter(dep_med >1000) |>
+  dplyr::filter(dep_med >1000) |> 
   dplyr::mutate(
     label = glue::glue(
       "N variants = {nmut}\n Median depth = {dep_med}\n Gender = {Sex}"
@@ -1139,6 +1176,62 @@ metadata_anno_depth_dep |>
   ) +
   ggsci::scale_color_jama(
     name = "Disease type"
+  ) +
+  annotate(
+    geom = "segment",
+    x = xwidth,
+    y = yhight,
+    xend = xwidth + 1,
+    yend = yhight,
+    linetype = 21,
+    colour = "black",
+    linewidth = 1
+  ) +
+  annotate(
+    geom = "text",
+    x = xwidth + 3,
+    y = yhight,
+    size = 5,
+    label = latex2exp::TeX(glue::glue("$\\rho$={round(cta$estimate, 2)}, $P$={round(cta$p.value,3)}")),
+    fontface = "bold"
+  ) +
+  annotate(
+    geom = "segment",
+    x = xwidth,
+    y = yhight - 2,
+    xend = xwidth + 1,
+    yend = yhight - 2,
+    linetype = 1,
+    colour = ggsci::pal_jama()(2)[1],
+    linewidth = 1
+  ) +
+  annotate(
+    geom = "text",
+    x = xwidth + 3,
+    y = yhight - 2,
+    size = 5,
+    label = latex2exp::TeX(glue::glue("$\\rho$={round(cta_mci$estimate, 2)}, $P$={round(cta_mci$p.value,3)}")),
+    fontface = "bold",
+    color = ggsci::pal_jama()(2)[1]
+  ) +
+  annotate(
+    geom = "segment",
+    x = xwidth,
+    y = yhight - 4,
+    xend = xwidth + 1,
+    yend = yhight - 4,
+    linetype = 1,
+    colour = ggsci::pal_jama()(2)[2],
+    linewidth = 1
+  ) +
+  annotate(
+    geom = "text",
+    x = xwidth + 3,
+    y = yhight - 4,
+    size = 5,
+    label = latex2exp::TeX(glue::glue("$\\rho$={round(cta_ad$estimate, 2)}, $P$={round(cta_ad$p.value,3)}")),
+    fontface = "bold",
+    color = ggsci::pal_jama()(2)[2]
   ) +
   theme_bw() +
   theme(
