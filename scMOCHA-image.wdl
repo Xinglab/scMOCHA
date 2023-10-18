@@ -16,9 +16,9 @@ workflow scMOCHA {
   # mgatk inputs
   String chrM = "MT"
 
-  # cell_cluster_annotation inputsß
-  String cellrefname = "pbmcref"
-  String celllevel = "celltype.l1"
+  # cell_cluster_annotation inputs
+  String cellrefname
+  String celllevel
 
 
   # Runtime attributes
@@ -492,7 +492,9 @@ task call_mt_variants {
       -c ${cpu} \
       -bt CB \
       -b ${barcodes_tsv} \
-      -ub UB
+      -ub UB \
+      --snake-stdout \
+      --keep-temp-files
 
     # the cell/final/ last "/" is important
     variant_calling_cell_raw.py \
@@ -508,7 +510,9 @@ task call_mt_variants {
       -n cluster \
       -g ${rCRS} \
       -c ${cpu} \
-      -bt CJ
+      -bt CJ \
+      --snake-stdout \
+      --keep-temp-files
 
     variant_calling_cluster.py \
       cluster/final/ \
