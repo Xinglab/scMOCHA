@@ -23,7 +23,7 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/home/liuc9/github/scMOCHA/03-ADKP/cromwell-executions/scMOCHA/b0e9447d-910b-4509-8404-fb63b67ba1b8/call-cellranger_count/execution/R3728445/outs/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/outputs/SRR11680207/filtered_feature_bc_matrix.h5"
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
 # celllevel <- "annotation.l1"
 
@@ -458,9 +458,10 @@ fn_check_cellref <- function(.refname) {
 
 # load data ---------------------------------------------------------------
 
+sc <- fn_load_sc_10x(h5file)
+
 fn_check_cellref(refname)
 
-sc <- fn_load_sc_10x(h5file)
 
 # body --------------------------------------------------------------------
 
