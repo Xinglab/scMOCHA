@@ -314,7 +314,14 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
 
 fn_plot_azimuth_umap <- function(.x) {
 
-  .umap <- .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
+  .umap <- tryCatch(
+      expr = {
+        .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
+      },
+      error = \(e) {
+        .x@reductions$umap@cell.embeddings |> data.table::as.data.table()
+      }
+    )
   colnames(.umap) <- c("UMAP_1", "UMAP_2")
 
   # .umap
@@ -595,7 +602,7 @@ sc$sc_azimuth@meta.data |>
   dplyr::select(1, 3, 4) ->
   sc$cellbarcode_cluster
 
-quit(save = "no")
+# quit(save = "no")
 
 sc$cellbarcode_bulk <- sc$cellbarcode_cluster |>
   dplyr::mutate(cluster = "Bulk")
