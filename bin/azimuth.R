@@ -27,6 +27,34 @@ celllevel <- args[3]
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
 # celllevel <- "annotation.l1"
 
+use_azimuth <- TRUE
+
+if(!file.exists(h5file)) {
+  message(
+    "Notice: {h5file} does not exist" |> glue::glue()
+  )
+  quit(save = "no")
+} else {
+  message(
+    "Notice: {h5file} exists" |> glue::glue()
+  )
+}
+
+if (is.na(refname)) {
+  message(
+    "Notice: refname is not defined \n the cell cluster and annotation will not be using by Azimuth"
+  )
+  use_azimuth <- FALSE
+}
+
+if (is.na(celllevel)) {
+  message(
+    "Notice: celllevel is not defined \n the cell cluster and annotation will not be using by Azimuth"
+  )
+  use_azimuth <- FALSE
+}
+
+
 
 # src ---------------------------------------------------------------------
 
@@ -215,25 +243,73 @@ fn_stat_cell <- function(.x, .y) {
 fn_azimuth <- function(.sc, .ref, .celllevel) {
   # .sc <- sc$sc_filter
   # .sc <- sc$sc
-
+  
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
     reference = .ref
   )
-
-  .celltype <-  .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
-
+  
+  .celltype <- .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
+  
   .celltype_collapse <- gsub(
     pattern = '[[:punct:]]| ',
     replacement = "_",
     x = .celltype
   ) |> factor()
-
+  
   .sca[["celltype"]] <- .celltype
   .sca[["celltype_name"]] <- .celltype_collapse
-
+  
   .sca
+  
+}
 
+fn_sctransform <- function(.sc) {
+  .sct <- Seurat::SCTransform(
+    object = .sc,
+    vars.to.regress = c("percent.mt", "percent.ribo")
+  )
+  
+  .npcs <- 30
+  .reso <- 0.1
+  
+  .sct |> 
+    Seurat::RunPCA(npcs = .npcs) |> 
+    Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |> 
+    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |> 
+    Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |> 
+    Seurat::FindClusters(resolution = .reso) ->
+    .scta
+  
+  .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
+  .celltype_collapse <- .celltype
+  
+  .scta[["celltype"]] <- .celltype
+  .scta[["celltype_name"]] <- .celltype_collapse
+  
+  .scta
+  
+}
+
+fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
+  # .sc <- sc$sc_filter
+  # .sc <- sc$sc
+  
+  if(.use_azimuth) {
+    .sca <- 
+      tryCatch(
+        expr = {
+          fn_azimuth(.sc, .ref, .celllevel)
+        },
+        error = \(e) {
+          fn_sctransform(.sc)
+        }
+      )
+  } else {
+    .sca <- fn_sctransform(.sc)
+  }
+  
+  .sca
 }
 
 fn_plot_azimuth_umap <- function(.x) {
@@ -433,6 +509,7 @@ fn_check_cellref <- function(.refname) {
   # SeuratData::InstalledData() |> dplyr::glimpse()
   if(dir.exists(.refname)) {
     message(glue::glue("Azimuth reference {.refname} installed"))
+    use_azimuth <<- TRUE
     return(1)
   }
   
@@ -440,27 +517,41 @@ fn_check_cellref <- function(.refname) {
     dplyr::filter(
       grepl("Azimuth Reference", x = Summary)
       )
-  
 
   .ref <- .sd |>
     dplyr::filter(Dataset == .refname) 
-  
 
   if(length(.ref$Installed)!=0 && .ref$Installed) {
     message(glue::glue("Azimuth reference {.refname} installed"))
   } else {
-    SeuratData::InstallData(
-      ds = .refname
+    tryCatch(
+      expr = {
+        SeuratData::InstallData(
+          ds = .refname
+        )
+      },
+      warning = \(w) {
+        use_azimuth <<- FALSE
+      },
+      error = \(e) {
+        use_azimuth <<- FALSE
+      }
     )
   }
 }
 
 
 # load data ---------------------------------------------------------------
+fn_check_cellref(refname)
+
+
+
+
+# Load 10x ----------------------------------------------------------------
+
 
 sc <- fn_load_sc_10x(h5file)
 
-fn_check_cellref(refname)
 
 
 # body --------------------------------------------------------------------
@@ -477,11 +568,13 @@ sc$cell_stats <- fn_stat_cell(
 
 # Azimuth -----------------------------------------------------------------
 
-sc$sc_azimuth <- fn_azimuth(
+sc$sc_azimuth <- fn_cluster_anno(
   .sc = sc$sc_filter,
+  .use_azimuth = use_azimuth,
   .ref = refname,
   .celllevel = celllevel
 )
+
 
 
 # Cell barcode ------------------------------------------------------------
@@ -502,6 +595,7 @@ sc$sc_azimuth@meta.data |>
   dplyr::select(1, 3, 4) ->
   sc$cellbarcode_cluster
 
+quit(save = "no")
 
 sc$cellbarcode_bulk <- sc$cellbarcode_cluster |>
   dplyr::mutate(cluster = "Bulk")
