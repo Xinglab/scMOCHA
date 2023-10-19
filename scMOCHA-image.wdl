@@ -3,6 +3,9 @@ workflow scMOCHA {
   # version of this pipeline
   String version = "CellRanger v7.0.1"
 
+  # MitoScape
+  Boolean use_mitoscape = false
+
   # Cell ranger inpunts
   String output_id
   String fastqs
