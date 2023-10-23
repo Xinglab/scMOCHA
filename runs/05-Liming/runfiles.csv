@@ -1,0 +1,3 @@
+path,name,srrid,srrdir,scmocha_sh
+/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/fastq/Rh0,GEX_Rh0,GEX_Rh0,/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/torun/GEX_Rh0,/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/torun/GEX_Rh0/runwdl_GEX_Rh0.sh
+/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/fastq/WT,GEX_WT,GEX_WT,/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/torun/GEX_WT,/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/torun/GEX_WT/runwdl_GEX_WT.sh
