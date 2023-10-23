@@ -3,17 +3,25 @@ workflow scMOCHA {
   # version of this pipeline
   String version = "CellRanger v7.0.1"
 
+  # MitoScape
+  Boolean use_mitoscape = false
+
+  # Cell ranger inpunts
   String output_id
   String fastqs
   String sample_id
   String transcriptome = "/home/liuc9/data/refdata/mgatk_index/Human"
   File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
+
+
   String output_dir
 
+  # mgatk inputs
   String chrM = "MT"
 
-  String cellrefname = "pbmcref"
-  String celllevel = "celltype.l1"
+  # cell_cluster_annotation inputs
+  String cellrefname
+  String celllevel
 
 
   # Runtime attributes
@@ -21,14 +29,15 @@ workflow scMOCHA {
   Int boot_disk_size_gb = 12
   String disk_space = "50"
   Int cpu = 10
+  Boolean use_ssd = false
 
+  # docker image
   String scmocha_version = "latest"
   String docker = "chunjiesamliu/scmocha"
   String partition = "defq"
   String account = "liuc9"
   File IMAGE = "/scr1/users/liuc9/sif/scmocha_latest.sif"
 
-  Boolean use_ssd = false
 
   parameter_meta {
       output_id: "Output ID"
@@ -332,7 +341,7 @@ task cellranger_count {
       samtools view -b -h -o ${output_id}/outs/possorted_genome_bam.MT.bam ${output_id}/outs/possorted_genome_bam.bam ${chrM}
       samtools index ${output_id}/outs/possorted_genome_bam.MT.bam
 
-      # mt depth
+      # MT depth
       samtools depth -a -r ${chrM} --threads=${cpu} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
 
       # Depth plot
@@ -486,7 +495,9 @@ task call_mt_variants {
       -c ${cpu} \
       -bt CB \
       -b ${barcodes_tsv} \
-      -ub UB
+      -ub UB \
+      --snake-stdout \
+      --keep-temp-files
 
     # the cell/final/ last "/" is important
     variant_calling_cell_raw.py \
@@ -502,7 +513,9 @@ task call_mt_variants {
       -n cluster \
       -g ${rCRS} \
       -c ${cpu} \
-      -bt CJ
+      -bt CJ \
+      --snake-stdout \
+      --keep-temp-files
 
     variant_calling_cluster.py \
       cluster/final/ \

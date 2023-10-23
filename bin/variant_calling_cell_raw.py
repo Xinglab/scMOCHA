@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 ###################################################
 # Call mito variants
@@ -173,19 +173,21 @@ variant_output.columns = ["position", "nucleotide", "variant", "vmr", "mean", "v
 variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]] = variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]].astype(float)
 
 # exclude variants with less than three cells
-multi_cell_variants = variant_output[variant_output["n_cells_conf_detected"] >= 3]["variant"]
 heteroplasmic_df.to_csv(MGATK_OUT_DIR + sample_prefix + ".cell_heteroplasmic_df_raw.tsv.gz", sep="\t", compression="gzip")
-heteroplasmic_df = heteroplasmic_df[multi_cell_variants]
 
-# generate caleb plot
-plt.figure(figsize=(10, 8))
-plt.scatter(variant_output[variant_output["variant"].isin(multi_cell_variants)]["strand_correlation"], np.log10(variant_output[variant_output["variant"].isin(multi_cell_variants)]["vmr"] + 0.1), s=5)
-plt.axhline(np.log10(0.01), color="red", alpha=0.4, linestyle=":")
-plt.axvline(0.65, color="red", alpha=0.4, linestyle=":")
-plt.xlabel("strand correlation", fontsize=20)
-plt.ylabel("log10(VMR)", fontsize=20)
+
+# multi_cell_variants = variant_output[variant_output["n_cells_conf_detected"] >= 0]["variant"] # default 3
+# heteroplasmic_df = heteroplasmic_df[multi_cell_variants]
+
+# # generate caleb plot
+# plt.figure(figsize=(10, 8))
+# plt.scatter(variant_output[variant_output["variant"].isin(multi_cell_variants)]["strand_correlation"], np.log10(variant_output[variant_output["variant"].isin(multi_cell_variants)]["vmr"] + 0.1), s=5)
+# plt.axhline(np.log10(0.01), color="red", alpha=0.4, linestyle=":")
+# plt.axvline(0.65, color="red", alpha=0.4, linestyle=":")
+# plt.xlabel("strand correlation", fontsize=20)
+# plt.ylabel("log10(VMR)", fontsize=20)
+# plt.savefig(MGATK_OUT_DIR + sample_prefix + ".vmr_strand_plot.png")
 
 # save results
-plt.savefig(MGATK_OUT_DIR + sample_prefix + ".vmr_strand_plot.png")
 variant_output.to_csv(MGATK_OUT_DIR + sample_prefix + ".variant_stats.tsv.gz", sep="\t", compression="gzip", index=False)
 heteroplasmic_df.to_csv(MGATK_OUT_DIR + sample_prefix + ".cell_heteroplasmic_df.tsv.gz", sep="\t", compression="gzip")

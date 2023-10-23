@@ -36,17 +36,16 @@ cell_hetero_raw_file <- args[6]
 perlscript <- args[7]
 jar_path <- args[8]
 sqlite_path <- args[9]
-#
-#
-# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
-# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
-# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/cromwell-executions/SCMTAH/d0a2f746-597b-4716-afb5-1c6f1488664b/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
 
+#
+# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-plot_scMOCHA/inputs/1423780135/barcode_cluster.tsv"
+# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
+# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
 # perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
-# jar_path <- "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"
+# jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
 # sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
 
@@ -628,7 +627,8 @@ fn_http_request <- function() {
   } else {NULL}
 }
 
-cmd <- "perl {perlscript} {jar_path} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+cmd <- "perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+# cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {jar_path} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
 system(command = cmd)
 
 variant_annotation <- if(file.exists("cell_variant_annotation.tsv")) {
@@ -732,5 +732,5 @@ cell_raw_ch_af_depth <- fn_heatmap(
 
 # save image --------------------------------------------------------------
 
-save.image(file = "scmtah.rda")
+save.image(file = "scMOCHA.rda")
 # load(file = "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/0138fcd0-c384-42c2-8704-6647767610d2/call-plot_scmtah/execution/scmtah.rda")

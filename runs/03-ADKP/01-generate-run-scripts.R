@@ -96,7 +96,7 @@ metadata_d |>
           "scMOCHA.account" = "liuc9",
           "scMOCHA.IMAGE" = "/scr1/users/liuc9/sif/scmocha_latest.sif",
           "scMOCHA.perlscript" = "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl",
-          "scMOCHA.jar_path" = "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar",
+          "scMOCHA.jar_path" = "/scr1/users/liuc9/tools/haplogrep3",
           "scMOCHA.sqlite_path" = "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
         )
         
