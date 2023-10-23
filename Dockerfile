@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
   && mkdir -p /scMOCHA \
   && mkdir -p /opt/ \
   && cd /opt/ \
-  && wget -O cellranger-7.1.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.1.0.tar.gz?Expires=1691655506&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jZi4xMHhnZW5vbWljcy5jb20vcmVsZWFzZXMvY2VsbC1leHAvY2VsbHJhbmdlci03LjEuMC50YXIuZ3oiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE2OTE2NTU1MDZ9fX1dfQ__&Signature=PVRqashGFzHsyqomOJu6KYl3cwj195ChzQHFUu7f5HkscDjlJOcHX8dSuPiYb-n5ZG81ASEkBpuJ8GY6hETioKmpQkze~8d1lQKWGAhUPDENNm8bq6ClqNxgEI5CHYSEeKQv9ZJN4lw2O~tXKYqRdjc4wEfzn4l8~dUZTCRBpbf~KJaRse42Cml7Su6QkyV2POazOSpRZQvpsbK5Hc~U3igrikqXTudpMdX8p99YRezGuFiDvkgnwHsRb0NOgQBKPAnHo1P0Pl~zMtg4g-F8MQ~HmD92fq3AFntp9ehdfXaciGLs2tHycmvRN-bKCW3KXkuIovNvSfmIfUTcE-IDuQ__&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA" \
+  && wget -O cellranger-7.1.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.1.0.tar.gz?Expires=1698133810&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=K03-tm~GbfexOYcuPPbpIN8m0jGtCE51Jajc0TVjp1S3Yn9w0raTWtQkLyWtEvOG8nNxK1km5o-I5SQPK9VzVMHXCyE5BthwGSDiLEd7Iwju2kx56u203Wy8BX2tho7IZxl7UWy8-GF1CvtpLnDsYJaIgozSMxH1cmEAAIoV0C5f0kF2BHfmNQGos2Ytvk2DOJMv5KvbrbshPjlgRNu81qa9kpO9aQJvZN-UFB58TD0Hod3OGvLT1FxxSowOLjFhsJg0bShCWvJ7GkaArIdxpHSVH8ET8CwljrbMLMo9miDgFGQSP-e40awxELgNz5RfCru1dRxD8xWR5q0NFQYFuA__" \
   && tar -xzvf cellranger-7.1.0.tar.gz \
   && ln -s /opt/cellranger-7.1.0/bin/cellranger /usr/bin/cellranger \
   && rm cellranger-7.1.0.tar.gz \
