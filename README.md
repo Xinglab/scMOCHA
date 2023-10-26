@@ -60,7 +60,5 @@ cpanm DBD::SQLite
 
 ## Singularity or docker image
 ```bash
-
 singularity pull docker://chunjiesamliu/scmocha:latest
-
 ```
