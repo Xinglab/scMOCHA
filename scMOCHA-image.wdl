@@ -496,6 +496,7 @@ task call_mt_variants {
       -bt CB \
       -b ${barcodes_tsv} \
       -ub UB \
+      --low-coverage-threshold 3 \
       --snake-stdout \
       --keep-temp-files
 
@@ -504,7 +505,7 @@ task call_mt_variants {
       cell/final/ \
       cell \
       16569 \
-      10 \
+      3 \
       ${chrM}
 
     # call variants on cluster level
@@ -514,6 +515,7 @@ task call_mt_variants {
       -g ${rCRS} \
       -c ${cpu} \
       -bt CJ \
+      --low-coverage-threshold 3 \
       --snake-stdout \
       --keep-temp-files
 
@@ -521,7 +523,7 @@ task call_mt_variants {
       cluster/final/ \
       cluster \
       16569 \
-      10 \
+      3 \
       ${chrM}
 
   }

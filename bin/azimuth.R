@@ -23,7 +23,7 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/01-Sci_Immunol_32651212/outputs/SRR11680207/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/22b5c1d0-b835-4018-8eb4-d3b880a87c49/call-cell_cluster_annotation/inputs/900172710/filtered_feature_bc_matrix.h5"
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
 # celllevel <- "annotation.l1"
 
@@ -270,11 +270,11 @@ fn_sctransform <- function(.sc) {
     vars.to.regress = c("percent.mt", "percent.ribo")
   )
   
-  .npcs <- 30
-  .reso <- 0.1
+  .npcs <- 10
+  .reso <- 0.01
   
   .sct |> 
-    Seurat::RunPCA(npcs = .npcs) |> 
+    Seurat::RunPCA(npcs = 30) |> 
     Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |> 
     Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |> 
     Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |> 
