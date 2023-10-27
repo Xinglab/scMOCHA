@@ -598,7 +598,7 @@ task plot_scMOCHA {
       ${cell_coverage_file} \
       ${cluster_hetero_file} \
       ${cluster_coverage_file} \
-      ${cell_hetero_raw_file}
+      ${cell_hetero_raw_file} \
       ${perlscript} \
       ${jar_path} \
       ${sqlite_path}
