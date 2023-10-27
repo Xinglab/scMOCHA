@@ -38,6 +38,11 @@ workflow scMOCHA {
   String account = "liuc9"
   File IMAGE = "/scr1/users/liuc9/sif/scmocha_latest.sif"
 
+  File perlscript = "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
+  File jar_path = "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"  # /opt/haplogrep3/haplogrep3.jar
+  File sqlite_path = "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
+
+
 
   parameter_meta {
       output_id: "Output ID"
@@ -119,6 +124,9 @@ workflow scMOCHA {
       cluster_hetero_file = call_mt_variants.cluster_cell_heteroplasmic_df_tsv_gz,
       cluster_coverage_file = call_mt_variants.cluster_coverage_txt_gz,
       cell_hetero_raw_file = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz,
+      perlscript = perlscript,
+      jar_path = jar_path,
+      sqlite_path = sqlite_path,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -481,6 +489,7 @@ task call_mt_variants {
   String account
   File IMAGE
 
+
   command {
 
     # module load R/4.1.0
@@ -581,6 +590,10 @@ task plot_scMOCHA {
 
   File cell_hetero_raw_file
 
+  File perlscript
+  File jar_path
+  File sqlite_path
+
   String memory
   Int boot_disk_size_gb
   String disk_space
@@ -603,7 +616,10 @@ task plot_scMOCHA {
       ${cell_coverage_file} \
       ${cluster_hetero_file} \
       ${cluster_coverage_file} \
-      ${cell_hetero_raw_file}
+      ${cell_hetero_raw_file} \
+      ${perlscript} \
+      ${jar_path} \
+      ${sqlite_path}
   }
 
   output {
