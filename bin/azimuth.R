@@ -285,11 +285,11 @@ fn_scnorm <- function(.sc) {
     .reso <- 0.01
 
     .scn |>
-      Seurat::RunPCA() |>
-      Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
-      Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |>
+      Seurat::RunPCA(features = VariableFeatures(.scn)) |>
       Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |>
-      Seurat::FindClusters(resolution = .reso) ->
+      Seurat::FindClusters(resolution = .reso) |> 
+      Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
+      Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
       .scna
     
     .celltype <- glue::glue("cluster_{.scna[['seurat_clusters']][, 1]}") |> factor()
