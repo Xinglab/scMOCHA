@@ -388,7 +388,7 @@ ch_af_depth <- fn_heatmap(
   pdf(
     file = "cell_af_heatmap.pdf",
     width = 14,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_af)
   dev.off()
@@ -396,7 +396,7 @@ ch_af_depth <- fn_heatmap(
   pdf(
     file = "cell_depth_heatmap.pdf",
     width = 14,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_depth)
   dev.off()
@@ -447,7 +447,7 @@ cluster_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_af_heatmap.pdf",
     width = 7,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_af)
   dev.off()
@@ -455,7 +455,7 @@ cluster_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_depth_heatmap.pdf",
     width = 7,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_depth)
   dev.off()
@@ -710,7 +710,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_cell_af_heatmap.pdf",
     width = 20,
-    height = 10
+    height = 15
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
   dev.off()
@@ -718,7 +718,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_cell_depth_heatmap.pdf",
     width = 14,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)
   dev.off()
