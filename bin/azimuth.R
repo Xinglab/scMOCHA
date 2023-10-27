@@ -23,7 +23,7 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/22b5c1d0-b835-4018-8eb4-d3b880a87c49/call-cell_cluster_annotation/inputs/900172710/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/c614cad0-69e4-4906-9b2d-8bdeb2031d5f/call-cell_cluster_annotation/inputs/1915383757/filtered_feature_bc_matrix.h5"
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
 # celllevel <- "annotation.l1"
 
@@ -264,6 +264,43 @@ fn_azimuth <- function(.sc, .ref, .celllevel) {
   
 }
 
+fn_scnorm <- function(.sc) {
+    .sc |>
+      Seurat::NormalizeData() ->
+      .scn
+
+    .scn <- Seurat::FindVariableFeatures(
+      .scn,
+      selection.method = "vst",
+      nfeatures = 2000
+    )
+
+    .allgenes <- rownames(.scn)
+    .scn <- Seurat::ScaleData(
+      .scn,
+      features = .allgenes
+    )
+
+    .npcs <- 10
+    .reso <- 0.01
+
+    .scn |>
+      Seurat::RunPCA() |>
+      Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
+      Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |>
+      Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |>
+      Seurat::FindClusters(resolution = .reso) ->
+      .scna
+    
+    .celltype <- glue::glue("cluster_{.scna[['seurat_clusters']][, 1]}") |> factor()
+    .celltype_collapse <- .celltype
+    
+    .scna[["celltype"]] <- .celltype
+    .scna[["celltype_name"]] <- .celltype_collapse
+    
+    .scna
+}
+
 fn_sctransform <- function(.sc) {
   .sct <- Seurat::SCTransform(
     object = .sc,
@@ -274,12 +311,14 @@ fn_sctransform <- function(.sc) {
   .reso <- 0.01
   
   .sct |> 
-    Seurat::RunPCA(npcs = 30) |> 
+    Seurat::RunPCA() |> 
     Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |> 
     Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |> 
     Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |> 
     Seurat::FindClusters(resolution = .reso) ->
     .scta
+  
+  
   
   .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
   .celltype_collapse <- .celltype
