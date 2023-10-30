@@ -23,7 +23,7 @@ args <- commandArgs(TRUE)
 h5file <- args[1]
 refname <- args[2]
 celllevel <- args[3]
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/c614cad0-69e4-4906-9b2d-8bdeb2031d5f/call-cell_cluster_annotation/inputs/1915383757/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/tmp/filtered_feature_bc_matrix.h5"
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
 # celllevel <- "annotation.l1"
 
@@ -307,14 +307,14 @@ fn_sctransform <- function(.sc) {
     vars.to.regress = c("percent.mt", "percent.ribo")
   )
   
-  .npcs <- 10
-  .reso <- 0.01
+  .npcs <- 50
+  .reso <- 0.05
   
   .sct |> 
     Seurat::RunPCA() |> 
     Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |> 
     Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |> 
-    Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |> 
+    Seurat::FindNeighbors(reduction = "pca", dims = 1:.npcs) |> 
     Seurat::FindClusters(resolution = .reso) ->
     .scta
   
@@ -591,13 +591,9 @@ fn_check_cellref <- function(.refname) {
 fn_check_cellref(refname)
 
 
-
-
 # Load 10x ----------------------------------------------------------------
 
-
 sc <- fn_load_sc_10x(h5file)
-
 
 
 # body --------------------------------------------------------------------
