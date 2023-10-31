@@ -4,6 +4,7 @@
 # @DATE: 2023-05-20 15:14:09
 # @DESCRIPTION:
 
+# mamba env create --name scmocha --file scmocha.env.yaml
 # Number of input parameters
 param=$#
 # Input parameters
