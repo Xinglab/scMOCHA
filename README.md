@@ -23,33 +23,19 @@ First test PBMC data was source from [Stuart el al., Cell, 2019](https://www.sci
 
 ## Requrements
 
-```
-name: scmocha
-channels:
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - python
-  - samtools
-  - bcftools
-  - pip
-  - r-base
-  - r-tidyverse
-  - r-seurat
-  - bioconductor-gmoviz
-  - r-biocmanager
-  - r-devtools
-  - perl
-  - perl-dbi
-  - sqlite
-  - perl-app-cpanminus
-  - pip:
-    - flake8
-    - black
-    - sinto
+> the conda environment includes Seurat and SeuratData, for the cell annotation, when using Azimuth, we need install reference data map by using SeuratData to install corresonpoding reference tissue and cell types.
 
+### Conda environment
+
+```shell
+
+# production mode
+conda env create -f scmocha.prod.yaml
+
+# dev mode
+conda env create -f scmocha.dev.yaml
 ```
+
 
 ### Annotation software
 > For variant annotation, we need use `cpanm` to install `perl` module `DBD:SQLite`.
