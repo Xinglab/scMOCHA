@@ -104,22 +104,13 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     col.name = "percent.ribo"
   )
 
-  if(packageVersion(Seurat)>=0.5.0){
     apply(
-        .sc[["RNA"]]$counts,
-        2,
-       function(x) (100 * max(x)) / sum(x)
-      ) ->
-       .sc$Percent.Largest.Gene
-  } else if(packageVersion(Seurat)<0.5.0){
-     apply(
-        .sc@assays$RNA@counts,
-        2,
-       function(x) (100 * max(x)) / sum(x)
-      ) ->
-       .sc$Percent.Largest.Gene
-  }
-  
+    .sc@assays$RNA@counts,
+    2,
+    function(x) (100 * max(x)) / sum(x)
+  ) ->
+    .sc$Percent.Largest.Gene
+
 
 
   .sc@meta.data %>%
@@ -253,25 +244,25 @@ fn_stat_cell <- function(.x, .y) {
 fn_azimuth <- function(.sc, .ref, .celllevel) {
   # .sc <- sc$sc_filter
   # .sc <- sc$sc
-  
+
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
     reference = .ref
   )
-  
+
   .celltype <- .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
-  
+
   .celltype_collapse <- gsub(
     pattern = '[[:punct:]]| ',
     replacement = "_",
     x = .celltype
   ) |> factor()
-  
+
   .sca[["celltype"]] <- .celltype
   .sca[["celltype_name"]] <- .celltype_collapse
-  
+
   .sca
-  
+
 }
 
 fn_scnorm <- function(.sc) {
@@ -297,17 +288,17 @@ fn_scnorm <- function(.sc) {
     .scn |>
       Seurat::RunPCA(features = VariableFeatures(.scn)) |>
       Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |>
-      Seurat::FindClusters(resolution = .reso) |> 
+      Seurat::FindClusters(resolution = .reso) |>
       Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
       Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
       .scna
-    
+
     .celltype <- glue::glue("cluster_{.scna[['seurat_clusters']][, 1]}") |> factor()
     .celltype_collapse <- .celltype
-    
+
     .scna[["celltype"]] <- .celltype
     .scna[["celltype_name"]] <- .celltype_collapse
-    
+
     .scna
 }
 
@@ -316,36 +307,36 @@ fn_sctransform <- function(.sc) {
     object = .sc,
     vars.to.regress = c("percent.mt", "percent.ribo")
   )
-  
+
   .npcs <- 50
   .reso <- 0.05
-  
-  .sct |> 
-    Seurat::RunPCA() |> 
-    Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |> 
-    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |> 
-    Seurat::FindNeighbors(reduction = "pca", dims = 1:.npcs) |> 
+
+  .sct |>
+    Seurat::RunPCA() |>
+    Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
+    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |>
+    Seurat::FindNeighbors(reduction = "pca", dims = 1:.npcs) |>
     Seurat::FindClusters(resolution = .reso) ->
     .scta
-  
-  
-  
+
+
+
   .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
   .celltype_collapse <- .celltype
-  
+
   .scta[["celltype"]] <- .celltype
   .scta[["celltype_name"]] <- .celltype_collapse
-  
+
   .scta
-  
+
 }
 
 fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
   # .sc <- sc$sc_filter
   # .sc <- sc$sc
-  
+
   if(.use_azimuth) {
-    .sca <- 
+    .sca <-
       tryCatch(
         expr = {
           fn_azimuth(.sc, .ref, .celllevel)
@@ -357,7 +348,7 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
   } else {
     .sca <- fn_sctransform(.sc)
   }
-  
+
   .sca
 }
 
@@ -568,14 +559,14 @@ fn_check_cellref <- function(.refname) {
     use_azimuth <<- TRUE
     return(1)
   }
-  
+
   .sd <- SeuratData::AvailableData() |>
     dplyr::filter(
       grepl("Azimuth Reference", x = Summary)
       )
 
   .ref <- .sd |>
-    dplyr::filter(Dataset == .refname) 
+    dplyr::filter(Dataset == .refname)
 
   if(length(.ref$Installed)!=0 && .ref$Installed) {
     message(glue::glue("Azimuth reference {.refname} installed"))
