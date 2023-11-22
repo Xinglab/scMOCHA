@@ -20,8 +20,10 @@ args <- commandArgs(TRUE)
 
 depthfile <- args[1]
 outfile <- args[2]
+mt_exons_df <- args[3]
 
 # depthfile <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/MT.depth"
+# mt_exons_df <- "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
 
 
 # header ------------------------------------------------------------------
@@ -60,7 +62,7 @@ coverage <- data.table::fread(
 
 gtf_gene_df <-
   readr::read_rds(
-    file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
+    file = mt_exons_df
   )
 
 coverage %>%

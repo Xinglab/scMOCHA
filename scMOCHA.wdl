@@ -13,6 +13,9 @@ workflow scMOCHA {
   String transcriptome = "/home/liuc9/data/refdata/mgatk_index/Human"
   File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
 
+  File mt_exons_df = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
+  File mt_features_gmoviz = "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz"
+
 
   String output_dir
 
@@ -42,6 +45,8 @@ workflow scMOCHA {
   File jar_path = "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"  # /opt/haplogrep3/haplogrep3.jar
   File sqlite_path = "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
+  String bindir = "/home/liuc9/github/scMOCHA/bin"
+
 
   parameter_meta {
       output_id: "Output ID"
@@ -62,6 +67,7 @@ workflow scMOCHA {
         sample_id = sample_id,
         transcriptome = transcriptome,
         chrM = chrM,
+        mt_exons_df = mt_exons_df,
         memory = memory,
         boot_disk_size_gb = boot_disk_size_gb,
         disk_space = disk_space,
@@ -70,7 +76,8 @@ workflow scMOCHA {
         docker = docker,
         partition = partition,
         account = account,
-        IMAGE = IMAGE
+        IMAGE = IMAGE,
+        bindir = bindir
   }
 
   call cell_cluster_annotation {
@@ -80,6 +87,9 @@ workflow scMOCHA {
       mt_bam_index = cellranger_count.mt_bam_index,
       refname = cellrefname,
       celllevel = celllevel,
+      mt_rcrs_fasta = rCRS,
+      mt_exons_df = mt_exons_df,
+      mt_features_gmoviz = mt_features_gmoviz,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -88,7 +98,8 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE
+      IMAGE = IMAGE,
+      bindir = bindir
   }
 
   call call_mt_variants {
@@ -112,7 +123,8 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE
+      IMAGE = IMAGE,
+      bindir = bindir
   }
 
   call plot_scMOCHA {
@@ -134,7 +146,8 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE
+      IMAGE = IMAGE,
+      bindir = bindir
   }
 
   call gather_outputfiles {
@@ -212,7 +225,8 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE
+      IMAGE = IMAGE,
+      bindir = bindir
 
 
   }
@@ -314,6 +328,8 @@ task cellranger_count {
 
     String chrM = "MT"
 
+    File mt_exons_df
+
     String memory
     Int boot_disk_size_gb
     String disk_space
@@ -323,8 +339,8 @@ task cellranger_count {
     String partition
     String account
     File IMAGE
+    String bindir
 
-    String bindir = "/home/liuc9/github/scMOCHA/bin"
 
     command {
 
@@ -354,7 +370,7 @@ task cellranger_count {
       samtools depth -a -r ${chrM} --threads=${cpu} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
 
       # Depth plot
-      ${bindir}/depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf
+      ${bindir}/depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf ${mt_exons_df}
 
     }
 
@@ -385,6 +401,10 @@ task cell_cluster_annotation {
   String refname
   String celllevel
 
+  File mt_rcrs_fasta
+  File mt_exons_df
+  File mt_features_gmoviz
+
   String memory
   Int boot_disk_size_gb
   String disk_space
@@ -394,8 +414,8 @@ task cell_cluster_annotation {
   String partition
   String account
   File IMAGE
+  String bindir
 
-  String bindir = "/home/liuc9/github/scMOCHA/bin"
 
   command {
     # module load R/4.1.0
@@ -426,7 +446,7 @@ task cell_cluster_annotation {
     bamtools split -in MT_cluster.bam -tag CJ
 
     # gmoviz plot of cluster coverage
-    ${bindir}/depth_cluster_gmoviz.R
+    ${bindir}/depth_cluster_gmoviz.R ${mt_features_gmoviz} ${mt_rcrs_fasta} ${mt_exons_df}
 
   }
   output {
@@ -475,8 +495,8 @@ task call_mt_variants {
   String partition
   String account
   File IMAGE
+  String bindir
 
-  String bindir = "/home/liuc9/github/scMOCHA/bin"
 
   command {
 
@@ -583,8 +603,8 @@ task plot_scMOCHA {
   String partition
   String account
   File IMAGE
+  String bindir
 
-  String bindir = "/home/liuc9/github/scMOCHA/bin"
 
   command {
     # module load R/4.1.0
@@ -698,8 +718,7 @@ task gather_outputfiles {
   String partition
   String account
   File IMAGE
-
-  String bindir = "/home/liuc9/github/scMOCHA/bin"
+  String bindir
 
   command {
     mkdir -p ${output_dir}
