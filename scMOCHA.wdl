@@ -21,6 +21,7 @@ workflow scMOCHA {
 
   # mgatk inputs
   String chrM = "MT"
+  Int low_coverage_threshold = 10
 
   # cell_cluster_annotation inputs
   String cellrefname
@@ -115,6 +116,7 @@ workflow scMOCHA {
       mt_bulk_bam_index = cell_cluster_annotation.mt_bulk_bam_index,
       chrM = chrM,
       rCRS = rCRS,
+      low_coverage_threshold = low_coverage_threshold,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -484,6 +486,7 @@ task call_mt_variants {
 
   String chrM
   File rCRS
+  Int low_coverage_threshold
 
 
   String memory
@@ -513,7 +516,7 @@ task call_mt_variants {
       -bt CB \
       -b ${barcodes_tsv} \
       -ub UB \
-      --low-coverage-threshold 3 \
+      --low-coverage-threshold ${low_coverage_threshold} \
       --snake-stdout \
       --keep-temp-files
 
@@ -522,7 +525,7 @@ task call_mt_variants {
       cell/final/ \
       cell \
       16569 \
-      3 \
+      ${low_coverage_threshold} \
       ${chrM}
 
     # call variants on cluster level
@@ -532,7 +535,7 @@ task call_mt_variants {
       -g ${rCRS} \
       -c ${cpu} \
       -bt CJ \
-      --low-coverage-threshold 3 \
+      --low-coverage-threshold ${low_coverage_threshold} \
       --snake-stdout \
       --keep-temp-files
 
@@ -540,7 +543,7 @@ task call_mt_variants {
       cluster/final/ \
       cluster \
       16569 \
-      3 \
+      ${low_coverage_threshold} \
       ${chrM}
 
   }
