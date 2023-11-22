@@ -104,12 +104,22 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     col.name = "percent.ribo"
   )
 
-  apply(
-    .sc@assays$RNA@counts,
-    2,
-    function(x) (100 * max(x)) / sum(x)
-  ) ->
-    .sc$Percent.Largest.Gene
+  if(packageVersion(Seurat)>=0.5.0){
+    apply(
+        .sc[["RNA"]]$counts,
+        2,
+       function(x) (100 * max(x)) / sum(x)
+      ) ->
+       .sc$Percent.Largest.Gene
+  } else if(packageVersion(Seurat)<0.5.0){
+     apply(
+        .sc@assays$RNA@counts,
+        2,
+       function(x) (100 * max(x)) / sum(x)
+      ) ->
+       .sc$Percent.Largest.Gene
+  }
+  
 
 
   .sc@meta.data %>%
