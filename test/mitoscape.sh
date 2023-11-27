@@ -22,8 +22,8 @@ cellranger count \
 
 #! mapping use STAR
 cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-2
-/scr1/users/liuc9/tools/STAR-2.7.1a/bin/Linux_x86_64/STAR \
-  --genomeDir /mnt/isilon/xing_lab/liuc9/refdata/rCRS/rCRS_cellranger/star/ \
+~/tools/STAR-2.7.9a/bin/Linux_x86_64/STAR \
+  --genomeDir /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/rCRS_starindex2.7.9a \
   --readFilesIn Pei-2_S2_L001_R2_001.fastq.gz Pei-2_S2_L001_R1_001.fastq.gz \
   --soloType Droplet \
   --readFilesCommand zcat \
