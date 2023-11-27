@@ -24,11 +24,27 @@ cellranger count \
 cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-2
 ~/tools/STAR-2.7.9a/bin/Linux_x86_64/STAR \
   --genomeDir /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/rCRS_starindex2.7.9a \
+  --readFilesIn Pei-2_S2_L001_R2_001.fastq.gz Pei-2_S2_L001_R1_001.fastq.gz --readFilesCommand zcat \
+  --outFileNamePrefix cj_mapping_ \
+  --outSAMtype BAM SortedByCoordinate \
+  --soloType Droplet \
+  --soloCBwhitelist /scr1/users/liuc9/tools/cellranger-7.0.1/lib/python/cellranger/barcodes/737K-august-2016.txt \
+  --runThreadN 10 \
+  --soloUMIlen 12 \
+  --clipAdapterType CellRanger4 \
+  --outFilterScoreMin 30 \
+  --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
+  --soloUMIfiltering MultiGeneUMI_CR \
+  --soloUMIdedup 1MM_CR
+
+~/tools/STAR-2.7.9a/bin/Linux_x86_64/STAR \
+  --genomeDir /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/genome_no_MT_starindex2.7.9a \
   --readFilesIn Pei-2_S2_L001_R2_001.fastq.gz Pei-2_S2_L001_R1_001.fastq.gz \
   --soloType Droplet \
   --readFilesCommand zcat \
   --soloCBwhitelist /scr1/users/liuc9/tools/cellranger-7.0.1/lib/python/cellranger/barcodes/737K-august-2016.txt \
-  --outFileNamePrefix cj_mapping_ \
+  --outFileNamePrefix cj_mapping_no_MT_ \
+  --outSAMtype BAM SortedByCoordinate \
   --runThreadN 10 \
   --soloUMIlen 12 \
   --clipAdapterType CellRanger4 \
