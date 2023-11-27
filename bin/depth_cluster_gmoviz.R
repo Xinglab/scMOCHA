@@ -7,7 +7,6 @@
 # @DESCRIPTION: filename
 
 # Library -----------------------------------------------------------------
-
 library(magrittr)
 library(ggplot2)
 library(patchwork)
@@ -16,12 +15,14 @@ library(gmoviz)
 library(ggtranscript)
 
 # args --------------------------------------------------------------------
+
+args <- commandArgs(TRUE)
 mt_features_gmoviz <- args[1]
 mt_rcrs_fasta <- args[2]
 mt_exons_df <- args[3]
-# mt_features_gmoviz <- "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz"
-# mt_rcrs_fasta <- "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
-# mt_exons_df <- "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
+# mt_features_gmoviz <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/6982bedc-1c08-40aa-8c4f-31b59cebe69b/call-cell_cluster_annotation/inputs/2014965526/mt_features.grange.gmoviz.rds.gz"
+# mt_rcrs_fasta <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/6982bedc-1c08-40aa-8c4f-31b59cebe69b/call-cell_cluster_annotation/inputs/2014965526/rCRS.MT.fasta"
+# mt_exons_df <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/6982bedc-1c08-40aa-8c4f-31b59cebe69b/call-cell_cluster_annotation/inputs/2014965526/mt_exons.df.rds.gz"
 
 # src ---------------------------------------------------------------------
 
@@ -104,7 +105,6 @@ fn_plot_coverage <- function(.filename, .celltype) {
 }
 
 # load data ---------------------------------------------------------------
-
 tibble::tibble(
   filename = list.files(
     pattern = "MT_cluster.TAG_CJ_.*.bam$"
@@ -119,8 +119,8 @@ tibble::tibble(
   ) ->
 celltype_bams
 
-# body --------------------------------------------------------------------
 
+# body --------------------------------------------------------------------
 
 celltype_bams |>
   dplyr::mutate(
