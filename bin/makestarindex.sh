@@ -22,3 +22,15 @@ seqkit grep -vrp "MT" genome.fa >genome.no_MT.fa
   --genomeFastaFiles /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/genome.no_MT.fa \
   --sjdbGTFfile /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/Homo_sapiens.GRCh38.107.new.no_MT.gtf \
   --sjdbOverhang 100
+
+cellranger mkref --genome=genome_no_MT_cellranger \
+  --fasta=/mnt/isilon/xing_lab/liuc9/refdata/mitoscape/genome.no_MT.fa \
+  --genes=/mnt/isilon/xing_lab/liuc9/refdata/mitoscape/Homo_sapiens.GRCh38.107.new.no_MT.gtf \
+  --nthreads=50 \
+  --memgb=200
+
+cellranger mkref --genome=rCRS_cellranger \
+  --fasta=/mnt/isilon/xing_lab/liuc9/refdata/mitoscape/NC_012920.rCRS.fasta \
+  --genes=/mnt/isilon/xing_lab/liuc9/refdata/mitoscape/Homo_sapiens.GRCh38.107.MT.gtf \
+  --nthreads=50 \
+  --memgb=200
