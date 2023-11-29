@@ -23,14 +23,18 @@ cellranger count \
   --disable-ui \
   --localcores 10
 
-cellranger count \
-  --id=Pei-2 \
-  --fastqs=/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-2 \
-  --sample=Pei-2 \
-  --transcriptome=/mnt/isilon/xing_lab/liuc9/refdata/rCRS/rCRS_cellranger \
-  --nosecondary \
-  --disable-ui \
-  --localcores 20
+samtools calmd -e --output-fmt BAM --threads 20 input_MT.bam /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/rCRS_cellranger/fasta/genome.fa >input_MT_MD.bam
+
+/scr1/users/liuc9/tools/bamtofastq input_MT_MD.bam
+
+# cellranger count \
+#   --id=Pei-1 \
+#   --fastqs=/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1 \
+#   --sample=Pei-1 \
+#   --transcriptome=/mnt/isilon/xing_lab/liuc9/refdata/mitoscape/genome_no_MT_cellranger \
+#   --nosecondary \
+#   --disable-ui \
+#   --localcores 20
 
 # #! 2. Create MD tags
 # samtools calmd -e -Q --output-fmt BAM input_MT.bam >input_MT_MD.bam
