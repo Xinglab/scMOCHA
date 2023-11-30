@@ -13,7 +13,7 @@ param=$#
 # https://kb.10xgenomics.com/hc/en-us/articles/115003802691-How-do-I-prepare-Sequence-Read-Archive-SRA-data-from-NCBI-for-Cell-Ranger-
 # https://help.geneiousbiologics.com/hc/en-us/articles/4781289585300-Understanding-Single-Cell-technologies-Barcodes-and-UMIs
 
-# #! 1. Align fastq to hte MT rCRS
+#! 1. Align fastq to hte MT rCRS
 cellranger count \
   --id=Pei-1 \
   --fastqs=/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1 \
@@ -23,21 +23,50 @@ cellranger count \
   --disable-ui \
   --localcores 10
 
-samtools calmd -e --output-fmt BAM --threads 20 input_MT.bam /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/rCRS_cellranger/fasta/genome.fa >input_MT_MD.bam
+# https://wikis.utexas.edu/display/CoreNGSTools/Filtering+with+SAMTools
+# samtools view -O BAM -F 2 --threads=10 possorted_genome_bam_MT.bam >input_MT.bam
+samtools view -b -h -F 4 --threads=20 -o input_MT.bam possorted_genome_bam_MT.bam MT
 
-/scr1/users/liuc9/tools/bamtofastq input_MT_MD.bam
+samtools index input_MT.bam
 
-# cellranger count \
-#   --id=Pei-1 \
-#   --fastqs=/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1 \
-#   --sample=Pei-1 \
-#   --transcriptome=/mnt/isilon/xing_lab/liuc9/refdata/mitoscape/genome_no_MT_cellranger \
-#   --nosecondary \
-#   --disable-ui \
-#   --localcores 20
-
-# #! 2. Create MD tags
+#! 2. Create MD tags
 # samtools calmd -e -Q --output-fmt BAM input_MT.bam >input_MT_MD.bam
+
+samtools calmd -e -Q --output-fmt BAM --threads 20 input_MT.bam /mnt/isilon/xing_lab/liuc9/refdata/mitoscape/rCRS_cellranger/fasta/genome.fa >input_MT_MD.bam
+
+samtools index -@ 20 input_MT_MD.bam
+
+#! 3. Convert the files generated in step 1 to fastq
+
+/scr1/users/liuc9/tools/bamtofastq input_MT.bam Pei-1
+
+#! 4. Align the fastq files in step 3 to the genome without MT
+
+cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1.mt/outs/Pei-1/Pei-1_0_1_HKWYLDRXX
+cellranger count \
+  --id=bamtofastq \
+  --fastqs=/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1.mt/outs/Pei-1/Pei-1_0_1_HKWYLDRXX \
+  --sample=bamtofastq \
+  --transcriptome=/mnt/isilon/xing_lab/liuc9/refdata/mitoscape/genome_no_MT_cellranger \
+  --nosecondary \
+  --disable-ui \
+  --localcores 50
+
+cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1.mt/outs/Pei-1/Pei-1_0_1_HKWYLDRXX/bamtofastq/outs
+
+samtools view -b -h -F 4 --threads=20 -o input_NT.bam possorted_genome_bam.bam
+samtools index input_NT.bam
+
+#! 5 MitoScape
+module load Java/15.0.1
+
+java -Xmx16G -jar /scr1/users/liuc9/tools/MitoScape-1.0.jar \
+  --prob 0.3 \
+  --ld /scr1/users/liuc9/tools/MitoScape/src/universal/mitomap.ld \
+  --numt /scr1/users/liuc9/tools/MitoScape/src/universal/NUMTs_hg38.txt \
+  --classifier /scr1/users/liuc9/tools/MitoScape/src/universal/MTClassifierModel.RF \
+  --prefix input \
+  --out mitoscape
 
 #! mapping use STAR
 cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-2
