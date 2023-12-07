@@ -23,9 +23,10 @@ cellranger count \
   --disable-ui \
   --localcores 10
 
+mamba activate scmocha
 # https://wikis.utexas.edu/display/CoreNGSTools/Filtering+with+SAMTools
 # samtools view -O BAM -F 2 --threads=10 possorted_genome_bam_MT.bam >input_MT.bam
-samtools view -b -h -F 4 --threads=20 -o input_MT.bam possorted_genome_bam_MT.bam MT
+samtools view -b -h -F 4 --threads=20 -o input_MT.bam possorted_genome_bam.bam MT
 
 samtools index input_MT.bam
 
@@ -42,7 +43,7 @@ samtools index -@ 20 input_MT_MD.bam
 
 #! 4. Align the fastq files in step 3 to the genome without MT
 
-cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1.mt/outs/Pei-1/Pei-1_0_1_HKWYLDRXX
+cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1/outs/Pei-1/Pei-1_0_1_HKWYLDRXX
 cellranger count \
   --id=bamtofastq \
   --fastqs=/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1.mt/outs/Pei-1/Pei-1_0_1_HKWYLDRXX \
@@ -52,12 +53,14 @@ cellranger count \
   --disable-ui \
   --localcores 50
 
-cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1.mt/outs/Pei-1/Pei-1_0_1_HKWYLDRXX/bamtofastq/outs
+cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1/outs/Pei-1/Pei-1_0_1_HKWYLDRXX/bamtofastq/outs
 
 samtools view -b -h -F 4 --threads=20 -o input_NT.bam possorted_genome_bam.bam
 samtools index input_NT.bam
 
 #! 5 MitoScape
+cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/Pei-1.mt/outs
+
 module load Java/15.0.1
 
 java -Xmx16G -jar /scr1/users/liuc9/tools/MitoScape-1.0.jar \
@@ -67,6 +70,8 @@ java -Xmx16G -jar /scr1/users/liuc9/tools/MitoScape-1.0.jar \
   --classifier /scr1/users/liuc9/tools/MitoScape/src/universal/MTClassifierModel.RF \
   --prefix input \
   --out mitoscape
+
+#! below is not used in the analysis
 
 #! mapping use STAR
 cd /home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-2
