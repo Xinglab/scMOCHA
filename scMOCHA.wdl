@@ -21,7 +21,7 @@ workflow scMOCHA {
 
   # mgatk inputs
   String chrM = "MT"
-  Int low_coverage_threshold = 3
+  Int low_coverage_threshold = 10
 
   # cell_cluster_annotation inputs
   String cellrefname
