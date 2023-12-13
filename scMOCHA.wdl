@@ -24,6 +24,8 @@ workflow scMOCHA {
   Int low_coverage_threshold = 10
 
   # cell_cluster_annotation inputs
+  Int npcs = 10
+  Float reso = 0.01
   String cellrefname
   String celllevel
 
@@ -86,6 +88,8 @@ workflow scMOCHA {
       h5file = cellranger_count.filtered_feature_bc_matrix,
       mt_bam = cellranger_count.mt_bam,
       mt_bam_index = cellranger_count.mt_bam_index,
+      npcs = npcs,
+      reso = reso,
       refname = cellrefname,
       celllevel = celllevel,
       mt_rcrs_fasta = rCRS,
@@ -400,6 +404,8 @@ task cell_cluster_annotation {
   File mt_bam
   File mt_bam_index
 
+  Int npcs
+  Float reso
   String refname
   String celllevel
 
@@ -426,7 +432,7 @@ task cell_cluster_annotation {
     conda activate scmocha
 
     # cell cluster annotation
-    ${bindir}/azimuth.R ${h5file} ${refname} ${celllevel}
+    ${bindir}/azimuth.R ${h5file} ${npcs} ${reso} ${refname} ${celllevel}
 
     # addtags for cluster
     sinto addtags \

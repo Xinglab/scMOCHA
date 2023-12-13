@@ -21,8 +21,10 @@ library(Azimuth)
 args <- commandArgs(TRUE)
 
 h5file <- args[1]
-refname <- args[2]
-celllevel <- args[3]
+npcs <- args[2]
+reso <- args[3]
+refname <- args[4]
+celllevel <- args[5]
 # h5file <- "/scr1/users/liuc9/tmp/filtered_feature_bc_matrix.h5"
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
 # celllevel <- "annotation.l1"
@@ -282,8 +284,8 @@ fn_scnorm <- function(.sc) {
       features = .allgenes
     )
 
-    .npcs <- 10
-    .reso <- 0.01
+    .npcs <- npcs
+    .reso <- reso
 
     .scn |>
       Seurat::RunPCA(features = VariableFeatures(.scn)) |>
@@ -308,8 +310,8 @@ fn_sctransform <- function(.sc) {
     vars.to.regress = c("percent.mt", "percent.ribo")
   )
 
-  .npcs <- 50
-  .reso <- 0.05
+  .npcs <- npcs
+  .reso <- reso
 
   .sct |>
     Seurat::RunPCA() |>
