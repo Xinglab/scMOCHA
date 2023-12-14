@@ -92,6 +92,11 @@ logfile |>
   dplyr::filter(!is.na(outputdir)) ->
   outdir
 
+readr::write_rds(
+  x = outdir,
+  file = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/outdir.rds.gz"
+)
+
 future::plan(future::multisession, workers = 7)
 outdir |> 
   dplyr::mutate(
@@ -167,6 +172,32 @@ writexl::write_xlsx(
   path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/qc_cell_stats.xlsx"
 )
 
+
+alldataloaded |> 
+  tidyr::unnest(cols = cluster) |> 
+  dplyr::select(projectname, celltype_ratio) |> 
+  tidyr::unnest(cols = celltype_ratio) |> 
+  ggplot(aes(
+    x = projectname,
+    y = ratio
+  )) +
+  geom_col(aes(fill = celltype)) +
+  ggsci::scale_fill_lancet(name = "Clusters") +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "Ratio"
+  ) -> 
+  p_ratio;p_ratio
+
+ggsave(
+  filename = "cluster_ratio.pdf",
+  plot = p_ratio,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun",
+  width = 8,
+  height = 5
+)
 
 # read depth --------------------------------------------------------------
 
@@ -577,6 +608,52 @@ ggsave(
   width = 8,
   height = 5
 )
+
+
+# Load mutations ----------------------------------------------------------
+
+# 
+# future::plan(future::multisession, workers = 7)
+# outdir |> 
+#   dplyr::mutate(
+#     cluster = furrr::future_map(
+#       .x = outputdir,
+#       .f = \(.x) {
+#         cell_variant_annotation <- readr::read_tsv(
+#           file.path(
+#             .x,
+#             "cell_variant_annotation.tsv"
+#           )
+#         )
+# 
+#         cell_heteroplasmic_df_raw <- readr::read_tsv(
+#           file.path(
+#             .x,
+#             "cell.cell_heteroplasmic_df_raw.tsv.gz"
+#           )
+#         )
+#         cell_coverage <- readr::read_tsv(
+#           file.path(
+#             .x,
+#             "cell.coverage.txt.gz"
+#           )
+#         )
+#         
+#         tibble::tibble(
+#             cell_variant_annotation = list(cell_variant_annotation),
+#             cell_heteroplasmic_df_raw = list(cell_heteroplasmic_df_raw),
+#             cell_coverage = list(cell_coverage)
+#         )
+#       }
+#     )
+#   )  ->
+#   mutations
+# future::plan(future::sequential)
+# 
+# 
+# mutations |> 
+#   dplyr::select(projectname, cluster) |> 
+#   tidyr::unnest(cols = cluster)
 
 # footer ------------------------------------------------------------------
 
