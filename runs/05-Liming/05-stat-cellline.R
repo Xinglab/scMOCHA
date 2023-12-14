@@ -92,9 +92,10 @@ logfile |>
   dplyr::filter(!is.na(outputdir)) ->
   outdir
 
+future::plan(future::multisession, workers = 7)
 outdir |> 
   dplyr::mutate(
-    cluster = purrr::map(
+    cluster = furrr::future_map(
       .x = outputdir,
       .f = \(.x) {
         # .x <- outdir$outputdir[[1]]
@@ -116,42 +117,408 @@ outdir |>
             "celltype_ratio.tsv"
           )
         )
-        cell_variant_annotation <- readr::read_tsv(
-          file.path(
-            .x,
-            "cell_variant_annotation.tsv"
-          )
-        )
-        
-        cell_heteroplasmic_df_raw <- readr::read_tsv(
-          file.path(
-            .x,
-            "cell.cell_heteroplasmic_df_raw.tsv.gz"
-          )
-        )
-        cell_coverage <- readr::read_tsv(
-          file.path(
-            .x,
-            "cell.coverage.txt.gz"
-          )
-        )
+        # cell_variant_annotation <- readr::read_tsv(
+        #   file.path(
+        #     .x,
+        #     "cell_variant_annotation.tsv"
+        #   )
+        # )
+        # 
+        # cell_heteroplasmic_df_raw <- readr::read_tsv(
+        #   file.path(
+        #     .x,
+        #     "cell.cell_heteroplasmic_df_raw.tsv.gz"
+        #   )
+        # )
+        # cell_coverage <- readr::read_tsv(
+        #   file.path(
+        #     .x,
+        #     "cell.coverage.txt.gz"
+        #   )
+        # )
         
         tibble::tibble(
           qc_cell_stats = list(qc_cell_stats),
           read_depth = list(read_depth),
           celltype_ratio = list(celltype_ratio),
-          cell_variant_annotation = list(cell_variant_annotation),
-          cell_heteroplasmic_df_raw = list(cell_heteroplasmic_df_raw),
-          cell_coverage = list(cell_coverage)
+        #   cell_variant_annotation = list(cell_variant_annotation),
+        #   cell_heteroplasmic_df_raw = list(cell_heteroplasmic_df_raw),
+        #   cell_coverage = list(cell_coverage)
+        )
+      }
+    )
+  )  ->
+  alldataloaded
+future::plan(future::sequential)
+
+# qc_cell_stats -----------------------------------------------------------
+
+
+alldataloaded |> 
+  tidyr::unnest(cols = cluster) |> 
+  dplyr::select(
+    projectname,
+    qc_cell_stats
+  ) |> 
+  tidyr::unnest(cols = qc_cell_stats) ->
+  qc_cell_stats
+writexl::write_xlsx(
+  x = qc_cell_stats,
+  path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/qc_cell_stats.xlsx"
+)
+
+
+# read depth --------------------------------------------------------------
+
+rh0_depth <- readr::read_tsv("/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/4adb4525-bf49-445d-b433-40c4b84a9932/call-cellranger_count/execution/GEX_Rh0/outs/possorted_genome_bam.MT.depth")
+
+alldataloaded |> 
+  tidyr::unnest(cols = cluster) |> 
+  dplyr::glimpse()
+
+
+alldataloaded |> 
+  tidyr::unnest(cols = cluster) |> 
+  dplyr::select(projectname, read_depth) |> 
+  tidyr::unnest(cols = read_depth) ->
+  read_depth
+
+read_depth |> 
+  dplyr::mutate(
+    V3 = V3 / 1000000
+  ) |> 
+  ggplot(aes(
+    x = V2,
+    y = V3
+  )) +
+  geom_line(
+    aes(color = projectname),
+    stat = "identity"
+  ) +
+  geom_vline(xintercept = 3243, color = "black") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0.01, 0)),
+    limits = c(1, 17000),
+    breaks = seq(0, 17000, 2000),
+    labels = seq(0, 17000, 2000)
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0)
+  ) +
+  ggsci::scale_color_aaas(
+    name = "Dataset",
+    guide = guide_legend(nrow = 1)
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.line.x.bottom = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = "top"
+  ) +
+  labs(y = "Depth (x10^6)") ->
+  p_depth
+
+ggsave(
+  filename = "merged_depth.pdf",
+  plot = p_depth,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun",
+  width = 8,
+  height = 6
+)
+
+
+# ADKP read_depth ---------------------------------------------------------
+
+tibble::tibble(
+  path = list.dirs(
+    path = "/home/liuc9/github/scMOCHA/03-ADKP/output",
+    full.names = T,
+    recursive = F
+  )
+) |> 
+  dplyr::filter(grepl(pattern = "R", x = path)) |> 
+  dplyr::mutate(projectname = basename(path)) |> 
+  dplyr::mutate(
+    read_depth = purrr::map(
+      .x = path,
+      .f = \(.x) {
+        # .x <- "/home/liuc9/github/scMOCHA/03-ADKP/output/R1246326"
+        .read_depth <- data.table::fread(
+          file = file.path(
+            .x,
+            "possorted_genome_bam.MT.depth"
+          )
         )
       }
     )
   ) |> 
-  tidyr::unnest(cols = a) ->
-  alldataloaded
+  dplyr::select(projectname, read_depth) |> 
+  tidyr::unnest(cols = read_depth) ->
+  adkp_read_depth
 
-alldataloaded
 
+adkp_read_depth |> 
+  dplyr::mutate(
+    V3 = V3 / 1000000
+  ) |> 
+  ggplot(aes(
+    x = V2,
+    y = V3
+  )) +
+  geom_line(
+    aes(color = projectname),
+    stat = "identity"
+  ) +
+  geom_vline(xintercept = 3243, color = "black") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0.01, 0)),
+    limits = c(1, 17000),
+    breaks = seq(0, 17000, 2000),
+    labels = seq(0, 17000, 2000)
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0)
+  ) +
+  ggsci::scale_color_aaas(
+    name = "Dataset",
+    guide = guide_legend(nrow = 2)
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.line.x.bottom = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = "top"
+  ) +
+  labs(y = "Depth (x10^6)") ->
+  adkp_p_depth;adkp_p_depth
+
+
+
+tibble::tibble(
+  path = list.dirs(
+    path = "/home/liuc9/github/scMOCHA/01-Sci_Immunol_32651212/outputs",
+    full.names = T,
+    recursive = F
+  )
+) |> 
+  # dplyr::filter(grepl(pattern = "R", x = path)) |> 
+  dplyr::mutate(projectname = basename(path)) |> 
+  dplyr::mutate(
+    read_depth = purrr::map(
+      .x = path,
+      .f = \(.x) {
+        # .x <- "/home/liuc9/github/scMOCHA/03-ADKP/output/R1246326"
+        .read_depth <- data.table::fread(
+          file = file.path(
+            .x,
+            "possorted_genome_bam.MT.depth"
+          )
+        )
+      }
+    )
+  ) |> 
+  dplyr::select(projectname, read_depth) |> 
+  tidyr::unnest(cols = read_depth) ->
+  sci_immunol_read_depth
+
+
+
+
+sci_immunol_read_depth |> 
+  dplyr::mutate(
+    V3 = V3 / 1000000
+  ) |> 
+  ggplot(aes(
+    x = V2,
+    y = V3
+  )) +
+  geom_line(
+    aes(color = projectname),
+    stat = "identity"
+  ) +
+  geom_vline(xintercept = 3243, color = "black") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0.01, 0)),
+    limits = c(1, 17000),
+    breaks = seq(0, 17000, 2000),
+    labels = seq(0, 17000, 2000)
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0)
+  ) +
+  ggsci::scale_color_aaas(
+    name = "Dataset",
+    guide = guide_legend(nrow = 2)
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.line.x.bottom = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = "top"
+  ) +
+  labs(y = "Depth (x10^6)") ->
+  sci_immunol_p_depth;sci_immunol_p_depth
+
+
+# Mixed cellline ----------------------------------------------------------
+
+
+gex_wt <- data.table::fread("/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/1165f242-d68f-4260-8be4-55785cf2bc71/call-cellranger_count/execution/GEX_WT/outs/possorted_genome_bam.MT.depth") |> 
+  tibble::as_tibble() |> 
+  tibble::add_column(
+    projectname = "GEX_WT",
+    .before = 1
+  )
+# gex_rh0 <- data.table::fread("05-Liming/scmocha-celline/cromwell-executions/scMOCHA/4adb4525-bf49-445d-b433-40c4b84a9932/call-cellranger_count/execution/GEX_Rh0/outs/possorted_genome_bam.MT.depth") |> 
+#   tibble::as_tibble() |> 
+#   tibble::add_column(
+#     projectname = "GEX_Rh0",
+#     .before = 1
+#   )
+gex_read_depth <- gex_wt
+
+
+gex_read_depth |> 
+  dplyr::mutate(
+    V3 = V3 / 1000000
+  ) |> 
+  ggplot(aes(
+    x = V2,
+    y = V3
+  )) +
+  geom_line(
+    aes(color = projectname),
+    stat = "identity"
+  ) +
+  geom_vline(xintercept = 3243, color = "black") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0.01, 0)),
+    limits = c(1, 17000),
+    breaks = seq(0, 17000, 2000),
+    labels = seq(0, 17000, 2000)
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0)
+  ) +
+  ggsci::scale_color_aaas(
+    name = "Dataset",
+    guide = guide_legend(nrow = 2)
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.line.x.bottom = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = "top"
+  ) +
+  labs(y = "Depth (x10^6)") ->
+  gex_p_depth;gex_p_depth
+
+
+
+# Combined all read depth -------------------------------------------------
+dplyr::bind_rows(
+  sci_immunol_read_depth |> 
+    dplyr::group_by(V2) |> 
+    dplyr::summarise(m = mean(V3)) |> 
+    dplyr::mutate(
+      project = "Sci_Immunol"
+    ),
+  gex_read_depth |> 
+    dplyr::group_by(V2) |> 
+    dplyr::summarise(m = mean(V3)) |> 
+    dplyr::mutate(
+      project = "Mixed 4 cellline WT"
+    ),
+  adkp_read_depth |> 
+    dplyr::group_by(V2) |> 
+    dplyr::summarise(m = mean(V3)) |> 
+    dplyr::mutate(
+      project = "ADKP"
+    ),
+  read_depth |> 
+    dplyr::group_by(V2) |> 
+    dplyr::summarise(m = mean(V3)) |> 
+    dplyr::mutate(
+      project = "Pei 143b"
+    )
+) ->
+  merged_read_depth
+
+merged_read_depth |> 
+  dplyr::mutate(
+    m = m / 1000000
+  ) |>
+  ggplot(aes(
+    x = V2,
+    y = m
+  )) +
+  geom_line(
+    aes(color = project),
+    stat = "identity"
+  ) +
+  geom_vline(xintercept = 3243, color = "black") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0.01, 0)),
+    limits = c(1, 17000),
+    breaks = seq(0, 17000, 2000),
+    labels = seq(0, 17000, 2000)
+  ) +
+  scale_y_continuous(
+    expand = c(0.01, 0)
+  ) +
+  ggsci::scale_color_aaas(
+    name = "Dataset"
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.line.x.bottom = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = c(0.8, 0.8),
+    legend.key = element_blank()
+  ) + 
+  labs(y = "Depth (x10^6)") ->
+  merged_p_read_depth;merged_p_read_depth
+
+
+ggsave(
+  filename = "combined_read_depth.pdf",
+  plot = merged_p_read_depth,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun",
+  width = 8,
+  height = 6
+)
 
 # footer ------------------------------------------------------------------
 
@@ -161,3 +528,4 @@ alldataloaded
 save.image(
   "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/05-stat-cellline.rda"
 )
+load("/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/05-stat-cellline.rda")
