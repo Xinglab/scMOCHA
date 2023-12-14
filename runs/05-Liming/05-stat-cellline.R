@@ -219,7 +219,8 @@ read_depth |>
     # axis.text.x = element_blank(),
     # axis.line.x = element_blank(),
     axis.title.x = element_blank(),
-    legend.position = "top"
+    legend.position = "top",
+    legend.key = element_blank()
   ) +
   labs(y = "Depth (x10^6)") ->
   p_depth
@@ -230,7 +231,7 @@ ggsave(
   device = "pdf",
   path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun",
   width = 8,
-  height = 6
+  height = 5
 )
 
 
@@ -452,7 +453,7 @@ dplyr::bind_rows(
     dplyr::group_by(V2) |> 
     dplyr::summarise(m = mean(V3)) |> 
     dplyr::mutate(
-      project = "Mixed 4 cellline WT"
+      project = "Mixed 4 celllines WT"
     ),
   adkp_read_depth |> 
     dplyr::group_by(V2) |> 
@@ -517,7 +518,64 @@ ggsave(
   device = "pdf",
   path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun",
   width = 8,
-  height = 6
+  height = 5
+)
+
+
+
+merged_read_depth |> 
+  dplyr::filter(
+    V2 > 3200
+  ) |> 
+  dplyr::filter(V2 < 3300) |> 
+  # dplyr::mutate(
+  #   m = m / 1000000
+  # ) |>
+  ggplot(aes(
+    x = V2,
+    y = m
+  )) +
+  geom_line(
+    aes(color = project),
+    stat = "identity"
+  ) +
+  geom_vline(xintercept = 3243, color = "black") +
+  # scale_x_continuous(
+  #   expand = expansion(mult = c(0.01, 0)),
+  #   limits = c(1, 17000),
+  #   breaks = seq(0, 17000, 2000),
+  #   labels = seq(0, 17000, 2000)
+  # ) +
+  scale_y_continuous(
+    expand = c(0.01, 0)
+  ) +
+  ggsci::scale_color_aaas(
+    name = "Dataset"
+  ) +
+  theme(
+    plot.margin = margin(t = 0, b = 0, unit = "cm"),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line.y.left = element_line(color = "black"),
+    axis.line.x.bottom = element_line(color = "black"),
+    # axis.ticks.x = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.line.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = c(0.8, 0.8),
+    legend.key = element_blank()
+  ) + 
+  labs(y = "Depth (x10^6)") ->
+  zoomin_merged_p_read_depth;zoomin_merged_p_read_depth
+
+
+ggsave(
+  filename = "zoomin_combined_read_depth.pdf",
+  plot = zoomin_merged_p_read_depth,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun",
+  width = 8,
+  height = 5
 )
 
 # footer ------------------------------------------------------------------
