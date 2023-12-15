@@ -533,6 +533,62 @@ ggsave(
 )
 
 
+# metrics -----------------------------------------------------------------
+
+
+future::plan(future::multisession, workers = 7)
+outdir |>
+  dplyr::mutate(
+    n_mutations = furrr::future_map(
+      .x = outputdir,
+      .f = \(.x) {
+        
+        .m <- readr::read_csv(
+          file.path(
+            .x,
+            "metrics_summary.csv"
+          )
+        )
+        .m
+      }
+    )
+  )  ->
+  metrics
+future::plan(future::sequential)
+
+m_gexrh0 <- readr::read_csv(
+  file = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/11c22b3c-ffcd-4c78-b75b-5b314378339f/call-cellranger_count/execution/GEX_Rh0/outs/metrics_summary.csv"
+) |> 
+  tibble::add_column(
+    projectname = "Mixed cellline Rh0",
+    .before = 1
+  )
+m_gexwt <- readr::read_csv(
+  file = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/1165f242-d68f-4260-8be4-55785cf2bc71/call-cellranger_count/execution/GEX_WT/outs/metrics_summary.csv"
+) |> 
+  tibble::add_column(
+    projectname = "Mixed cellline WT",
+    .before = 1
+  )
+
+metrics |> 
+  dplyr::select(projectname, n_mutations) |> 
+  tidyr::unnest(cols = n_mutations) |> 
+  dplyr::bind_rows(
+    m_gexrh0,
+    m_gexwt
+  ) |> 
+  dplyr::select(!dplyr::contains("Reads Mapped")) |> 
+  dplyr::select(!dplyr::contains("Q30")) |> 
+  dplyr::select(-c(6,7)) ->
+  qc_metrics
+
+
+writexl::write_xlsx(
+  qc_metrics,
+  path = "/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/qc_metrics.xlsx"
+)
+
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
