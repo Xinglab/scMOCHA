@@ -142,7 +142,7 @@ shiping_variant |>
           p_shiping
         
         base_list_load |> 
-          dplyr::select(pos, ref, variant, Count = {.y}) |> 
+          dplyr::select(pos, ref, variant, Count = .y) |> 
           dplyr::filter(pos %in% .xd$pos) |> 
           dplyr::filter(!is.na(variant)) |> 
           dplyr::mutate(aref = glue::glue("{pos}{ref}")) |> 
@@ -184,6 +184,7 @@ shiping_variant_cluster |>
       .y = p,
       .f = \(.x, .y) {
         ggsave(
+          plot = .y,
           filename = "freq_count_{.x}.pdf" |> glue::glue(),
           device = "pdf",
           path = "/home/liuc9/github/scMOCHA/05-Liming/benchmark",
