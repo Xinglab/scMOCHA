@@ -1,3 +1,3 @@
 path,name,srrid,srrdir,scmocha_sh
-/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/fastq/Rh0,GEX_Rh0,GEX_Rh0,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/GEX_Rh0,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/GEX_Rh0/runwdl_GEX_Rh0.sh
-/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/fastq/WT,GEX_WT,GEX_WT,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/GEX_WT,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/GEX_WT/runwdl_GEX_WT.sh
+/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/fastq/Rh0,Rh0,Rh0,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/Rh0,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/Rh0/runwdl_Rh0.sh
+/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/fastq/WT,WT,WT,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/WT,/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/torun/WT/runwdl_WT.sh
