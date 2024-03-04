@@ -75,7 +75,7 @@ metadata |>
           "scMOCHA.rCRS" = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta",
           "scMOCHA.output_dir" = "{.srrid}" |> glue::glue(),
           "scMOCHA.cellrefname" = "",
-          "scMOCHA.celllevel" = "annotation.l1",
+          "scMOCHA.celllevel" = "",
           "scMOCHA.memory" = "50 GB",
           "scMOCHA.boot_disk_size_gb" = "12",
           "scMOCHA.disk_space" = "50",
@@ -121,7 +121,7 @@ metadata |>
           "# @DATE: {lubridate::now()}" |> glue::glue(),
           "",
           "module load Java/15.0.1",
-          "nohup java -Dconfig.file=/home/liuc9/github/scMOCHA/config/singularity.slurm.conf \\",
+          "nohup java -Dconfig.file=/home/liuc9/github/scMOCHA/config/slurm.conf \\",
           "-jar /home/liuc9/tools/cromwell-78.jar \\",
           "run /home/liuc9/github/scMOCHA/scMOCHA-image.wdl \\",
           "-i {.jsonfile} 1>{.logfile} 2>{.errfile} &" |> glue::glue()
