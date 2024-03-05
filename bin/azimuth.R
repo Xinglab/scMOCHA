@@ -25,7 +25,9 @@ npcs <- args[2]
 reso <- args[3]
 refname <- args[4]
 celllevel <- args[5]
-# h5file <- "/scr1/users/liuc9/tmp/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/023d7328-9097-4e50-8c11-19f860c5519e/call-cell_cluster_annotation/inputs/1509575042/filtered_feature_bc_matrix.h5"
+# npcs <- 10
+# reso <- 0.1
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
 # celllevel <- "annotation.l1"
 
@@ -105,16 +107,25 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     # pattern = "^Rp[sl][[:digit:]]|^Rplp[[:digit:]]|^Rpsa",
     col.name = "percent.ribo"
   )
-
+  
+  if(packageVersion("Seurat") > '5') {
     apply(
-    .sc@assays$RNA@counts,
-    2,
-    function(x) (100 * max(x)) / sum(x)
-  ) ->
-    .sc$Percent.Largest.Gene
-
-
-
+      # .sc@assays$RNA@counts, # Seurat version 4
+      .sc@assays$RNA@layers$counts, # Seurat version 5
+      2,
+      function(x) (100 * max(x)) / sum(x)
+    ) ->
+      .sc$Percent.Largest.Gene
+  } else {
+    apply(
+      .sc@assays$RNA@counts, # Seurat version 4
+      # .sc@assays$RNA@layers$counts, # Seurat version 5
+      2,
+      function(x) (100 * max(x)) / sum(x)
+    ) ->
+      .sc$Percent.Largest.Gene
+  } 
+    
   .sc@meta.data %>%
     dplyr::arrange(percent.mt) %>%
     ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.mt)) +
