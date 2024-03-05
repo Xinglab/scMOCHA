@@ -25,7 +25,7 @@ workflow scMOCHA {
 
   # cell_cluster_annotation inputs
   Int npcs = 10
-  Float reso = 0.01
+  Float reso = 0.1
   String cellrefname
   String celllevel
 
