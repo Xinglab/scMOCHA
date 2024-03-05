@@ -12,6 +12,7 @@ dependencies:
   - r-biocmanager==1.30.21.1
   - r-ggsci==3.0.0
   - r-signac==1.10.0
+  - r-logger==0.3.0
   - gxx_linux-64
   - gcc_linux-64
   - bioconductor-glmgampoi
