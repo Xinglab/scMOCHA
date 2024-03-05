@@ -71,12 +71,61 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 
 # function ----------------------------------------------------------------
 
-fn_load_sc_10x <- function(.x, .project = "singlecell") {
-  # .x is the feature_bc_matrix
-  # .x <- feature_path
-  # .x <- h5file
-  # .x
+fn_metrics_mito <- function(.sc) {
+  .sc@meta.data %>%
+    dplyr::arrange(percent.mt) %>%
+    ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.mt)) +
+    geom_point() +
+    scale_color_gradientn(colors=c("black","blue","green2","red","yellow")) +
+    ggtitle("Mito of plotting QC metrics") +
+    geom_hline(yintercept = 500, color = "red") +
+    geom_hline(yintercept = 6000, color = "red") +
+    theme_bw() ->
+    .metrics_mito
+}
 
+fn_metrics_ribo <- function(.sc) {
+    .sc@meta.data %>%
+    dplyr::arrange(percent.ribo) %>%
+    ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.ribo)) +
+    geom_point() +
+    scale_color_gradientn(colors=c("black","blue","green2","red","yellow")) +
+    ggtitle("Ribo of plotting QC metrics") +
+    geom_hline(yintercept = 500, color = "red") +
+    geom_hline(yintercept = 6000, color = "red") +
+    theme_bw() ->
+    .metrics_ribo
+  }
+
+fn_percent_mt_ribo_lg <- function(.sc) {
+    .sc@meta.data %>%
+    ggplot(aes(percent.mt)) +
+    geom_histogram(binwidth = 0.5, fill="red") +
+    ggtitle("Distribution of Percentage Mitochondrion") +
+    geom_vline(xintercept = 75) +
+    theme_bw() ->
+    .percent_mt
+
+  .sc@meta.data %>%
+    ggplot(aes(percent.ribo)) +
+    geom_histogram(binwidth = 0.5, fill="green") +
+    ggtitle("Distribution of Percentage Ribosome") +
+    geom_vline(xintercept = 50) +
+    theme_bw() ->
+    .percent_ribo
+
+  .sc@meta.data %>%
+    ggplot(aes(Percent.Largest.Gene)) +
+    geom_histogram(binwidth = 0.7, fill="blue") +
+    ggtitle("Distribution of Percentage Largest Gene") +
+    geom_vline(xintercept = 50) +
+    theme_bw() ->
+    .percent_largest_gene
+
+  (.percent_mt | .percent_ribo | .percent_largest_gene)
+}
+
+fn_create_sc <- function(.x, .project = "singlecell") {
   .counts <- tryCatch(
     expr = {
       Seurat::Read10X_h5(filename = .x)
@@ -107,7 +156,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
     # pattern = "^Rp[sl][[:digit:]]|^Rplp[[:digit:]]|^Rpsa",
     col.name = "percent.ribo"
   )
-  
+
   if(packageVersion("Seurat") > '5') {
     apply(
       # .sc@assays$RNA@counts, # Seurat version 4
@@ -124,97 +173,25 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
       function(x) (100 * max(x)) / sum(x)
     ) ->
       .sc$Percent.Largest.Gene
-  } 
-    
-  .sc@meta.data %>%
-    dplyr::arrange(percent.mt) %>%
-    ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.mt)) +
-    geom_point() +
-    scale_color_gradientn(colors=c("black","blue","green2","red","yellow")) +
-    ggtitle("Mito of plotting QC metrics") +
-    geom_hline(yintercept = 500, color = "red") +
-    geom_hline(yintercept = 6000, color = "red") +
-    theme_bw() ->
-    .metrics_mito
+  }
 
-  # ggsave(
-  #   plot = .metrics_mito,
-  #   filename = "{.project}-metrics-mt.pdf" %>% glue::glue(),
-  #   device = "pdf",
-  #   width = 7,
-  #   height = 5
-  # )
+  .sc
+}
 
-  .sc@meta.data %>%
-    dplyr::arrange(percent.ribo) %>%
-    ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.ribo)) +
-    geom_point() +
-    scale_color_gradientn(colors=c("black","blue","green2","red","yellow")) +
-    ggtitle("Ribo of plotting QC metrics") +
-    geom_hline(yintercept = 500, color = "red") +
-    geom_hline(yintercept = 6000, color = "red") +
-    theme_bw() ->
-    .metrics_ribo
+fn_load_sc_10x <- function(.x, .project = "singlecell") {
+  .sc <- fn_create_sc(.x, .project)
 
-  # ggsave(
-  #   plot = .metrics_ribo,
-  #   filename = "{.project}-metrics-ribo.pdf" %>% glue::glue(),
-  #   device = "pdf",
-  #   width = 7,
-  #   height = 5
-  # )
-
-  .plot_2 <- (.metrics_mito + .metrics_ribo) +
+  .plot_2 <- (fn_metrics_mito(.sc) + fn_metrics_ribo(.sc)) +
     plot_annotation(
       title = glue::glue("Quality control {.project}"),
       tag_levels = "A"
     )
 
-  # ggsave(
-  #   plot = .plot,
-  #   filename = "{.project}-metrics-mt-ribo.pdf" %>% glue::glue(),
-  #   device = "pdf",
-  #   width = 14,
-  #   height = 5
-  # )
-
-  .sc@meta.data %>%
-    ggplot(aes(percent.mt)) +
-    geom_histogram(binwidth = 0.5, fill="red") +
-    ggtitle("Distribution of Percentage Mitochondrion") +
-    geom_vline(xintercept = 75) +
-    theme_bw() ->
-    .percent_mt
-
-  .sc@meta.data %>%
-    ggplot(aes(percent.ribo)) +
-    geom_histogram(binwidth = 0.5, fill="green") +
-    ggtitle("Distribution of Percentage Ribosome") +
-    geom_vline(xintercept = 50) +
-    theme_bw() ->
-    .percent_ribo
-
-  .sc@meta.data %>%
-    ggplot(aes(Percent.Largest.Gene)) +
-    geom_histogram(binwidth = 0.7, fill="blue") +
-    ggtitle("Distribution of Percentage Largest Gene") +
-    geom_vline(xintercept = 50) +
-    theme_bw() ->
-    .percent_largest_gene
-
-  .plot_3 <- (.percent_mt | .percent_ribo | .percent_largest_gene) +
+  .plot_3 <- fn_percent_mt_ribo_lg(.sc) +
     plot_annotation(
       title = glue::glue("Quality control {.project}"),
       tag_levels = "A"
     )
-
-  # ggsave(
-  #   plot = .plot,
-  #   filename = "{.project}-qc-mt-ribo-largest.pdf" %>% glue::glue(),
-  #   device = "pdf",
-  #   width = 15,
-  #   height = 5
-  # )
 
   .sc_sub <- subset(
     x = .sc,
@@ -279,9 +256,7 @@ fn_azimuth <- function(.sc, .ref, .celllevel) {
 }
 
 fn_scnorm <- function(.sc) {
-    .sc |>
-      Seurat::NormalizeData() ->
-      .scn
+    .sc |> Seurat::NormalizeData() -> .scn
 
     .scn <- Seurat::FindVariableFeatures(
       .scn,
@@ -295,8 +270,8 @@ fn_scnorm <- function(.sc) {
       features = .allgenes
     )
 
-    .npcs <- npcs
-    .reso <- reso
+    .npcs <- as.numeric(npcs)
+    .reso <- as.numeric(reso)
 
     .scn |>
       Seurat::RunPCA(features = VariableFeatures(.scn)) |>
@@ -321,8 +296,8 @@ fn_sctransform <- function(.sc) {
     vars.to.regress = c("percent.mt", "percent.ribo")
   )
 
-  .npcs <- npcs
-  .reso <- reso
+  .npcs <- as.numeric(npcs)
+  .reso <- as.numeric(reso)
 
   .sct |>
     Seurat::RunPCA() |>
@@ -331,8 +306,6 @@ fn_sctransform <- function(.sc) {
     Seurat::FindNeighbors(reduction = "pca", dims = 1:.npcs) |>
     Seurat::FindClusters(resolution = .reso) ->
     .scta
-
-
 
   .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
   .celltype_collapse <- .celltype
@@ -622,7 +595,10 @@ sc$cell_stats <- fn_stat_cell(
 )
 
 
+
 # Azimuth -----------------------------------------------------------------
+
+message("Notice: fn_cluster_anno is running")
 
 sc$sc_azimuth <- fn_cluster_anno(
   .sc = sc$sc_filter,
@@ -630,6 +606,7 @@ sc$sc_azimuth <- fn_cluster_anno(
   .ref = refname,
   .celllevel = celllevel
 )
+message("Notice: fn_cluster_anno is done")
 
 
 
