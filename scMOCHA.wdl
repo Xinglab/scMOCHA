@@ -45,7 +45,7 @@ workflow scMOCHA {
   File IMAGE = "/scr1/users/liuc9/sif/scmocha_latest.sif"
 
   File perlscript = "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
-  File jar_path = "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"  # /opt/haplogrep3/haplogrep3.jar
+  File jar_path = "/scr1/users/liuc9/tools/haplogrep3"  # /opt/haplogrep3/haplogrep3.jar
   File sqlite_path = "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
   String bindir = "/home/liuc9/github/scMOCHA/bin"

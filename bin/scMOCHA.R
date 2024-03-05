@@ -628,7 +628,7 @@ fn_http_request <- function() {
 }
 
 cmd <- "perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
-cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+# cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
 message(cmd)
 system(command = cmd)
 
