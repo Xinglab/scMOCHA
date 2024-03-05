@@ -123,7 +123,7 @@ metadata |>
           "module load Java/15.0.1",
           "nohup java -Dconfig.file=/home/liuc9/github/scMOCHA/config/slurm.conf \\",
           "-jar /home/liuc9/tools/cromwell-78.jar \\",
-          "run /home/liuc9/github/scMOCHA/scMOCHA-image.wdl \\",
+          "run /home/liuc9/github/scMOCHA/scMOCHA.wdl \\",
           "-i {.jsonfile} 1>{.logfile} 2>{.errfile} &" |> glue::glue()
         )
         
