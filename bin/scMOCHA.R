@@ -12,10 +12,12 @@ library(magrittr)
 library(ggplot2)
 library(patchwork)
 library(rlang)
-library(ComplexHeatmap)
+# library(ComplexHeatmap)
+suppressPackageStartupMessages(library(ComplexHeatmap))
 library(httr)
 library(GetoptLong)
 library(logger)
+ht_opt$message <- FALSE
 
 # src ---------------------------------------------------------------------
 pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
@@ -578,104 +580,104 @@ readr::write_delim(
 #   file = "cell_snvlist.tsv"
 # )
 
-fn_http_request <- function() {
-  cell_variant_response <- tryCatch(
-    {
-      POST(
-        "https://mitomap.org/mitomaster/websrvc.cgi",
-        body = list(
-          file = upload_file("cell_snvlist.tsv"),
-          fileType = "snvlist",
-          output = "detail"
-        ),
-        encode = "multipart"
-      )
-    },
-    error = function(err) {
-      print(paste("HTTP error:", err$message))
-      # "error"
-    },
-    warning = function(w) {
-      print(paste("Warning:", w$message))
-    },
-    finally = {
-      print("Done.")
-    }
-  )
+# fn_http_request <- function() {
+#   cell_variant_response <- tryCatch(
+#     {
+#       POST(
+#         "https://mitomap.org/mitomaster/websrvc.cgi",
+#         body = list(
+#           file = upload_file("cell_snvlist.tsv"),
+#           fileType = "snvlist",
+#           output = "detail"
+#         ),
+#         encode = "multipart"
+#       )
+#     },
+#     error = function(err) {
+#       print(paste("HTTP error:", err$message))
+#       # "error"
+#     },
+#     warning = function(w) {
+#       print(paste("Warning:", w$message))
+#     },
+#     finally = {
+#       print("Done.")
+#     }
+#   )
 
-  status <- tryCatch(
-    expr = {
-      httr::status_code(cell_variant_response)
-    },
-    error = function(err) {
-      0
-    }
-  )
-
-
-
-  variant_annotation <- if(status == 200) {
-    cell_anno <- content(
-      x = cell_variant_response,
-      as = "text",
-      encoding = "UTF-8"
-    ) |>
-      data.table::fread(
-        sep = "\t"
-      )
-
-    readr::write_tsv(
-      x = cell_anno,
-      file = "cell_variant_annotation.tsv"
-    )
-
-    writexl::write_xlsx(
-      x = cell_anno,
-      path = "cell_variant_annotation.xlsx"
-    )
+#   status <- tryCatch(
+#     expr = {
+#       httr::status_code(cell_variant_response)
+#     },
+#     error = function(err) {
+#       0
+#     }
+#   )
 
 
-    cell_anno |>
-      dplyr::mutate(
-        variant = glue::glue("{tpos}{tnt}>{qnt}")
-      ) |>
-      dplyr::select(
-        variant, ntchange, calc_locus, patientphenotype,
-        conservation, verbose_haplogroup
-      ) |>
-      dplyr::mutate(
-        calc_locus = gsub(
-          pattern = "<br>.*",
-          replace = "",
-          x = calc_locus
-        )
-      ) |>
-      dplyr::mutate(
-        conservation = gsub(
-          pattern = "%",
-          replacement = "",
-          x = conservation
-        )
-      ) |>
-      dplyr::mutate(
-        patientphenotype = stringr::str_wrap(
-          stringr::str_to_sentence(string = patientphenotype),
-          width = 30
-        )
-      ) |>
-      dplyr::mutate(conservation = as.numeric(conservation)) |>
-      dplyr::select(
-        Ntchange = ntchange,
-        Locus = calc_locus,
-        Conservation = conservation,
-        Haplogroup = verbose_haplogroup,
-        Phenotype = patientphenotype
-      )
-  } else {NULL}
-}
+
+#   variant_annotation <- if(status == 200) {
+#     cell_anno <- content(
+#       x = cell_variant_response,
+#       as = "text",
+#       encoding = "UTF-8"
+#     ) |>
+#       data.table::fread(
+#         sep = "\t"
+#       )
+
+#     readr::write_tsv(
+#       x = cell_anno,
+#       file = "cell_variant_annotation.tsv"
+#     )
+
+#     writexl::write_xlsx(
+#       x = cell_anno,
+#       path = "cell_variant_annotation.xlsx"
+#     )
+
+
+#     cell_anno |>
+#       dplyr::mutate(
+#         variant = glue::glue("{tpos}{tnt}>{qnt}")
+#       ) |>
+#       dplyr::select(
+#         variant, ntchange, calc_locus, patientphenotype,
+#         conservation, verbose_haplogroup
+#       ) |>
+#       dplyr::mutate(
+#         calc_locus = gsub(
+#           pattern = "<br>.*",
+#           replace = "",
+#           x = calc_locus
+#         )
+#       ) |>
+#       dplyr::mutate(
+#         conservation = gsub(
+#           pattern = "%",
+#           replacement = "",
+#           x = conservation
+#         )
+#       ) |>
+#       dplyr::mutate(
+#         patientphenotype = stringr::str_wrap(
+#           stringr::str_to_sentence(string = patientphenotype),
+#           width = 30
+#         )
+#       ) |>
+#       dplyr::mutate(conservation = as.numeric(conservation)) |>
+#       dplyr::select(
+#         Ntchange = ntchange,
+#         Locus = calc_locus,
+#         Conservation = conservation,
+#         Haplogroup = verbose_haplogroup,
+#         Phenotype = patientphenotype
+#       )
+#   } else {NULL}
+# }
 
 cmd <- "perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
-cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+# cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
 message(cmd)
 system(command = cmd)
 
