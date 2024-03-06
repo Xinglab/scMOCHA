@@ -376,7 +376,10 @@ task cellranger_count {
       samtools depth -a -r ${chrM} --threads=${cpu} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
 
       # Depth plot
-      ${bindir}/depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf ${mt_exons_df}
+      ${bindir}/depth.R \
+        -d ${output_id}/outs/possorted_genome_bam.MT.depth \
+        -o ${output_id}/outs/possorted_genome_bam.MT.depth.pdf \
+        -m ${mt_exons_df}
 
     }
 
@@ -622,15 +625,15 @@ task plot_scMOCHA {
     conda activate scmocha
 
     ${bindir}/scMOCHA.R \
-      ${barcode_cluster_file} \
-      ${cell_hetero_file} \
-      ${cell_coverage_file} \
-      ${cluster_hetero_file} \
-      ${cluster_coverage_file} \
-      ${cell_hetero_raw_file} \
-      ${perlscript} \
-      ${jar_path} \
-      ${sqlite_path}
+      -b ${barcode_cluster_file} \
+      -ceh ${cell_hetero_file} \
+      -cec ${cell_coverage_file} \
+      -clh ${cluster_hetero_file} \
+      -clc ${cluster_coverage_file} \
+      -chr ${cell_hetero_raw_file} \
+      -p ${perlscript} \
+      -j ${jar_path} \
+      -s ${sqlite_path}
   }
 
   output {
