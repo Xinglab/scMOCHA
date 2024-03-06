@@ -352,7 +352,8 @@ task cellranger_count {
 
       # module load R/4.1.0
       # module load R/4.2.3
-      source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+      #source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+      eval "$(conda shell.bash hook)"
       conda activate scmocha
 
       # cell ranger output to get bams and h5 files
@@ -431,7 +432,8 @@ task cell_cluster_annotation {
   command {
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    #source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    eval "$(conda shell.bash hook)"
     conda activate scmocha
 
     # cell cluster annotation
@@ -514,7 +516,8 @@ task call_mt_variants {
 
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    #source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    eval "$(conda shell.bash hook)"
     conda activate scmocha
     # call variants on single cell level
     mgatk tenx -i ${sorted_bam} \
@@ -621,7 +624,8 @@ task plot_scMOCHA {
   command {
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    #source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    eval "$(conda shell.bash hook)"
     conda activate scmocha
 
     ${bindir}/scMOCHA.R \
