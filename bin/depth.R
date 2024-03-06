@@ -13,14 +13,39 @@ library(ggplot2)
 library(patchwork)
 library(rlang)
 library(ggtranscript)
+library(GetoptLong)
+library(logger)
 
 # src ---------------------------------------------------------------------
+# s: string, i: integer, f: float, !: boolean
+# @: array
+# %: hash
+# default: default value specified here.
 
-args <- commandArgs(TRUE)
+# depthfile <- "WT/outs/possorted_genome_bam.MT.depth"
+# outfile <- "WT/outs/possorted_genome_bam.MT.depth.pdf"
+# mt_exons_df <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/023d7328-9097-4e50-8c11-19f860c5519e/call-cellranger_count/inputs/2014965526/mt_exons.df.rds.gz"
 
-depthfile <- args[1]
-outfile <- args[2]
-mt_exons_df <- args[3]
+verbose <- FALSE
+
+spec <- "
+Usage: Rscript scMOCHA.R [options]
+
+Options:
+<depthfile=s> possorted_genome_bam.MT.depth
+<outfile=s> possorted_genome_bam.MT.depth.pdf
+<mt_exons_df=s> mt_exons.df.rds.gz
+<verbose!> Print messages
+"
+
+GetoptLong.options(help_style = "two-column")
+GetoptLong(spec, template_control = list(opt_width = 50))
+
+# args <- commandArgs(TRUE)
+# 
+# depthfile <- args[1]
+# outfile <- args[2]
+# mt_exons_df <- args[3]
 
 # depthfile <- "/scr1/users/liuc9/mitochondrial/testdata/1_old_donor_pbmc/flu2/Flu2/outs/MT.depth"
 # mt_exons_df <- "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
