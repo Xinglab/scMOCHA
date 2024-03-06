@@ -10,6 +10,6 @@ param=$#
 # Input parameters
 mamba create -n scmocha python -y
 mamba activate scmocha
-mamba env update -n scmocha --file scmocha.env.yaml
+mamba env update -n scmocha --file scmocha.dev.yaml
 
 # mamba env remove -n scmocha
