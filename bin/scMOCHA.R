@@ -12,8 +12,12 @@ library(magrittr)
 library(ggplot2)
 library(patchwork)
 library(rlang)
-library(ComplexHeatmap)
+# library(ComplexHeatmap)
+suppressPackageStartupMessages(library(ComplexHeatmap))
 library(httr)
+library(GetoptLong)
+library(logger)
+ht_opt$message <- FALSE
 
 # src ---------------------------------------------------------------------
 pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
@@ -22,28 +26,73 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 
 # args --------------------------------------------------------------------
 
-args <- commandArgs(TRUE)
 
-barcode_cluster_file <- args[1]
-cell_hetero_file <- args[2]
-cell_coverage_file <- args[3]
+# s: string, i: integer, f: float, !: boolean
+# @: array
+# %: hash
+# default: default value specified here.
 
-cluster_hetero_file <- args[4]
-cluster_coverage_file <- args[5]
+# barcode_cluster_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/393971319/barcode_cluster.tsv"
 
-cell_hetero_raw_file <- args[6]
+# cell_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1023831751/cell.cell_heteroplasmic_df.tsv.gz"
 
-perlscript <- args[7]
-jar_path <- args[8]
-sqlite_path <- args[9]
+# cell_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1023831751/cell.coverage.txt.gz"
+
+# cluster_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/-1360301021/cluster.cell_heteroplasmic_df.tsv.gz"
+
+# cluster_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/-1360301021/cluster.coverage.txt.gz"
+
+# cell_hetero_raw_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1023831751/cell.cell_heteroplasmic_df_raw.tsv.gz"
+
+# perlscript <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1463544024/get_variants_info.pl"
+
+# jar_path <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1606835458/haplogrep3"
+
+# sqlite_path <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/406118411/mitomap_sqlite_20230525.sqlite3"
+
+verbose <- FALSE
+
+spec <- "
+Usage: Rscript scMOCHA.R [options]
+
+Options:
+<barcode_cluster_file=s> barcode_cluster.tsv
+<cell_hetero_file|ceh=s> cell.cell_heteroplasmic_df.tsv.gz
+<cell_coverage_file|cec=s> cell.coverage.txt.gz
+<cluster_hetero_file|clh=s> cluster.cell_heteroplasmic_df.tsv.gz
+<cluster_coverage_file|clc=s> cluster.coverage.txt.gz
+<cell_hetero_raw_file|chr=s> cell.cell_heteroplasmic_df_raw.tsv.gz
+<perlscript=s> /home/liuc9/github/scMOCHA/bin/get_variants_info.pl
+<jar_path=s> /scr1/users/liuc9/tools/haplogrep3
+<sqlite_path=s> /mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3
+<verbose!> Print messages
+"
+
+GetoptLong.options(help_style = "two-column")
+GetoptLong(spec, template_control = list(opt_width = 50))
+
+# args <- commandArgs(TRUE)
+#
+# barcode_cluster_file <- args[1]
+# cell_hetero_file <- args[2]
+# cell_coverage_file <- args[3]
+#
+# cluster_hetero_file <- args[4]
+# cluster_coverage_file <- args[5]
+#
+# cell_hetero_raw_file <- args[6]
+#
+# perlscript <- args[7]
+# jar_path <- args[8]
+# sqlite_path <- args[9]
 
 #
-# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-plot_scMOCHA/inputs/1423780135/barcode_cluster.tsv"
-# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
-# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/cromwell-executions/scMOCHA/f4a724fb-8da3-4a4a-9dbd-7c765607acdc/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
+# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/144388986/barcode_cluster.tsv"
+# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/212984394/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/212984394/cell.coverage.txt.gz"
+# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/1877126592/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/1877126592/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/212984394/cell.cell_heteroplasmic_df_raw.tsv.gz"
 # perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
 # jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
 # sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
@@ -388,7 +437,7 @@ ch_af_depth <- fn_heatmap(
   pdf(
     file = "cell_af_heatmap.pdf",
     width = 14,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_af)
   dev.off()
@@ -396,7 +445,7 @@ ch_af_depth <- fn_heatmap(
   pdf(
     file = "cell_depth_heatmap.pdf",
     width = 14,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_depth)
   dev.off()
@@ -447,7 +496,7 @@ cluster_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_af_heatmap.pdf",
     width = 7,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_af)
   dev.off()
@@ -455,7 +504,7 @@ cluster_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_depth_heatmap.pdf",
     width = 7,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_depth)
   dev.off()
@@ -531,104 +580,105 @@ readr::write_delim(
 #   file = "cell_snvlist.tsv"
 # )
 
-fn_http_request <- function() {
-  cell_variant_response <- tryCatch(
-    {
-      POST(
-        "https://mitomap.org/mitomaster/websrvc.cgi",
-        body = list(
-          file = upload_file("cell_snvlist.tsv"),
-          fileType = "snvlist",
-          output = "detail"
-        ),
-        encode = "multipart"
-      )
-    },
-    error = function(err) {
-      print(paste("HTTP error:", err$message))
-      # "error"
-    },
-    warning = function(w) {
-      print(paste("Warning:", w$message))
-    },
-    finally = {
-      print("Done.")
-    }
-  )
+# fn_http_request <- function() {
+#   cell_variant_response <- tryCatch(
+#     {
+#       POST(
+#         "https://mitomap.org/mitomaster/websrvc.cgi",
+#         body = list(
+#           file = upload_file("cell_snvlist.tsv"),
+#           fileType = "snvlist",
+#           output = "detail"
+#         ),
+#         encode = "multipart"
+#       )
+#     },
+#     error = function(err) {
+#       print(paste("HTTP error:", err$message))
+#       # "error"
+#     },
+#     warning = function(w) {
+#       print(paste("Warning:", w$message))
+#     },
+#     finally = {
+#       print("Done.")
+#     }
+#   )
 
-  status <- tryCatch(
-    expr = {
-      httr::status_code(cell_variant_response)
-    },
-    error = function(err) {
-      0
-    }
-  )
-
-
-
-  variant_annotation <- if(status == 200) {
-    cell_anno <- content(
-      x = cell_variant_response,
-      as = "text",
-      encoding = "UTF-8"
-    ) |>
-      data.table::fread(
-        sep = "\t"
-      )
-
-    readr::write_tsv(
-      x = cell_anno,
-      file = "cell_variant_annotation.tsv"
-    )
-
-    writexl::write_xlsx(
-      x = cell_anno,
-      path = "cell_variant_annotation.xlsx"
-    )
+#   status <- tryCatch(
+#     expr = {
+#       httr::status_code(cell_variant_response)
+#     },
+#     error = function(err) {
+#       0
+#     }
+#   )
 
 
-    cell_anno |>
-      dplyr::mutate(
-        variant = glue::glue("{tpos}{tnt}>{qnt}")
-      ) |>
-      dplyr::select(
-        variant, ntchange, calc_locus, patientphenotype,
-        conservation, verbose_haplogroup
-      ) |>
-      dplyr::mutate(
-        calc_locus = gsub(
-          pattern = "<br>.*",
-          replace = "",
-          x = calc_locus
-        )
-      ) |>
-      dplyr::mutate(
-        conservation = gsub(
-          pattern = "%",
-          replacement = "",
-          x = conservation
-        )
-      ) |>
-      dplyr::mutate(
-        patientphenotype = stringr::str_wrap(
-          stringr::str_to_sentence(string = patientphenotype),
-          width = 30
-        )
-      ) |>
-      dplyr::mutate(conservation = as.numeric(conservation)) |>
-      dplyr::select(
-        Ntchange = ntchange,
-        Locus = calc_locus,
-        Conservation = conservation,
-        Haplogroup = verbose_haplogroup,
-        Phenotype = patientphenotype
-      )
-  } else {NULL}
-}
+
+#   variant_annotation <- if(status == 200) {
+#     cell_anno <- content(
+#       x = cell_variant_response,
+#       as = "text",
+#       encoding = "UTF-8"
+#     ) |>
+#       data.table::fread(
+#         sep = "\t"
+#       )
+
+#     readr::write_tsv(
+#       x = cell_anno,
+#       file = "cell_variant_annotation.tsv"
+#     )
+
+#     writexl::write_xlsx(
+#       x = cell_anno,
+#       path = "cell_variant_annotation.xlsx"
+#     )
+
+
+#     cell_anno |>
+#       dplyr::mutate(
+#         variant = glue::glue("{tpos}{tnt}>{qnt}")
+#       ) |>
+#       dplyr::select(
+#         variant, ntchange, calc_locus, patientphenotype,
+#         conservation, verbose_haplogroup
+#       ) |>
+#       dplyr::mutate(
+#         calc_locus = gsub(
+#           pattern = "<br>.*",
+#           replace = "",
+#           x = calc_locus
+#         )
+#       ) |>
+#       dplyr::mutate(
+#         conservation = gsub(
+#           pattern = "%",
+#           replacement = "",
+#           x = conservation
+#         )
+#       ) |>
+#       dplyr::mutate(
+#         patientphenotype = stringr::str_wrap(
+#           stringr::str_to_sentence(string = patientphenotype),
+#           width = 30
+#         )
+#       ) |>
+#       dplyr::mutate(conservation = as.numeric(conservation)) |>
+#       dplyr::select(
+#         Ntchange = ntchange,
+#         Locus = calc_locus,
+#         Conservation = conservation,
+#         Haplogroup = verbose_haplogroup,
+#         Phenotype = patientphenotype
+#       )
+#   } else {NULL}
+# }
 
 cmd <- "perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
-# cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {jar_path} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+# cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+message(cmd)
 system(command = cmd)
 
 variant_annotation <- if(file.exists("cell_variant_annotation.tsv")) {
@@ -709,7 +759,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_cell_af_heatmap.pdf",
     width = 20,
-    height = 10
+    height = 15
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
   dev.off()
@@ -717,7 +767,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
   pdf(
     file = "cluster_cell_depth_heatmap.pdf",
     width = 14,
-    height = 7
+    height = 15
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)
   dev.off()

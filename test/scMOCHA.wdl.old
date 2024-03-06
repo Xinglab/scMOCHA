@@ -3,31 +3,17 @@ workflow scMOCHA {
   # version of this pipeline
   String version = "CellRanger v7.0.1"
 
-  # MitoScape
-  Boolean use_mitoscape = false
-
-  # Cell ranger inpunts
   String output_id
   String fastqs
   String sample_id
   String transcriptome = "/home/liuc9/data/refdata/mgatk_index/Human"
   File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
-
-  File mt_exons_df = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
-  File mt_features_gmoviz = "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz"
-
-
   String output_dir
 
-  # mgatk inputs
   String chrM = "MT"
-  Int low_coverage_threshold = 10
 
-  # cell_cluster_annotation inputs
-  Int npcs = 10
-  Float reso = 0.1
-  String cellrefname
-  String celllevel
+  String cellrefname = "pbmcref"
+  String celllevel = "celltype.l1"
 
 
   # Runtime attributes
@@ -35,9 +21,7 @@ workflow scMOCHA {
   Int boot_disk_size_gb = 12
   String disk_space = "50"
   Int cpu = 10
-  Boolean use_ssd = false
 
-  # docker image
   String scmocha_version = "latest"
   String docker = "chunjiesamliu/scmocha"
   String partition = "defq"
@@ -45,11 +29,10 @@ workflow scMOCHA {
   File IMAGE = "/scr1/users/liuc9/sif/scmocha_latest.sif"
 
   File perlscript = "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
-  File jar_path = "/scr1/users/liuc9/tools/haplogrep3"  # /opt/haplogrep3/haplogrep3.jar
+  File jar_path = "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"  # /opt/haplogrep3/haplogrep3.jar
   File sqlite_path = "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
-  String bindir = "/home/liuc9/github/scMOCHA/bin"
-
+  Boolean use_ssd = false
 
   parameter_meta {
       output_id: "Output ID"
@@ -70,7 +53,6 @@ workflow scMOCHA {
         sample_id = sample_id,
         transcriptome = transcriptome,
         chrM = chrM,
-        mt_exons_df = mt_exons_df,
         memory = memory,
         boot_disk_size_gb = boot_disk_size_gb,
         disk_space = disk_space,
@@ -79,8 +61,7 @@ workflow scMOCHA {
         docker = docker,
         partition = partition,
         account = account,
-        IMAGE = IMAGE,
-        bindir = bindir
+        IMAGE = IMAGE
   }
 
   call cell_cluster_annotation {
@@ -88,13 +69,8 @@ workflow scMOCHA {
       h5file = cellranger_count.filtered_feature_bc_matrix,
       mt_bam = cellranger_count.mt_bam,
       mt_bam_index = cellranger_count.mt_bam_index,
-      npcs = npcs,
-      reso = reso,
       refname = cellrefname,
       celllevel = celllevel,
-      mt_rcrs_fasta = rCRS,
-      mt_exons_df = mt_exons_df,
-      mt_features_gmoviz = mt_features_gmoviz,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -103,8 +79,7 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE,
-      bindir = bindir
+      IMAGE = IMAGE
   }
 
   call call_mt_variants {
@@ -120,7 +95,6 @@ workflow scMOCHA {
       mt_bulk_bam_index = cell_cluster_annotation.mt_bulk_bam_index,
       chrM = chrM,
       rCRS = rCRS,
-      low_coverage_threshold = low_coverage_threshold,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -129,8 +103,7 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE,
-      bindir = bindir
+      IMAGE = IMAGE
   }
 
   call plot_scMOCHA {
@@ -152,8 +125,7 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE,
-      bindir = bindir
+      IMAGE = IMAGE
   }
 
   call gather_outputfiles {
@@ -231,8 +203,7 @@ workflow scMOCHA {
       docker = docker,
       partition = partition,
       account = account,
-      IMAGE = IMAGE,
-      bindir = bindir
+      IMAGE = IMAGE
 
 
   }
@@ -334,8 +305,6 @@ task cellranger_count {
 
     String chrM = "MT"
 
-    File mt_exons_df
-
     String memory
     Int boot_disk_size_gb
     String disk_space
@@ -345,15 +314,13 @@ task cellranger_count {
     String partition
     String account
     File IMAGE
-    String bindir
-
 
     command {
 
       # module load R/4.1.0
       # module load R/4.2.3
-      source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-      conda activate scmocha
+      # source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+      # conda activate scmocha
 
       # cell ranger output to get bams and h5 files
       cellranger count \
@@ -372,14 +339,11 @@ task cellranger_count {
       samtools view -b -h -o ${output_id}/outs/possorted_genome_bam.MT.bam ${output_id}/outs/possorted_genome_bam.bam ${chrM}
       samtools index ${output_id}/outs/possorted_genome_bam.MT.bam
 
-      # MT depth
+      # mt depth
       samtools depth -a -r ${chrM} --threads=${cpu} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
 
       # Depth plot
-      ${bindir}/depth.R \
-        -d ${output_id}/outs/possorted_genome_bam.MT.depth \
-        -o ${output_id}/outs/possorted_genome_bam.MT.depth.pdf \
-        -m ${mt_exons_df}
+      Rscript /home/liuc9/github/scMOCHA/bin/depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf
 
     }
 
@@ -399,7 +363,15 @@ task cellranger_count {
         File mt_bam_index = "${output_id}/outs/possorted_genome_bam.MT.bam.bai"
     }
 
-
+    runtime {
+      memory: "${memory}"
+      disks: "local-disk ${disk_space}"
+      cpu: "${cpu}"
+      docker: "chunjiesamliu/scmocha:${scmocha_version}"
+      partition: "${partition}"
+      account: "${account}"
+      IMAGE: "${IMAGE}"
+    }
 }
 
 task cell_cluster_annotation {
@@ -407,14 +379,8 @@ task cell_cluster_annotation {
   File mt_bam
   File mt_bam_index
 
-  Int npcs
-  Float reso
   String refname
   String celllevel
-
-  File mt_rcrs_fasta
-  File mt_exons_df
-  File mt_features_gmoviz
 
   String memory
   Int boot_disk_size_gb
@@ -425,17 +391,15 @@ task cell_cluster_annotation {
   String partition
   String account
   File IMAGE
-  String bindir
-
 
   command {
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-    conda activate scmocha
+    # source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    # conda activate scmocha
 
     # cell cluster annotation
-    ${bindir}/azimuth.R ${h5file} ${npcs} ${reso} ${refname} ${celllevel}
+    Rscript /home/liuc9/github/scMOCHA/bin/azimuth.R ${h5file} ${refname} ${celllevel}
 
     # addtags for cluster
     sinto addtags \
@@ -457,7 +421,7 @@ task cell_cluster_annotation {
     bamtools split -in MT_cluster.bam -tag CJ
 
     # gmoviz plot of cluster coverage
-    ${bindir}/depth_cluster_gmoviz.R ${mt_features_gmoviz} ${mt_rcrs_fasta} ${mt_exons_df}
+    Rscript /home/liuc9/github/scMOCHA/bin/depth_cluster_gmoviz.R
 
   }
   output {
@@ -478,7 +442,15 @@ task cell_cluster_annotation {
     File plot_mt_cluster_depth = "plot-mt-cluster-depth.pdf"
   }
 
-
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
+  }
 }
 
 task call_mt_variants {
@@ -495,7 +467,6 @@ task call_mt_variants {
 
   String chrM
   File rCRS
-  Int low_coverage_threshold
 
 
   String memory
@@ -507,15 +478,13 @@ task call_mt_variants {
   String partition
   String account
   File IMAGE
-  String bindir
-
 
   command {
 
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-    conda activate scmocha
+    # source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    # conda activate scmocha
     # call variants on single cell level
     mgatk tenx -i ${sorted_bam} \
       -o cell \
@@ -525,16 +494,14 @@ task call_mt_variants {
       -bt CB \
       -b ${barcodes_tsv} \
       -ub UB \
-      --low-coverage-threshold ${low_coverage_threshold} \
-      --snake-stdout \
-      --keep-temp-files
+      --snake-stdout
 
     # the cell/final/ last "/" is important
-    ${bindir}/variant_calling_cell_raw.py \
+    python /home/liuc9/github/scMOCHA/bin/variant_calling_cell_raw.py \
       cell/final/ \
       cell \
       16569 \
-      ${low_coverage_threshold} \
+      10 \
       ${chrM}
 
     # call variants on cluster level
@@ -544,15 +511,13 @@ task call_mt_variants {
       -g ${rCRS} \
       -c ${cpu} \
       -bt CJ \
-      --low-coverage-threshold ${low_coverage_threshold} \
-      --snake-stdout \
-      --keep-temp-files
+      --snake-stdout
 
-    ${bindir}/variant_calling_cluster.py \
+    python /home/liuc9/github/scMOCHA/bin/variant_calling_cluster.py \
       cluster/final/ \
       cluster \
       16569 \
-      ${low_coverage_threshold} \
+      10 \
       ${chrM}
 
   }
@@ -588,7 +553,15 @@ task call_mt_variants {
 
   }
 
-
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
+  }
 }
 
 task plot_scMOCHA {
@@ -606,6 +579,7 @@ task plot_scMOCHA {
   File jar_path
   File sqlite_path
 
+
   String memory
   Int boot_disk_size_gb
   String disk_space
@@ -615,25 +589,23 @@ task plot_scMOCHA {
   String partition
   String account
   File IMAGE
-  String bindir
-
 
   command {
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-    conda activate scmocha
+    # source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
+    # conda activate scmocha
 
-    ${bindir}/scMOCHA.R \
-      -b ${barcode_cluster_file} \
-      -ceh ${cell_hetero_file} \
-      -cec ${cell_coverage_file} \
-      -clh ${cluster_hetero_file} \
-      -clc ${cluster_coverage_file} \
-      -chr ${cell_hetero_raw_file} \
-      -p ${perlscript} \
-      -j ${jar_path} \
-      -s ${sqlite_path}
+    Rscript /home/liuc9/github/scMOCHA/bin/scMOCHA.R \
+      ${barcode_cluster_file} \
+      ${cell_hetero_file} \
+      ${cell_coverage_file} \
+      ${cluster_hetero_file} \
+      ${cluster_coverage_file} \
+      ${cell_hetero_raw_file} \
+      ${perlscript} \
+      ${jar_path} \
+      ${sqlite_path}
   }
 
   output {
@@ -646,6 +618,16 @@ task plot_scMOCHA {
     File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
     File cell_variant_annotation_tsv = "cell_variant_annotation.tsv"
     File cell_variant_annotation_xlsx = "cell_variant_annotation.xlsx"
+  }
+
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
   }
 
 }
@@ -730,7 +712,6 @@ task gather_outputfiles {
   String partition
   String account
   File IMAGE
-  String bindir
 
   command {
     mkdir -p ${output_dir}
@@ -810,5 +791,13 @@ task gather_outputfiles {
     File output_dir_tar_gz = "${output_dir}.tar.gz"
   }
 
-
+  runtime {
+    memory: "${memory}"
+    disks: "local-disk ${disk_space}"
+    cpu: "${cpu}"
+    docker: "chunjiesamliu/scmocha:${scmocha_version}"
+    partition: "${partition}"
+    account: "${account}"
+    IMAGE: "${IMAGE}"
+  }
 }

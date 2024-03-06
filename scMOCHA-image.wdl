@@ -13,6 +13,9 @@ workflow scMOCHA {
   String transcriptome = "/home/liuc9/data/refdata/mgatk_index/Human"
   File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
 
+  File mt_exons_df = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
+  File mt_features_gmoviz = "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz"
+
 
   String output_dir
 
@@ -38,6 +41,11 @@ workflow scMOCHA {
   String account = "liuc9"
   File IMAGE = "/scr1/users/liuc9/sif/scmocha_latest.sif"
 
+  File perlscript = "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
+  File jar_path = "/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar"  # /opt/haplogrep3/haplogrep3.jar
+  File sqlite_path = "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
+
+
 
   parameter_meta {
       output_id: "Output ID"
@@ -58,6 +66,7 @@ workflow scMOCHA {
         sample_id = sample_id,
         transcriptome = transcriptome,
         chrM = chrM,
+        mt_exons_df = mt_exons_df,
         memory = memory,
         boot_disk_size_gb = boot_disk_size_gb,
         disk_space = disk_space,
@@ -76,6 +85,9 @@ workflow scMOCHA {
       mt_bam_index = cellranger_count.mt_bam_index,
       refname = cellrefname,
       celllevel = celllevel,
+      mt_rcrs_fasta = rCRS,
+      mt_exons_df = mt_exons_df,
+      mt_features_gmoviz = mt_features_gmoviz,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -119,6 +131,9 @@ workflow scMOCHA {
       cluster_hetero_file = call_mt_variants.cluster_cell_heteroplasmic_df_tsv_gz,
       cluster_coverage_file = call_mt_variants.cluster_coverage_txt_gz,
       cell_hetero_raw_file = call_mt_variants.cell_cell_heteroplasmic_df_raw_tsv_gz,
+      perlscript = perlscript,
+      jar_path = jar_path,
+      sqlite_path = sqlite_path,
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -307,6 +322,8 @@ task cellranger_count {
 
     String chrM = "MT"
 
+    File mt_exons_df
+
     String memory
     Int boot_disk_size_gb
     String disk_space
@@ -345,7 +362,7 @@ task cellranger_count {
       samtools depth -a -r ${chrM} --threads=${cpu} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
 
       # Depth plot
-      depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf
+      depth.R ${output_id}/outs/possorted_genome_bam.MT.depth ${output_id}/outs/possorted_genome_bam.MT.depth.pdf ${mt_exons_df}
 
     }
 
@@ -383,6 +400,10 @@ task cell_cluster_annotation {
 
   String refname
   String celllevel
+
+  File mt_rcrs_fasta
+  File mt_exons_df
+  File mt_features_gmoviz
 
   String memory
   Int boot_disk_size_gb
@@ -423,7 +444,7 @@ task cell_cluster_annotation {
     bamtools split -in MT_cluster.bam -tag CJ
 
     # gmoviz plot of cluster coverage
-    depth_cluster_gmoviz.R
+    depth_cluster_gmoviz.R ${mt_features_gmoviz} ${mt_rcrs_fasta} ${mt_exons_df}
 
   }
   output {
@@ -481,6 +502,7 @@ task call_mt_variants {
   String account
   File IMAGE
 
+
   command {
 
     # module load R/4.1.0
@@ -496,6 +518,7 @@ task call_mt_variants {
       -bt CB \
       -b ${barcodes_tsv} \
       -ub UB \
+      --low-coverage-threshold 3 \
       --snake-stdout \
       --keep-temp-files
 
@@ -504,7 +527,7 @@ task call_mt_variants {
       cell/final/ \
       cell \
       16569 \
-      10 \
+      3 \
       ${chrM}
 
     # call variants on cluster level
@@ -514,6 +537,7 @@ task call_mt_variants {
       -g ${rCRS} \
       -c ${cpu} \
       -bt CJ \
+      --low-coverage-threshold 3 \
       --snake-stdout \
       --keep-temp-files
 
@@ -521,7 +545,7 @@ task call_mt_variants {
       cluster/final/ \
       cluster \
       16569 \
-      10 \
+      3 \
       ${chrM}
 
   }
@@ -579,6 +603,10 @@ task plot_scMOCHA {
 
   File cell_hetero_raw_file
 
+  File perlscript
+  File jar_path
+  File sqlite_path
+
   String memory
   Int boot_disk_size_gb
   String disk_space
@@ -601,7 +629,10 @@ task plot_scMOCHA {
       ${cell_coverage_file} \
       ${cluster_hetero_file} \
       ${cluster_coverage_file} \
-      ${cell_hetero_raw_file}
+      ${cell_hetero_raw_file} \
+      ${perlscript} \
+      ${jar_path} \
+      ${sqlite_path}
   }
 
   output {

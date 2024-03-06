@@ -87,7 +87,7 @@ def gather_possible_variants(base_coverage_dict, reference_file):
 MGATK_OUT_DIR = sys.argv[1]
 sample_prefix = sys.argv[2]
 mito_length = int(sys.argv[3])  # 16569
-low_coverage_threshold = int(sys.argv[4])  # 10
+low_coverage_threshold = int(sys.argv[4])  # 3
 mito_genome = sys.argv[5]  # chrM
 
 letters = list("ATCG")
