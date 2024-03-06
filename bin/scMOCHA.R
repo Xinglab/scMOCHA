@@ -50,6 +50,10 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 
 # sqlite_path <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/406118411/mitomap_sqlite_20230525.sqlite3"
 
+
+
+conda_root <- "/home/liuc9/tools/anaconda3"
+conda_env <- "scmocha"
 verbose <- FALSE
 
 spec <- "
@@ -65,6 +69,8 @@ Options:
 <perlscript=s> /home/liuc9/github/scMOCHA/bin/get_variants_info.pl
 <jar_path=s> /scr1/users/liuc9/tools/haplogrep3
 <sqlite_path=s> /mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3
+<conda_root=s> /home/liuc9/tools/anaconda3
+<conda_env=s> scmocha
 <verbose!> Print messages
 "
 
@@ -676,7 +682,7 @@ readr::write_delim(
 #   } else {NULL}
 # }
 
-cmd <- "perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+cmd <- "source {conda_root}/etc/profile.d/conda.sh; conda activate {conda_env}; perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
 # cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
 message(cmd)
 system(command = cmd)

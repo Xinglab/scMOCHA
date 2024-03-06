@@ -49,6 +49,8 @@ workflow scMOCHA {
   File sqlite_path = "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
   String bindir = "/home/liuc9/github/scMOCHA/bin"
+  String conda_root = "/home/liuc9/tools/anaconda3"
+  String conda_env = "scmocha"
 
 
   parameter_meta {
@@ -80,7 +82,10 @@ workflow scMOCHA {
         partition = partition,
         account = account,
         IMAGE = IMAGE,
-        bindir = bindir
+        bindir = bindir,
+        conda_root = conda_root,
+        conda_env = conda_env
+
   }
 
   call cell_cluster_annotation {
@@ -104,7 +109,9 @@ workflow scMOCHA {
       partition = partition,
       account = account,
       IMAGE = IMAGE,
-      bindir = bindir
+      bindir = bindir,
+      conda_root = conda_root,
+      conda_env = conda_env
   }
 
   call call_mt_variants {
@@ -130,7 +137,9 @@ workflow scMOCHA {
       partition = partition,
       account = account,
       IMAGE = IMAGE,
-      bindir = bindir
+      bindir = bindir,
+      conda_root = conda_root,
+      conda_env = conda_env
   }
 
   call plot_scMOCHA {
@@ -153,7 +162,9 @@ workflow scMOCHA {
       partition = partition,
       account = account,
       IMAGE = IMAGE,
-      bindir = bindir
+      bindir = bindir,
+      conda_root = conda_root,
+      conda_env = conda_env
   }
 
   call gather_outputfiles {
@@ -232,7 +243,9 @@ workflow scMOCHA {
       partition = partition,
       account = account,
       IMAGE = IMAGE,
-      bindir = bindir
+      bindir = bindir,
+      conda_root = conda_root,
+      conda_env = conda_env
 
 
   }
@@ -346,14 +359,16 @@ task cellranger_count {
     String account
     File IMAGE
     String bindir
+    String conda_root
+    String conda_env
 
 
     command {
 
       # module load R/4.1.0
       # module load R/4.2.3
-      source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-      conda activate scmocha
+      source ${conda_root}/etc/profile.d/conda.sh
+      conda activate ${conda_env}
 
       # cell ranger output to get bams and h5 files
       cellranger count \
@@ -426,13 +441,15 @@ task cell_cluster_annotation {
   String account
   File IMAGE
   String bindir
+  String conda_root
+  String conda_env
 
 
   command {
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-    conda activate scmocha
+    source ${conda_root}/etc/profile.d/conda.sh
+    conda activate ${conda_env}
 
     # cell cluster annotation
     ${bindir}/azimuth.R ${h5file} ${npcs} ${reso} ${refname} ${celllevel}
@@ -508,14 +525,16 @@ task call_mt_variants {
   String account
   File IMAGE
   String bindir
+  String conda_root
+  String conda_env
 
 
   command {
 
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-    conda activate scmocha
+    source ${conda_root}/etc/profile.d/conda.sh
+    conda activate ${conda_env}
     # call variants on single cell level
     mgatk tenx -i ${sorted_bam} \
       -o cell \
@@ -616,13 +635,15 @@ task plot_scMOCHA {
   String account
   File IMAGE
   String bindir
+  String conda_root
+  String conda_env
 
 
   command {
     # module load R/4.1.0
     # module load R/4.2.3
-    source /home/liuc9/tools/anaconda3/etc/profile.d/conda.sh
-    conda activate scmocha
+    source ${conda_root}/etc/profile.d/conda.sh
+    conda activate ${conda_env}
 
     ${bindir}/scMOCHA.R \
       -b ${barcode_cluster_file} \
@@ -633,7 +654,9 @@ task plot_scMOCHA {
       -chr ${cell_hetero_raw_file} \
       -p ${perlscript} \
       -j ${jar_path} \
-      -s ${sqlite_path}
+      -s ${sqlite_path} \
+      -conda_root ${conda_root} \
+      -conda_env ${conda_env}
   }
 
   output {
@@ -731,6 +754,8 @@ task gather_outputfiles {
   String account
   File IMAGE
   String bindir
+  String conda_root
+  String conda_env
 
   command {
     mkdir -p ${output_dir}
