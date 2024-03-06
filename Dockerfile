@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
   && mkdir -p /scMOCHA \
   && mkdir -p /opt/ \
   && cd /opt/ \
-  && wget -O cellranger-7.2.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.2.0.tar.gz?Expires=1698136230&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=QJtEJ9DWIMq5z1CB-gSB8vEkRSZ1ksdodzydgXMMTJPwiGbyYrAC0-8wZnPWonyF4t63EKQOgutOr4P6oJLKaRiarn3YEJOwQPPWnPHVm4xGhJczIdO3x6isS3hiMqRkDhwCRK4Zxcug1QbrqFoZgC15IoALBnR8dnH5IW9dgEiYD~PUemXpOYkfIilI5l40uJ40x3nc-lU8VZz~Xdbj3qOYt95uojnG74Qc7A5UoWwfebE1ftFtDuAqOwrJLi-OsxGtc9cn9P0sEG~J6lwNH9AVjEekWIQpn~ldUMf-cHkfCpoQl8UecglBtH~3ReHw4xhhiYZGkU9-8XDraq-S9A__" \
+  && wget -O cellranger-7.2.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.2.0.tar.gz?Expires=1709793992&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=YcCMmnC7fBwnECULPHLAUwBByR-VAW~4Lc0QagWr8lH2aG71XS-i-hxOs9E5fuJ65DU04FBxT2keT19z71uDqsCyxSFyQcNhBl9dB~Es-oHv6exGP2jgwlOGbHvRKmauhBFR0xlnFgRxKrWOLzSMultiLBpeSi1gjjG9JxlKTp9HkIFGVFCVKIwVwtwbvaLQiiMre3TCQ8NJItORHDnhHwI6lxM~vgjqBDEmavrIf56WFfNJtfTOjQkgCDTiYoALXZ63WQsBQb12XCxwsZtIuw3-oMvnLPe-dV4wU~1ixgwLNCqiZgYPXTTIQaAYO7A2j7ND4vJ9InCMOX4M4PkYeA__" \
   && tar -xzvf cellranger-7.2.0.tar.gz \
   && ln -s /opt/cellranger-7.2.0/bin/cellranger /usr/bin/cellranger \
   && rm cellranger-7.2.0.tar.gz \
