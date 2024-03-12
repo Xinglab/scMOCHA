@@ -300,11 +300,11 @@ fn_sctransform <- function(.sc) {
   .reso <- as.numeric(reso)
 
   .sct |>
-    Seurat::RunPCA() |>
-    Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
-    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) |>
+    Seurat::RunPCA(dim=.npcs) |>
     Seurat::FindNeighbors(reduction = "pca", dims = 1:.npcs) |>
-    Seurat::FindClusters(resolution = .reso) ->
+    Seurat::FindClusters(resolution = 0.1) |> 
+    Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs/2)) |>
+    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
     .scta
 
   .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
@@ -312,6 +312,8 @@ fn_sctransform <- function(.sc) {
 
   .scta[["celltype"]] <- .celltype
   .scta[["celltype_name"]] <- .celltype_collapse
+  
+  # fn_plot_azimuth_umap(.scta, .plottype = "tsne")$plot_umap
 
   .scta
 
@@ -338,77 +340,7 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
   .sca
 }
 
-fn_plot_azimuth_umap <- function(.x) {
-
-  .umap <- tryCatch(
-      expr = {
-        .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
-      },
-      error = \(e) {
-        .x@reductions$umap@cell.embeddings |> data.table::as.data.table()
-      }
-    )
-  colnames(.umap) <- c("UMAP_1", "UMAP_2")
-
-  # .umap
-  .x@meta.data |>
-    dplyr::select(
-      celltype
-    ) |>
-    data.table::as.data.table() ->
-    .xx
-
-  .xxx <- dplyr::bind_cols(.umap, .xx)
-
-  .xxx |>
-    dplyr::group_by(celltype) |>
-    dplyr::count() |>
-    dplyr::ungroup() |>
-    dplyr::mutate(ratio = n / sum(n)) ->
-    .xxx_celltype
-
-  .xxx_celltype |>
-    dplyr::ungroup() %>%
-    dplyr::mutate(csum = rev(cumsum(rev(n)))) %>%
-    dplyr::mutate(pos = n/2 + dplyr::lead(csum, 1)) %>%
-    dplyr::mutate(pos = dplyr::if_else(is.na(pos), n/2, pos)) %>%
-    dplyr::mutate(percentage = n/sum(n)) %>%
-    ggplot(aes(x = "", y = n, fill = celltype)) +
-    geom_bar(stat = "identity", width = 1, color = "white") +
-    # scale_fill_brewer(palette = "Dark2", name = NULL) +
-    scale_fill_manual(
-      name = NULL,
-      values = pcc$color,
-    ) +
-    # scale_color_manual(
-    #   name = NULL,
-    #   values = pcc$color
-    # ) +
-    ggrepel::geom_label_repel(
-      aes(
-        y = pos,
-        label = glue::glue("{celltype}\n{n} ({scales::percent(percentage)})"),
-        fill = celltype,
-        # color = celltype
-      ),
-      size = 6,
-      # fill = "white",
-      nudge_x = 1,
-      show.legend = FALSE,
-    ) +
-    coord_polar(theta = "y", start = 0) +
-    theme_void() +
-    theme(
-      plot.title = element_text(
-        # vjust = -2,
-        hjust = 0.5,
-        size = 22,
-      ),
-      legend.position = "none"
-    ) ->
-    .p_pie
-
-
+fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")){
   .xxx |>
     dplyr::group_by(celltype) |>
     tidyr::nest() |>
@@ -419,33 +351,33 @@ fn_plot_azimuth_umap <- function(.x) {
       #   dplyr::pull(data) |>
       #   .[[1]] ->
       #   .m
-
+      
       .m |>
         dplyr::summarise(u1 = mean(UMAP_1), u2 = mean(UMAP_2)) ->
         .mm
-
+      
       .m |>
         dplyr::mutate(u1 = UMAP_1 > .mm$u1, u2 = UMAP_2 > .mm$u2) ->
         .mmd
-
+      
       .mmd |>
         dplyr::group_by(u1, u2) |>
         dplyr::count() |>
         dplyr::ungroup() |>
         dplyr::arrange(-n) ->
         .mmm
-
+      
       if(nrow(.mmm) == 1) {
         return(
           .mmd |>
             # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
             dplyr::summarise(UMAP_1  = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
         )
-
+        
       }
-
+      
       .fc <- .mmm$n[[1]] / .mmm$n[[2]] # 1.1
-
+      
       if(.fc > 1.1) {
         .mmd |>
           dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
@@ -455,13 +387,13 @@ fn_plot_azimuth_umap <- function(.x) {
           # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
           dplyr::summarise(UMAP_1  = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
       }
-
+      
     })) |>
     dplyr::select(-data) |>
     tidyr::unnest(cols = u) |>
     dplyr::arrange(celltype) ->
     .xxx_label
-
+  
   ggplot() +
     geom_point(
       data = .xxx,
@@ -523,15 +455,101 @@ fn_plot_azimuth_umap <- function(.x) {
         size = 12
       )
     ) +
-    coord_fixed(
-      ratio = 1
-    ) ->
-    .p
+    labs(
+      x = .xy_labels[[1]],
+      y = .xy_labels[[2]]
+    ) +
+  coord_fixed(
+    ratio = 1
+  )
+}
 
+fn_celltype_pie_plot <- function(.xxx_celltype) {
+  .xxx_celltype |>
+    dplyr::ungroup() %>%
+    dplyr::mutate(csum = rev(cumsum(rev(n)))) %>%
+    dplyr::mutate(pos = n/2 + dplyr::lead(csum, 1)) %>%
+    dplyr::mutate(pos = dplyr::if_else(is.na(pos), n/2, pos)) %>%
+    dplyr::mutate(percentage = n/sum(n)) %>%
+    ggplot(aes(x = "", y = n, fill = celltype)) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    # scale_fill_brewer(palette = "Dark2", name = NULL) +
+    scale_fill_manual(
+      name = NULL,
+      values = pcc$color,
+    ) +
+    # scale_color_manual(
+    #   name = NULL,
+    #   values = pcc$color
+    # ) +
+    ggrepel::geom_label_repel(
+      aes(
+        y = pos,
+        label = glue::glue("{celltype}\n{n} ({scales::percent(percentage)})"),
+        fill = celltype,
+        # color = celltype
+      ),
+      size = 6,
+      # fill = "white",
+      nudge_x = 1,
+      show.legend = FALSE,
+    ) +
+    coord_polar(theta = "y", start = 0) +
+    theme_void() +
+    theme(
+      plot.title = element_text(
+        # vjust = -2,
+        hjust = 0.5,
+        size = 22,
+      ),
+      legend.position = "none"
+    ) 
+}
+
+fn_plot_azimuth_umap <- function(.x) {
+  
+  .col_names <- c("UMAP_1", "UMAP_2")
+  
+  if('ref.umap' %in% names(.x@reductions)) {
+    .umap <- .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
+    colnames(.umap) <- .col_names
+    .tsne <- NULL
+  } else {
+    .umap <- .x@reductions$umap@cell.embeddings |> data.table::as.data.table()
+    colnames(.umap) <- .col_names
+    .tsne <- .x@reductions$tsne@cell.embeddings |> data.table::as.data.table()
+    colnames(.tsne) <- .col_names
+  }
+
+  # .umap
+  .x@meta.data |>
+    dplyr::select(
+      celltype
+    ) |>
+    data.table::as.data.table() ->
+    .xx
+
+  .xxx <- dplyr::bind_cols(.umap, .xx)
+
+  .xxx |>
+    dplyr::group_by(celltype) |>
+    dplyr::count() |>
+    dplyr::ungroup() |>
+    dplyr::mutate(ratio = n / sum(n)) ->
+    .xxx_celltype
+
+  .plot_pie <- fn_celltype_pie_plot(.xxx_celltype )
+  
+  .plot_umap <- fn_plot_cluster(.xxx)
+  .plot_tsne <- if(is.null(.tsne)) {NULL} else {
+    .xxx <- dplyr::bind_cols(.tsne, .xx)
+    fn_plot_cluster(.xxx, .xy_labels = c("tSNE_1", "tSNE_2"))
+  }
 
   list(
-    plot_umap = .p,
-    plot_celltype_pie = .p_pie,
+    plot_umap = .plot_umap,
+    plot_tsne = .plot_tsne,
+    plot_celltype_pie = .plot_pie,
     cell_ratio = .xxx_celltype
   )
 
@@ -686,13 +704,24 @@ ggsave(
   height = 5
 )
 
-ggsave(
-  filename = "plot-umap.pdf",
-  plot = sc$plot_umap$plot_umap,
-  device = "pdf",
-  width = 9,
-  height = 7
-)
+if(is.null(sc$plot_umap$plot_tsne)) {
+  ggsave(
+    filename = "plot-umap.pdf",
+    plot = sc$plot_umap$plot_umap,
+    device = "pdf",
+    width = 9,
+    height = 7
+  )
+} else {
+  ggsave(
+    filename = "plot-umap.pdf",
+    plot = sc$plot_umap$plot_umap / sc$plot_umap$plot_tsne,
+    device = "pdf",
+    width = 9,
+    height = 12
+  )
+}
+
 
 ggsave(
   filename = "plot-pie-celltype.pdf",
