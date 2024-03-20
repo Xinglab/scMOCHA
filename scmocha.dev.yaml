@@ -27,6 +27,7 @@ dependencies:
   - boost-cpp
   - r-bh
   - r-brms
+  - r-gggenes
   - bioconductor-gmoviz
   - samtools==1.17
   - bamtools

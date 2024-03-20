@@ -28,6 +28,11 @@ workflow scMOCHA {
   Float reso = 0.1
   String cellrefname
   String celllevel
+  Int nFeature_RNA_min = 200
+  Int nFeature_RNA_max = 8000
+  Float percent_mt_max = 75
+  Float percent_ribo_max = 50
+  Float percent_Lagest_Gene_max = 50
 
 
   # Runtime attributes
@@ -97,6 +102,11 @@ workflow scMOCHA {
       reso = reso,
       refname = cellrefname,
       celllevel = celllevel,
+      nFeature_RNA_min = nFeature_RNA_min,
+      nFeature_RNA_max = nFeature_RNA_max,
+      percent_mt_max = percent_mt_max,
+      percent_ribo_max = percent_ribo_max,
+      percent_Lagest_Gene_max = percent_Lagest_Gene_max,
       mt_rcrs_fasta = rCRS,
       mt_exons_df = mt_exons_df,
       mt_features_gmoviz = mt_features_gmoviz,
@@ -422,10 +432,15 @@ task cell_cluster_annotation {
   File mt_bam
   File mt_bam_index
 
-  Int npcs
-  Float reso
+  Int npcs = 10
+  Float reso = 0.1
   String refname
   String celllevel
+  Int nFeature_RNA_min = 200
+  Int nFeature_RNA_max = 8000
+  Float percent_mt_max = 75
+  Float percent_ribo_max = 50
+  Float percent_Lagest_Gene_max = 50
 
   File mt_rcrs_fasta
   File mt_exons_df
@@ -452,7 +467,17 @@ task cell_cluster_annotation {
     conda activate ${conda_env}
 
     # cell cluster annotation
-    ${bindir}/azimuth.R ${h5file} ${npcs} ${reso} ${refname} ${celllevel}
+    ${bindir}/azimuth.R \
+      -h5file ${h5file} \
+      -npcs ${npcs} \
+      -reso ${reso} \
+      -refname_celllevel refname=${refname} celllevel=${celllevel} \
+      -nFeature_RNA_min ${nFeature_RNA_min}
+      -nFeature_RNA_max ${nFeature_RNA_max}
+      -percent_mt_max ${percent_mt_max}
+      -percent_ribo_max ${percent_ribo_max}
+      -percent_Lagest_Gene_max ${percent_Lagest_Gene_max}
+
 
     # addtags for cluster
     sinto addtags \
