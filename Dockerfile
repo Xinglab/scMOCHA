@@ -15,10 +15,10 @@ RUN apt-get update && apt-get install -y \
   && mkdir -p /scMOCHA \
   && mkdir -p /opt/ \
   && cd /opt/ \
-  && wget -O cellranger-7.2.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.2.0.tar.gz?Expires=1709793992&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=YcCMmnC7fBwnECULPHLAUwBByR-VAW~4Lc0QagWr8lH2aG71XS-i-hxOs9E5fuJ65DU04FBxT2keT19z71uDqsCyxSFyQcNhBl9dB~Es-oHv6exGP2jgwlOGbHvRKmauhBFR0xlnFgRxKrWOLzSMultiLBpeSi1gjjG9JxlKTp9HkIFGVFCVKIwVwtwbvaLQiiMre3TCQ8NJItORHDnhHwI6lxM~vgjqBDEmavrIf56WFfNJtfTOjQkgCDTiYoALXZ63WQsBQb12XCxwsZtIuw3-oMvnLPe-dV4wU~1ixgwLNCqiZgYPXTTIQaAYO7A2j7ND4vJ9InCMOX4M4PkYeA__" \
-  && tar -xzvf cellranger-7.2.0.tar.gz \
-  && ln -s /opt/cellranger-7.2.0/bin/cellranger /usr/bin/cellranger \
-  && rm cellranger-7.2.0.tar.gz \
+  && wget -O cellranger-8.0.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-8.0.0.tar.gz?Expires=1711015460&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=NNDHxw14LOdP14k5NhlkMLvE9tWutdtw0C3NgOeBQ4O-s8I3a0FO0L45eXYcnHm8N0IKDS4YIH49ryxUVNhveaJeFZIsjMirMZ92SaA72i7y6Xfr~i9EKE42jfTUVk8~wWby9BaWiIj75ZB9ERfhKYkYXirYT0mkef114-8x1hGBZWtFwks0wDk6TLjGiOHDlLOJIlb3lRGqysVzxGAtE9HSpFEpN4Na8CbKT6qWEt4SCEDoAv6SL8xqP0Z4ZaS4kUaMoS2Qv5SnZrVFqojRYs61P3wcYSiHm8sKAXABQp8EKoFj8-QHHe-zUe4qQwY3IYl5gUn2djQBB9ew7KQEng__" \
+  && tar -xzvf cellranger-8.0.0.tar.gz \
+  && ln -s /opt/cellranger-8.0.0/bin/cellranger /usr/bin/cellranger \
+  && rm cellranger-8.0.0.tar.gz \
   && cd /opt/ \
   && wget -O bamtools-2.5.2.tar.gz https://github.com/pezmaster31/bamtools/archive/refs/tags/v2.5.2.tar.gz \
   && tar -xzvf bamtools-2.5.2.tar.gz \
