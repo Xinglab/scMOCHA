@@ -42,7 +42,7 @@ verbose <- FALSE
 npcs <- 10
 reso <- 0.1
 refname_celllevel <- list(
-  refname = NA_character_,d <- 
+  refname = NA_character_,
   celllevel = NA_character_
 )
 nFeature_RNA_min <- 200
