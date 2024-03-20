@@ -116,7 +116,7 @@ run scMOCHA.wdl \
 > singularity example
 ```bash
 module load Java/15.0.1
-nohup java -Dconfig.file=/path/to/singularity.slurm.conf \
+java -Dconfig.file=/path/to/singularity.slurm.conf \
 -jar /path/to/cromwell-78.jar \
 run /path/to/scMOCHA/scMOCHA.image.wdl \
 -i scMOCHA.inputs.json 1>scMOCHA.log 2>scMOCHA.err
