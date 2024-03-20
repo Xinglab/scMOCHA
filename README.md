@@ -1,5 +1,5 @@
-# scRNAseq-MitoVariant
-Call MitoVariant from scRNA-seq data
+# scMOCHA: Single-Cell Mitochondrial Omics for Cellular Heteroplasmy Analysis
+Call mitochondrial mutation from scRNA-seq data
 
 1. Smart-Seq
 Smart-seq and Smart-Seq2 are popular protocols for single-cell RNA-sequencing. With these protocols, 96-well plates are used with individual cells placed in each well. To assess the quality of the reads, our pipeline employs FastQC and MultiQC, with checks including distributions of GC-content and levels of adapter contamination. Subsequently, reads are aligned to the appropriate reference genome using STAR, and protein-coding features are quantified with featureCounts program.
@@ -18,7 +18,7 @@ First test PBMC data was source from [Stuart el al., Cell, 2019](https://www.sci
 ![](img/tsne.png)
 
 ## Pipeline
-![](img/workflow.png)
+![](img/scMOCHA-workflow.png)
 
 
 ## Requrements
