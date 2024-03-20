@@ -227,7 +227,8 @@ fn_stat_cell <- function(.x, .y) {
     # `mean reads per cell` = .mean_reads_per_cell,
     `median UMI counts per cell` = .median_umicount_per_cell,
     `median genes per cell` = .median_gene_per_cell,
-    `number of cells after filtering` = .n_y_cells
+    `number of cells after filtering` = .n_y_cells,
+    `Preserve ratio` = .n_y_cells / .n_x_cells
   )
 }
 
