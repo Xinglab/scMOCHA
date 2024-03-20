@@ -747,7 +747,7 @@ writexl::write_xlsx(
   x = sc$cell_stats,
   path = "qc_cell_stats.xlsx"
 )
-
+log_success("Write intemediate tsv.")
 
 
 # save plot ---------------------------------------------------------------
@@ -796,7 +796,7 @@ ggsave(
   width = 8,
   height = 5
 )
-
+log_success("Save the plot!")
 
 # save --------------------------------------------------------------------
 
@@ -805,7 +805,7 @@ readr::write_rds(
   file = "sc_azimuth.rds.gz",
   compress = "none"
 )
-
+log_success("Save sc_azimuth.rds.gz")
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
@@ -813,3 +813,4 @@ readr::write_rds(
 # save image --------------------------------------------------------------
 
 save.image(file = "azimuth.rda")
+log_success("Save image.")
