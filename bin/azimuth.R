@@ -811,6 +811,7 @@ log_success("Save sc_azimuth.rds.gz")
 # future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
-
+log_info("Save image.")
 save.image(file = "azimuth.rda")
-log_success("Save image.")
+log_success("Save image done!")
+
