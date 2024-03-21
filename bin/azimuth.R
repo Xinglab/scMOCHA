@@ -146,8 +146,8 @@ fn_metrics_mito <- function(.sc) {
     geom_point() +
     scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
     ggtitle("Mito of plotting QC metrics") +
-    geom_hline(yintercept = 500, color = "red") +
-    geom_hline(yintercept = 6000, color = "red") +
+    geom_hline(yintercept = nFeature_RNA_min, color = "red") +
+    geom_hline(yintercept = nFeature_RNA_max, color = "red") +
     theme_bw() ->
   .metrics_mito
 }
@@ -159,8 +159,8 @@ fn_metrics_ribo <- function(.sc) {
     geom_point() +
     scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
     ggtitle("Ribo of plotting QC metrics") +
-    geom_hline(yintercept = 500, color = "red") +
-    geom_hline(yintercept = 6000, color = "red") +
+    geom_hline(yintercept = nFeature_RNA_min, color = "red") +
+    geom_hline(yintercept = nFeature_RNA_max, color = "red") +
     theme_bw() ->
   .metrics_ribo
 }
@@ -170,7 +170,7 @@ fn_percent_mt_ribo_lg <- function(.sc) {
     ggplot(aes(percent.mt)) +
     geom_histogram(binwidth = 0.5, fill = "red") +
     ggtitle("Distribution of Percentage Mitochondrion") +
-    geom_vline(xintercept = 75) +
+    geom_vline(xintercept = percent_mt_max) +
     theme_bw() ->
   .percent_mt
 
@@ -178,7 +178,7 @@ fn_percent_mt_ribo_lg <- function(.sc) {
     ggplot(aes(percent.ribo)) +
     geom_histogram(binwidth = 0.5, fill = "green") +
     ggtitle("Distribution of Percentage Ribosome") +
-    geom_vline(xintercept = 50) +
+    geom_vline(xintercept = percent_ribo_max) +
     theme_bw() ->
   .percent_ribo
 
@@ -186,7 +186,7 @@ fn_percent_mt_ribo_lg <- function(.sc) {
     ggplot(aes(Percent.Largest.Gene)) +
     geom_histogram(binwidth = 0.7, fill = "blue") +
     ggtitle("Distribution of Percentage Largest Gene") +
-    geom_vline(xintercept = 50) +
+    geom_vline(xintercept = percent_Lagest_Gene_max) +
     theme_bw() ->
   .percent_largest_gene
 
