@@ -60,10 +60,10 @@ Options:
 <npcs=f> default 10
 <reso=f> default 0.1
 <refname_celllevel=s%> azimuth reference name cell type level, should be used as -refname_celllevel refname=${refname} celllevel=${celllevel}
-<nFeature_RNA_min=i> default 500
-<nFeature_RNA_max=i> default 8000
-<percent_mt_max=i> default 75
-<percent_ribo_max=i> default 50
+<nFeature_RNA_min=f> default 500
+<nFeature_RNA_max=f> default 8000
+<percent_mt_max=f> default 75
+<percent_ribo_max=f> default 50
 <percent_Lagest_Gene_max=i> default 50
 <verbose!> Print messages
 "
