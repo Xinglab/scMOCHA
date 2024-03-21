@@ -128,7 +128,7 @@ workflow scMOCHA {
     input:
       sorted_bam = cellranger_count.sorted_bam,
       sorted_bam_index = cellranger_count.sorted_bam_index,
-      barcodes_tsv = cellranger_count.barcodes_tsv,
+      barcodes_tsv = cell_cluster_annotation.barcode_cell,
       mt_bam = cellranger_count.mt_bam,
       mt_bam_index = cellranger_count.mt_bam_index,
       mt_cluster_bam = cell_cluster_annotation.mt_cluster_bam,
@@ -472,10 +472,10 @@ task cell_cluster_annotation {
       -npcs ${npcs} \
       -reso ${reso} \
       -refname_celllevel refname=${refname} celllevel=${celllevel} \
-      -nFeature_RNA_min ${nFeature_RNA_min}
-      -nFeature_RNA_max ${nFeature_RNA_max}
-      -percent_mt_max ${percent_mt_max}
-      -percent_ribo_max ${percent_ribo_max}
+      -nFeature_RNA_min ${nFeature_RNA_min} \
+      -nFeature_RNA_max ${nFeature_RNA_max} \
+      -percent_mt_max ${percent_mt_max} \
+      -percent_ribo_max ${percent_ribo_max} \
       -percent_Lagest_Gene_max ${percent_Lagest_Gene_max}
 
 
@@ -504,6 +504,7 @@ task cell_cluster_annotation {
   }
   output {
     File azimuth_rda = "azimuth.rda"
+    File barcode_cell = "barcode_cell.tsv"
     File barcode_cluster = "barcode_cluster.tsv"
     File barcode_bulk = "barcode_bulk.tsv"
     File celltype_ratio = "celltype_ratio.tsv"
