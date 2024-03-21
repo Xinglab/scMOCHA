@@ -28,8 +28,8 @@ workflow scMOCHA {
   Float reso = 0.1
   String cellrefname
   String celllevel
-  Int nFeature_RNA_min = 200
-  Int nFeature_RNA_max = 8000
+  Int nFeature_RNA_min = 500
+  Int nFeature_RNA_max = 6000
   Float percent_mt_max = 75
   Float percent_ribo_max = 50
   Float percent_Lagest_Gene_max = 50
