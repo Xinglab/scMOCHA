@@ -728,6 +728,11 @@ log_success("Plot umap!")
 # readr -------------------------------------------------------------------
 
 # names(sc)
+readr::write_tsv(
+  x = sc$cellbarcode_cluster |> dplyr::select(cellbarcode),
+  file = "barcode_cell.tsv",
+  col_names = F
+)
 
 readr::write_tsv(
   x = sc$cellbarcode_cluster,
