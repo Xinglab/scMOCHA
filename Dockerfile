@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
   && mkdir -p /scMOCHA \
   && mkdir -p /opt/ \
   && cd /opt/ \
-  && wget -O cellranger-8.0.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-8.0.0.tar.gz?Expires=1711015460&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=NNDHxw14LOdP14k5NhlkMLvE9tWutdtw0C3NgOeBQ4O-s8I3a0FO0L45eXYcnHm8N0IKDS4YIH49ryxUVNhveaJeFZIsjMirMZ92SaA72i7y6Xfr~i9EKE42jfTUVk8~wWby9BaWiIj75ZB9ERfhKYkYXirYT0mkef114-8x1hGBZWtFwks0wDk6TLjGiOHDlLOJIlb3lRGqysVzxGAtE9HSpFEpN4Na8CbKT6qWEt4SCEDoAv6SL8xqP0Z4ZaS4kUaMoS2Qv5SnZrVFqojRYs61P3wcYSiHm8sKAXABQp8EKoFj8-QHHe-zUe4qQwY3IYl5gUn2djQBB9ew7KQEng__" \
+  && wget -O cellranger-8.0.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-8.0.0.tar.gz?Expires=1711093229&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=GMkFV-rv2KEMltgT5yMRDKsnGtE5e~w0WS0NvI4axuuCeRV6ufkRYdcX87uAkytqdR7ks4jbJey2Ba8AdEprSFZa2NMXOHbjrKlKVBI6QhbybQewyHKt4uCJmDi9GVDEa4fw909QBhY5TjU36Pg4eWDeQkQ~CTmcS0mKMGT40uGxSGQLh6h~TqedN5zivnibXXoojoG3g-beY~OFCvHVV5dMeyfFeHXRj7m~gF-LNSKXw09vr9O3SC1x0-7CG6ArvM0RZtaiwpW9I-Ypm7vwB4z5MRABAnIjn3XrW7MdTnJgwWMTaTcYMuBy6rXWpY-bAfXMHaCHa-equqdQU9FpSQ__" \
   && tar -xzvf cellranger-8.0.0.tar.gz \
   && ln -s /opt/cellranger-8.0.0/bin/cellranger /usr/bin/cellranger \
   && rm cellranger-8.0.0.tar.gz \
