@@ -246,7 +246,286 @@ ggplot2::ggsave(
   height = 7
 )
 
+for_upset |> 
+  dplyr::mutate(
+    b143 = purrr::map(
+      .x = srrid,
+      .f = \(.srrid) {
+        .s <- as.character(.srrid)
+        tibble::tibble(
+          in143B = "143B" %in% .s,
+          inpei = any(grepl("Pei", x = .s)),
+          ngroup = length(.s)
+        )
+        
+      }
+    )
+  ) |> 
+  tidyr::unnest(b143) |> 
+  dplyr::filter(in143B, !inpei) 
 
+
+for_upset |> 
+  dplyr::mutate(
+    b143 = purrr::map(
+      .x = srrid,
+      .f = \(.srrid) {
+        .s <- as.character(.srrid)
+        tibble::tibble(
+          in143B = "143B" %in% .s,
+          inpei = sum(grepl("Pei", x = .s)) > 5,
+          ngroup = length(.s)
+        )
+        
+      }
+    )
+  ) |> 
+  tidyr::unnest(b143) |> 
+  dplyr::filter(in143B) |> 
+  dplyr::filter(inpei)
+  
+for_upset |> 
+  dplyr::mutate(
+    m = purrr::map(
+      .x = srrid,
+      .f = \(.srrid, .cellline) {
+        .s <- as.character(.srrid)
+        tibble::tibble(
+          inm = .cellline %in% .s,
+          ngroup = length(.s)
+        )
+      },
+      .cellline = "WAL2A"
+    )
+  ) |> 
+  tidyr::unnest(m) |> 
+  dplyr::filter(inm) |> 
+  dplyr::filter(ngroup == 1) ->
+  wal2a
+
+ggplot() +
+  annotate(
+    "text", x = 1, y = 1,
+    size = 6,
+    color = "black", #ggsci::pal_aaas()(1),
+    label = stringr::str_wrap(
+      string = wal2a$v |> 
+        paste0(collapse = ", "),
+      width = 30
+    )
+  ) +
+  theme_void()
+
+for_upset |> 
+  dplyr::mutate(
+    m = purrr::map(
+      .x = srrid,
+      .f = \(.srrid, .cellline) {
+        .s <- as.character(.srrid)
+        tibble::tibble(
+          inm = .cellline %in% .s,
+          ngroup = length(.s)
+        )
+      },
+      .cellline = "A549"
+    )
+  ) |> 
+  tidyr::unnest(m) |> 
+  dplyr::filter(inm) |> 
+  dplyr::filter(ngroup == 1) -> 
+  a549
+
+ggplot() +
+  annotate(
+    "text", x = 1, y = 1,
+    size = 6,
+    color = "black", #ggsci::pal_aaas()(1),
+    label = stringr::str_wrap(
+      string = a549$v |> 
+        paste0(collapse = ", "),
+      width = 35
+    )
+  ) +
+  theme_void()
+
+for_upset |> 
+  dplyr::mutate(
+    m = purrr::map(
+      .x = srrid,
+      .f = \(.srrid, .cellline) {
+        .s <- as.character(.srrid)
+        tibble::tibble(
+          inm = .cellline %in% .s,
+          ngroup = length(.s)
+        )
+      },
+      .cellline = "HEK293"
+    )
+  ) |> 
+  tidyr::unnest(m) |> 
+  dplyr::filter(inm) |> 
+  dplyr::filter(ngroup == 1) ->
+  hek293
+ggplot() +
+  annotate(
+    "text", x = 1, y = 1,
+    size = 6,
+    color = "black", #ggsci::pal_aaas()(1),
+    label = stringr::str_wrap(
+      string = hek293$v |> 
+        paste0(collapse = ", "),
+      width = 35
+    )
+  ) +
+  theme_void()
+
+
+
+# Load data ---------------------------------------------------------------
+rcrs <- readr::read_lines(
+  file = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta",
+  skip = 1
+) |>
+  paste0(collapse = "")
+strsplit(rcrs, "")[[1]] |>
+  tibble::enframe(name = "pos", "ref") ->
+  rcrs_ref
+
+
+fn_load_cluster_coverage <- function(.path) {
+  bases <- c("A", "G", "C", "T")
+  names(bases) <- bases
+  
+  base_list <- as.list(bases)
+  
+  base_list |>
+    purrr::map(
+      .f = \(.x) {
+        data.table::fread(
+          input = file.path(
+            .path,
+            "cluster.{.x}.txt.gz" |> glue::glue()
+          ),
+          col.names = c("pos", "cluster", "f", "b")
+        ) |>
+          dplyr::mutate(totalcount = f + b) |>
+          dplyr::mutate(variant = .x) |>
+          dplyr::select(pos, cluster, totalcount, variant) |>
+          tidyr::spread(key = cluster, value = totalcount) ->
+          .d
+        
+        rcrs_ref |>
+          dplyr::left_join(.d, by = "pos") |> 
+          tidyr::replace_na(replace = list(variant = .x))
+      }
+    ) |>
+    dplyr::bind_rows() ->
+    base_list_load
+  base_list_load
+}
+
+outdir |>
+  dplyr::mutate(
+    a = purrr::map(
+      .x = outputdir,
+      .f = \(.path) {
+        log_warn(.path)
+        # log_warn("CJ")
+        # .path <- outdir$outputdir[[2]]
+        .clc <- fn_load_cluster_coverage(.path)
+        
+        .clc
+      }
+    )
+  ) -> 
+  outdir_coverage
+
+outdir_coverage |> 
+  dplyr::mutate(
+    b = purrr::map2(
+      .x = projectname,
+      .y = a,
+      .f= \(.x, .y) {
+        # .x <- outdir_coverage$projectname[[8]]
+        # .y <- outdir_coverage$a[[8]]
+        
+        if(.x != "WT") {
+          log_success(.x)
+          .y |> 
+            dplyr::select(pos, ref, variant) ->
+            .yy
+          .y |> 
+            dplyr::select(-c(pos, ref, variant)) %>%
+            dplyr::mutate(nn = rowSums(., na.rm = T)) |> 
+            dplyr::select(nn) -> 
+            .y_nn
+          .yy |> 
+            dplyr::bind_cols(.y_nn)  ->
+            .d
+          names(.d) <- c("pos", "ref", "variant", .x)
+          return(.d)
+        } else {
+          log_error(.x)
+          names(.y) <- c("pos", "ref", "variant", cellname)
+          return(.y)
+        }
+        
+      }
+    )
+  ) |> 
+  dplyr::select(projectname, b) ->
+  outdir_coverage_rename
+
+outdir_coverage_rename |> 
+  dplyr::mutate(
+    bb = purrr::map(
+      .x = b,
+      .f = \(.b, .targetpos) {
+        # .b <- outdir_coverage_rename$b[[8]]
+        .b |> 
+          dplyr::filter(pos %in% .targetpos) |> 
+          dplyr::filter(!is.na(variant)) |> 
+          dplyr::mutate(aref = glue::glue("{pos}{ref}")) |>
+          dplyr::arrange(pos) |> 
+          tidyr::gather(
+            -c(pos, ref, variant, aref),
+            key = "group",
+            value = "Count"
+          ) |> 
+          tidyr::replace_na(replace = list(Count = 0))
+      },
+      # .targetpos = c(311, 4024)
+      # .targetpos = c(293)
+      # .targetpos = c(225)
+      .targetpos = c(3197)
+    )
+  ) ->
+  outdir_coverage_rename_filter_pos
+
+outdir_coverage_rename_filter_pos$bb |> 
+  dplyr::bind_rows() ->
+  forplot
+forplot |> 
+  dplyr::mutate(
+    group = factor(group, levels =  c(paste("Pei", 1:7, sep = "-"), cellname |> rev()) |> rev())
+  ) |> 
+  ggplot(aes(x = variant, y = group)) +
+  geom_tile(aes(fill = Count)) +
+  scale_fill_gradient(
+    low = "white",
+    high = "red"
+  ) +
+  geom_label(aes(label = Count)) +
+  facet_wrap(~aref) +
+  theme(
+    # panel.background = element_rect(fill = NA),
+    axis.text.x = element_text(size = 14, face = "bold"),
+    axis.text.y = element_text(size = 14, face = "bold"),
+    # axis.title = element_text(size = 16, face = "bold"),
+    axis.title = element_blank(),
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 18, face = "bold"),
+  )
 
 # single cell 3243 --------------------------------------------------------
 
@@ -470,3 +749,4 @@ ggsave(
 # future::plan(future::sequential)
 
 # save image --------------------------------------------------------------
+save.image("/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/09-stat-high-depth-mutation.rda")
