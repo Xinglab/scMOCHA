@@ -472,10 +472,10 @@ task cell_cluster_annotation {
       -npcs ${npcs} \
       -reso ${reso} \
       -refname_celllevel refname=${refname} celllevel=${celllevel} \
-      -nFeature_RNA_min ${nFeature_RNA_min}
-      -nFeature_RNA_max ${nFeature_RNA_max}
-      -percent_mt_max ${percent_mt_max}
-      -percent_ribo_max ${percent_ribo_max}
+      -nFeature_RNA_min ${nFeature_RNA_min} \
+      -nFeature_RNA_max ${nFeature_RNA_max} \
+      -percent_mt_max ${percent_mt_max} \
+      -percent_ribo_max ${percent_ribo_max} \
       -percent_Lagest_Gene_max ${percent_Lagest_Gene_max}
 
 
