@@ -22,24 +22,24 @@
 # Remove tmp directory
 #  SeuratData
 
-sd <- SeuratData::AvailableData() |>
-  dplyr::filter(grepl("Azimuth Reference", x = Summary)) |>
-  dplyr::filter(species == "human") |>
-  dplyr::filter(!Installed)
+# sd <- SeuratData::AvailableData() |>
+#   dplyr::filter(grepl("Azimuth Reference", x = Summary)) |>
+#   dplyr::filter(species == "human") |>
+#   dplyr::filter(!Installed)
 
-purrr::map(
-  sd$Dataset,
-  \(.x) {
-      tryCatch(
-        expr = {
-          SeuratData::InstallData(.x)
-        },
-        error = function(e) {
-          1
-        }
-      )
-  }
-)
+# purrr::map(
+#   sd$Dataset,
+#   \(.x) {
+#       tryCatch(
+#         expr = {
+#           SeuratData::InstallData(.x)
+#         },
+#         error = function(e) {
+#           1
+#         }
+#       )
+#   }
+# )
 
 
 # just in case there were warnings, we want to see them
