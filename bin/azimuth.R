@@ -64,7 +64,7 @@ Options:
 <nFeature_RNA_max=f> default 8000
 <percent_mt_max=f> default 75
 <percent_ribo_max=f> default 50
-<percent_Lagest_Gene_max=i> default 50
+<percent_Lagest_Gene_max=f> default 50
 <verbose!> Print messages
 "
 
