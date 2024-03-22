@@ -221,6 +221,7 @@ workflow scMOCHA {
       # cell_cluster_annotation
       azimuth_rda = cell_cluster_annotation.azimuth_rda,
       barcode_cluster = cell_cluster_annotation.barcode_cluster,
+      barcode_cell = cell_cluster_annotation.barcode_cell,
       barcode_bulk = cell_cluster_annotation.barcode_bulk,
       celltype_ratio = cell_cluster_annotation.celltype_ratio,
       plot_metrics = cell_cluster_annotation.plot_metrics,
@@ -285,6 +286,7 @@ workflow scMOCHA {
       # cell_cluster_annotation
       File azimuth_rda = cell_cluster_annotation.azimuth_rda
       File barcode_cluster = cell_cluster_annotation.barcode_cluster
+      File barcode_cell = cell_cluster_annotation.barcode_cell
       File barcode_bulk = cell_cluster_annotation.barcode_bulk
       File celltype_ratio = cell_cluster_annotation.celltype_ratio
       File plot_metrics = cell_cluster_annotation.plot_metrics
@@ -747,6 +749,7 @@ task gather_outputfiles {
   # cell_cluster_annotation
   File azimuth_rda
   File barcode_cluster
+  File barcode_cell
   File barcode_bulk
   File celltype_ratio
   File plot_metrics
@@ -832,6 +835,7 @@ task gather_outputfiles {
     # cell_cluster_annotation
     cp ${azimuth_rda} ${output_dir}
     cp ${barcode_cluster} ${output_dir}
+    cp ${barcode_cell} ${output_dir}
     cp ${barcode_bulk} ${output_dir}
     cp ${celltype_ratio} ${output_dir}
     cp ${plot_metrics} ${output_dir}
