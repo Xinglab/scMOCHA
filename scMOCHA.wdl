@@ -232,6 +232,8 @@ workflow scMOCHA {
       mt_cluster_bam = cell_cluster_annotation.mt_cluster_bam,
       mt_cluster_bam_index = cell_cluster_annotation.mt_cluster_bam_index,
       plot_mt_cluster_depth = cell_cluster_annotation.plot_mt_cluster_depth,
+      allmarkers = cell_cluster_annotation.allmarkers,
+      plot_heatmap = cell_cluster_annotation.plot_heatmap,
       # cellranger_count
       filtered_feature_bc_matrix = cellranger_count.filtered_feature_bc_matrix,
       metrics_summary = cellranger_count.metrics_summary,
@@ -519,6 +521,8 @@ task cell_cluster_annotation {
     File mt_bulk_bam = "MT_bulk.bam"
     File mt_bulk_bam_index = "MT_bulk.bam.bai"
     File plot_mt_cluster_depth = "plot-mt-cluster-depth.pdf"
+    File allmarkers = "allmarkers.tsv"
+    File plot_heatmap = "plot-makergenes-heatmap.pdf"
   }
 
 
@@ -754,6 +758,8 @@ task gather_outputfiles {
   File mt_cluster_bam
   File mt_cluster_bam_index
   File plot_mt_cluster_depth
+  File allmarkers
+  File plot_heatmap
 
   # cellranger_count
   File filtered_feature_bc_matrix
@@ -837,6 +843,8 @@ task gather_outputfiles {
     cp ${mt_cluster_bam} ${output_dir}
     cp ${mt_cluster_bam_index} ${output_dir}
     cp ${plot_mt_cluster_depth} ${output_dir}
+    cp ${allmarkers} ${output_dir}
+    cp ${plot_heatmap} ${output_dir}
 
     # cellranger_count
     cp ${filtered_feature_bc_matrix} ${output_dir}
