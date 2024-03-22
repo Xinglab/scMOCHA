@@ -45,8 +45,8 @@ refname_celllevel <- list(
   refname = NA_character_,
   celllevel = NA_character_
 )
-nFeature_RNA_min <- 200
-nFeature_RNA_max <- 8000
+nFeature_RNA_min <- 500
+nFeature_RNA_max <- 6000
 percent_mt_max <- 75
 percent_ribo_max <- 50
 percent_Lagest_Gene_max <- 50
@@ -783,7 +783,7 @@ log_success("Write intemediate tsv.")
 log_info("maker genes and heatmap")
 readr::write_tsv(
   x = sc$markers$allmakers,
-  path = "allmarkers.tsv"
+  file = "allmarkers.tsv"
 )
 log_success("Save all marker genes.")
 ggplot(
