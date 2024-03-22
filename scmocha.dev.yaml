@@ -29,6 +29,7 @@ dependencies:
   - r-brms
   - r-gggenes
   - bioconductor-gmoviz
+  - bioconductor-limma
   - samtools==1.17
   - bamtools
   - bcftools
