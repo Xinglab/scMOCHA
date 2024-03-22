@@ -786,19 +786,22 @@ readr::write_tsv(
   file = "allmarkers.tsv"
 )
 log_success("Save all marker genes.")
-ggplot(
+
+ggsave(
   filename = "plot-makergenes-heatmap.pdf",
   plot = sc$markers$heatmap,
   device = "pdf",
-  with = 8,
+  width = 8,
   height = 12
 )
+
+
 log_success("Save heatmap plot.")
 
 # save plot ---------------------------------------------------------------
 
 
-names(sc)
+# names(sc)
 ggsave(
   filename = "plot-metrics.pdf",
   plot = sc$plot_metrics,
