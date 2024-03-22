@@ -655,7 +655,7 @@ fn_check_cellref <- function(.refname) {
   }
 }
 
-fn_allmarkers_heatmap <- function(.sc, .topn=20){
+fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
   future::plan(future::multisession, workers = 10)
   .allmarkers <- Seurat::FindAllMarkers(
     object = .sc,
@@ -665,16 +665,16 @@ fn_allmarkers_heatmap <- function(.sc, .topn=20){
     logfc.threshold = 0.25
   )
   future::plan(future::sequential)
-  
 
-  
+
+
   .allmarkers |>
     dplyr::group_by(cluster) |>
     dplyr::top_n(.topn, wt = avg_log2FC) ->
-    .top
-  
+  .top
+
   p <- Seurat::DoHeatmap(.sc, features = .top$gene) + Seurat::NoLegend()
-  
+
   list(
     allmakers = .allmarkers,
     heatmap = p
@@ -860,6 +860,5 @@ log_success("Save sc_azimuth.rds.gz")
 
 # save image --------------------------------------------------------------
 log_info("Save image.")
-# save.image(file = "azimuth.rda")
+save.image(file = "azimuth.rda")
 log_success("Save image done!")
-
