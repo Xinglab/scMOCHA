@@ -61,7 +61,8 @@ outdir <- readr::read_rds("/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/o
 
 wt <- tibble::tibble(
   projectname = "WT",
-  outputdir = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT"
+  # outputdir = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT"
+  outputdir = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/c2d8cb20-4ac4-43c7-ae53-63e0c4c179b8/call-gather_outputfiles/execution/WT"
 )
 outdir <- dplyr::bind_rows(
   outdir, 
@@ -73,6 +74,13 @@ cellname <- c(
   "cluster_1" = "A549",
   "cluster_2" = "HEK293",
   "cluster_3" = "143B"
+)
+
+cellname <- c(
+  "cluster_0" = "A549",
+  "cluster_1" = "WAL2A",
+  "cluster_3" = "HEK293",
+  "cluster_2" = "143B"
 )
 
 
@@ -142,6 +150,7 @@ mutations |>
         
         cell_heteroplasmic_df_raw |>
           tidyr::gather(-V1, key = v, value = freq) |>
+          dplyr::filter(V1 != "cluster_4") |> 
           dplyr::filter(freq > 0.05) ->
           .vv
 
@@ -238,7 +247,7 @@ for_upset |>
   ) ->
   intersected_mutations;intersected_mutations
 ggplot2::ggsave(
-  filename = "intersected_mutations.pdf",
+  filename = "intersected_mutations-7418.pdf",
   plot = intersected_mutations,
   device = "pdf",
   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth",
@@ -262,7 +271,8 @@ for_upset |>
     )
   ) |> 
   tidyr::unnest(b143) |> 
-  dplyr::filter(in143B, !inpei) 
+  dplyr::filter(in143B) |> 
+  dplyr::filter(!inpei)
 
 
 for_upset |> 
@@ -409,7 +419,7 @@ fn_load_cluster_coverage <- function(.path) {
           col.names = c("pos", "cluster", "f", "b")
         ) |>
           dplyr::mutate(totalcount = f + b) |>
-          dplyr::mutate(variant = .x) |>
+          dplyr::mutate(variant = .x) |> 
           dplyr::select(pos, cluster, totalcount, variant) |>
           tidyr::spread(key = cluster, value = totalcount) ->
           .d
@@ -466,8 +476,12 @@ outdir_coverage |>
           return(.d)
         } else {
           log_error(.x)
-          names(.y) <- c("pos", "ref", "variant", cellname)
-          return(.y)
+          .y |> 
+            dplyr::select(-cluster_4) ->
+            .yy
+          plyr::revalue(names(.yy), cellname) -> .newname
+          names(.yy) <- .newname
+          return(.yy)
         }
         
       }
@@ -494,10 +508,10 @@ outdir_coverage_rename |>
           ) |> 
           tidyr::replace_na(replace = list(Count = 0))
       },
-      # .targetpos = c(311, 4024)
+      .targetpos = c(311, 4024)
       # .targetpos = c(293)
       # .targetpos = c(225)
-      .targetpos = c(3197)
+      # .targetpos = c(3197)
     )
   ) ->
   outdir_coverage_rename_filter_pos
@@ -614,11 +628,12 @@ agct_3243_cell |>
   agct_3243_ratio_cell
 
 
-barcode <- readr::read_tsv("/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT/barcode_cluster.tsv", col_names = F) |> 
+readr::read_tsv("/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT/barcode_cluster.tsv", col_names = F) |> 
   dplyr::select(barcode = X1, X3) |> 
   dplyr::mutate(cellname = plyr::revalue(X3, cellname)) |> 
   dplyr::mutate(barcode = glue::glue("WT-{barcode}")) |> 
-  dplyr::select(-X3)
+  dplyr::select(-X3) ->
+  barcode
 
 agct_3243_ratio_cell |> 
   dplyr::mutate(barcode = glue::glue("{projectname}-{V2}")) |> 
