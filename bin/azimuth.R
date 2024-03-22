@@ -655,21 +655,30 @@ fn_check_cellref <- function(.refname) {
   }
 }
 
-fn_heatmap <- function(.sc, .allmarkers, .topn=20){
-  # .norm <- azimuth_ref_sunburst_cell_merge_norm_allmarkers$norm[[1]]
-  # .region <- azimuth_ref_sunburst_cell_merge_norm_allmarkers$region[[1]]
-  # .allmarkers <- azimuth_ref_sunburst_cell_merge_norm_allmarkers$allmarkers[[1]]
-  # .topn <- 10
+fn_allmarkers_heatmap <- function(.sc, .topn=20){
+  future::plan(future::multisession, workers = 10)
+  .allmarkers <- Seurat::FindAllMarkers(
+    object = .sc,
+    assay = "RNA",
+    only.pos = TRUE,
+    min.pct = 0.25,
+    logfc.threshold = 0.25
+  )
+  future::plan(future::sequential)
   
-  # Idents(.norm) <- "cell3_cluster"
+
   
   .allmarkers |>
     dplyr::group_by(cluster) |>
     dplyr::top_n(.topn, wt = avg_log2FC) ->
     .top
   
-  p <- Seurat::DoHeatmap(.sc, features = .top$gene) + NoLegend()
-  p
+  p <- Seurat::DoHeatmap(.sc, features = .top$gene) + Seurat::NoLegend()
+  
+  list(
+    allmakers = .allmarkers,
+    heatmap = p
+  )
 }
 
 # load data ---------------------------------------------------------------
@@ -740,7 +749,7 @@ sc$plot_umap <- fn_plot_azimuth_umap(.x = sc$sc_azimuth)
 
 log_success("Plot umap!")
 
-sc$all.markers <- Seurat::FindAllMarkers(sc$sc_azimuth)
+sc$markers <- fn_allmarkers_heatmap(sc$sc_azimuth)
 log_success("All marker genes")
 # readr -------------------------------------------------------------------
 
@@ -770,11 +779,21 @@ writexl::write_xlsx(
   path = "qc_cell_stats.xlsx"
 )
 log_success("Write intemediate tsv.")
+
+log_info("maker genes and heatmap")
 readr::write_tsv(
-  x = sc$all.markers,
-  path = "all.markers.tsv"
+  x = sc$markers$allmakers,
+  path = "allmarkers.tsv"
 )
 log_success("Save all marker genes.")
+ggplot(
+  filename = "plot-makergenes-heatmap.pdf",
+  plot = sc$markers$heatmap,
+  device = "pdf",
+  with = 8,
+  height = 12
+)
+log_success("Save heatmap plot.")
 
 # save plot ---------------------------------------------------------------
 
@@ -838,6 +857,6 @@ log_success("Save sc_azimuth.rds.gz")
 
 # save image --------------------------------------------------------------
 log_info("Save image.")
-save.image(file = "azimuth.rda")
+# save.image(file = "azimuth.rda")
 log_success("Save image done!")
 
