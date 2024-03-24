@@ -292,7 +292,8 @@ for_upset |>
   ) |> 
   tidyr::unnest(b143) |> 
   dplyr::filter(in143B) |> 
-  dplyr::filter(inpei)
+  # dplyr::filter(ngroup == 3)
+  dplyr::filter(!inpei)
   
 for_upset |> 
   dplyr::mutate(
@@ -628,8 +629,10 @@ agct_3243_cell |>
   agct_3243_ratio_cell
 
 
-readr::read_tsv("/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT/barcode_cluster.tsv", col_names = F) |> 
+# readr::read_tsv("/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT/barcode_cluster.tsv", col_names = F) |> 
+readr::read_tsv("/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/c2d8cb20-4ac4-43c7-ae53-63e0c4c179b8/call-gather_outputfiles/execution/WT/barcode_cluster.tsv", col_names = F) |> 
   dplyr::select(barcode = X1, X3) |> 
+  dplyr::filter(X3 != "cluster_4") |> 
   dplyr::mutate(cellname = plyr::revalue(X3, cellname)) |> 
   dplyr::mutate(barcode = glue::glue("WT-{barcode}")) |> 
   dplyr::select(-X3) ->
@@ -751,7 +754,7 @@ p_col/  p_bar + plot_layout(heights = c(9, 1)) ->
   p_bar_col;p_bar_col
 
 ggsave(
-  filename = "cell_ag_ratio.pdf",
+  filename = "cell_ag_ratio-7418.pdf",
   plot = p_bar_col,
   device = "pdf",
   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth",
