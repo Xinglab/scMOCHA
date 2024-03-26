@@ -30,10 +30,10 @@ First test PBMC data was source from [Stuart el al., Cell, 2019](https://www.sci
 ```shell
 
 # production mode
-conda env create -f scmocha.prod.yaml
+conda env create -n scmocha -f scmocha.prod.yaml
 
 # dev mode
-conda env create -f scmocha.dev.yaml
+conda env create -n scmocha -f scmocha.dev.yaml
 ```
 
 
