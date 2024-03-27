@@ -656,7 +656,7 @@ fn_check_cellref <- function(.refname) {
 }
 
 fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
-  future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 10))
+  future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
     object = .sc,
     assay = "RNA",
