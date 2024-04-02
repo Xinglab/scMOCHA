@@ -557,4 +557,3 @@ dependencies:
       - urllib3==2.0.4
       - wrapt==1.15.0
       - yte==1.5.1
-prefix: /home/liuc9/tools/anaconda3/envs/scmocha
