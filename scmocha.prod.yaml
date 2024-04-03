@@ -171,7 +171,6 @@ dependencies:
   - nss=3.89=he45b914_0
   - oniguruma=6.9.8=h166bdaf_0
   - openjpeg=2.5.0=hfec8fc6_2
-  - openssl=3.2.1=hd590300_1
   - packaging=23.1=pyhd8ed1ab_0
   - pandoc=2.19.2=h32600fe_2
   - pango=1.50.14=heaa33ce_1
