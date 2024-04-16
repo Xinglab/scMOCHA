@@ -64,4 +64,4 @@ cellranger count \
   --transcriptome=${transcriptome} \
   --nosecondary \
   --disable-ui \
-  --localcores ${cpu}
+  --localcores ${cpu} &
