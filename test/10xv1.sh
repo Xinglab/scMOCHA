@@ -10,10 +10,10 @@ param=$#
 # https://kb.10xgenomics.com/hc/en-us/articles/360043386291-How-to-format-v1-chemistry-datasets-to-work-with-current-Cell-Ranger-versions
 
 # rename
-# I2 -> I1 8bp
-# I1 -> R2 14bp
-# RA -> R1 98bp
-# R3 -> 10bp
+# I2 -> I1 8bp sample index
+# RA -> R1 98bp transcript
+# I1 -> R2 14bp barcode
+# R3 -> 10bp UMI
 
 datadir=/mnt/isilon/u01_project/liuc9/From_PT/10X_V1/pbmc3k_fastqs
 targetdir=/mnt/isilon/u01_project/liuc9/From_PT/10X_V1/rename
