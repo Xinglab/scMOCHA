@@ -390,6 +390,7 @@ task cellranger_count {
         --fastqs=${fastqs} \
         --sample=${sample_id} \
         --transcriptome=${transcriptome} \
+        --create-bam=true \ # for 10x v4
         --nosecondary \
         --disable-ui \
         --localcores ${cpu}
