@@ -225,7 +225,7 @@ fn_create_sc <- function(.x, .project = "singlecell") {
     col.name = "percent.ribo"
   )
 
-  if (packageVersion("Seurat") > "5") {
+  if (packageVersion("Seurat") >= "5") {
     apply(
       # .sc@assays$RNA@counts, # Seurat version 4
       .sc@assays$RNA@layers$counts, # Seurat version 5
