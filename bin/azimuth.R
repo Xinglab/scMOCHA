@@ -371,7 +371,7 @@ fn_sctransform <- function(.sc) {
     Seurat::RunPCA(dim = .npcs) |>
     Seurat::FindNeighbors(reduction = "pca", dims = 1:.npcs) |>
     Seurat::FindClusters(resolution = 0.1) |>
-    Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs / 2)) |>
+    Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs)) |>
     Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
   .scta
 
