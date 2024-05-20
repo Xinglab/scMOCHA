@@ -659,7 +659,7 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
   future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
     object = .sc,
-    assay = "RNA",
+    # assay = "RNA",
     only.pos = TRUE,
     min.pct = 0.25,
     logfc.threshold = 0.25
