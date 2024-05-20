@@ -676,7 +676,7 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
   p <- Seurat::DoHeatmap(.sc, features = .top$gene) + Seurat::NoLegend()
 
   list(
-    allmakers = .allmarkers,
+    allmarkers = .allmarkers,
     heatmap = p
   )
 }
@@ -780,15 +780,15 @@ writexl::write_xlsx(
 )
 log_success("Write intemediate tsv.")
 
-log_info("maker genes and heatmap")
+log_info("marker genes and heatmap")
 readr::write_tsv(
-  x = sc$markers$allmakers,
+  x = sc$markers$allmarkers,
   file = "allmarkers.tsv"
 )
 log_success("Save all marker genes.")
 
 ggsave(
-  filename = "plot-makergenes-heatmap.pdf",
+  filename = "plot-markergenes-heatmap.pdf",
   plot = sc$markers$heatmap,
   device = "pdf",
   width = 8,
