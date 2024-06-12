@@ -50,7 +50,7 @@ nFeature_RNA_max <- 6000
 percent_mt_max <- 75
 percent_ribo_max <- 50
 percent_Lagest_Gene_max <- 50
-
+x10_version <- "v3"
 
 spec <- "
 Usage: Rscript azimuth.R [options]
@@ -65,6 +65,7 @@ Options:
 <percent_mt_max=f> default 75
 <percent_ribo_max=f> default 50
 <percent_Lagest_Gene_max=f> default 50
+<x10_version=s> default v3
 <verbose!> Print messages
 "
 
