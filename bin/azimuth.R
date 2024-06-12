@@ -52,6 +52,16 @@ percent_ribo_max <- 50
 percent_Lagest_Gene_max <- 50
 x10_version <- "v3"
 
+setup_10x_version <- tibble::tibble(
+  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
+  "v1" = c(200, 2500),
+  "v2" = c(200, 6000),
+  "v3" = c(400, 7000),
+  "v3.1" = c(500, 7000),
+  "v4" = c(500, 10000)
+)
+
+
 spec <- "
 Usage: Rscript azimuth.R [options]
 
