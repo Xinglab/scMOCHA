@@ -88,6 +88,8 @@ log_layout(layout_glue_colors)
 # print(celllevel)
 refname <- refname_celllevel$refname
 celllevel <- refname_celllevel$celllevel
+nFeature_RNA_min <- setup_10x_version[[x10_version]][[1]]
+nFeature_RNA_max <- setup_10x_version[[x10_version]][[2]]
 
 use_azimuth <- TRUE
 
