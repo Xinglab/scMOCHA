@@ -33,6 +33,7 @@ workflow scMOCHA {
   Float percent_mt_max = 75
   Float percent_ribo_max = 50
   Float percent_Lagest_Gene_max = 50
+  String x10_version = "v3"
 
 
   # Runtime attributes
@@ -107,6 +108,7 @@ workflow scMOCHA {
       percent_mt_max = percent_mt_max,
       percent_ribo_max = percent_ribo_max,
       percent_Lagest_Gene_max = percent_Lagest_Gene_max,
+      x10_version = x10_version,
       mt_rcrs_fasta = rCRS,
       mt_exons_df = mt_exons_df,
       mt_features_gmoviz = mt_features_gmoviz,
@@ -446,6 +448,7 @@ task cell_cluster_annotation {
   Float percent_mt_max = 75
   Float percent_ribo_max = 50
   Float percent_Lagest_Gene_max = 50
+  String x10_version = "v3"
 
   File mt_rcrs_fasta
   File mt_exons_df
@@ -481,7 +484,8 @@ task cell_cluster_annotation {
       -nFeature_RNA_max ${nFeature_RNA_max} \
       -percent_mt_max ${percent_mt_max} \
       -percent_ribo_max ${percent_ribo_max} \
-      -percent_Lagest_Gene_max ${percent_Lagest_Gene_max}
+      -percent_Lagest_Gene_max ${percent_Lagest_Gene_max} \
+      -x10_version ${x10_version}
 
 
     # addtags for cluster
