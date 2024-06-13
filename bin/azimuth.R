@@ -27,7 +27,7 @@ library(logger)
 # refname <- args[4]
 # celllevel <- args[5]
 
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/023d7328-9097-4e50-8c11-19f860c5519e/call-cell_cluster_annotation/inputs/1509575042/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/8bbfa98f-e4c2-42ef-9bee-005442d2f066/call-cell_cluster_annotation/inputs/-462422120/filtered_feature_bc_matrix.h5"
 # npcs <- 10
 # reso <- 0.1
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
@@ -45,8 +45,8 @@ refname_celllevel <- list(
   refname = NA_character_,
   celllevel = NA_character_
 )
-nFeature_RNA_min <- 500
-nFeature_RNA_max <- 6000
+nFeature_RNA_min <- 200
+nFeature_RNA_max <- 12000
 percent_mt_max <- 75
 percent_ribo_max <- 50
 percent_Lagest_Gene_max <- 50
@@ -88,8 +88,8 @@ log_layout(layout_glue_colors)
 # print(celllevel)
 refname <- refname_celllevel$refname
 celllevel <- refname_celllevel$celllevel
-nFeature_RNA_min <- setup_10x_version[[x10_version]][[1]]
-nFeature_RNA_max <- setup_10x_version[[x10_version]][[2]]
+# nFeature_RNA_min <- setup_10x_version[[x10_version]][[1]]
+# nFeature_RNA_max <- setup_10x_version[[x10_version]][[2]]
 
 use_azimuth <- TRUE
 
@@ -136,13 +136,14 @@ log_success("refname ", refname, " ", class(refname))
 log_success("celllevel ", celllevel, " ", class(celllevel))
 log_success("nFeature_RNA_min ", nFeature_RNA_min, " ", class(nFeature_RNA_min))
 log_success("nFeature_RNA_max ", nFeature_RNA_max, " ", class(nFeature_RNA_max))
+log_success("10x version ", x10_version, " ", class(x10_version))
 log_success("percent_mt_max ", percent_mt_max, " ", class(percent_mt_max))
 log_success("percent_ribo_max ", percent_ribo_max, " ", class(percent_ribo_max))
 log_success("percent_Lagest_Gene_max ", percent_Lagest_Gene_max, " ", class(percent_Lagest_Gene_max))
 # quit(save="no", status = 0, runLast = F)
 # src ---------------------------------------------------------------------
 
-pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
+# pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
 
 
 
@@ -154,15 +155,25 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 
 fn_metrics_mito <- function(.sc) {
   .sc@meta.data %>%
-    dplyr::arrange(percent.mt) %>%
+    dplyr::arrange(percent.mt) ->
+    .df
+  
+  .df |> 
     ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.mt)) +
     geom_point() +
     scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
     ggtitle("Mito of plotting QC metrics") +
     geom_hline(yintercept = nFeature_RNA_min, color = "red") +
     geom_hline(yintercept = nFeature_RNA_max, color = "red") +
+    # geom_text(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min, vjust = -1) +
+    # geom_text(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max, vjust = -1) +
+    # scale_y_continuous(
+    #   breaks = sort(
+    #     c(seq(0, max(.df$nFeature_RNA), length.out = 5), nFeature_RNA_min, nFeature_RNA_max)
+    #   )
+    # )+
     theme_bw() ->
-  .metrics_mito
+  .metrics_mito;.metrics_mito
 }
 
 fn_metrics_ribo <- function(.sc) {
@@ -372,6 +383,9 @@ fn_scnorm <- function(.sc) {
 }
 
 fn_sctransform <- function(.sc) {
+  
+  # .sc <- fn_load_sc_10x(h5file)$sc_filter
+  
   .sct <- Seurat::SCTransform(
     object = .sc,
     vars.to.regress = c("percent.mt", "percent.ribo")
@@ -379,13 +393,16 @@ fn_sctransform <- function(.sc) {
 
   .npcs <- as.numeric(npcs)
   .reso <- as.numeric(reso)
+  
+  # .npcs <- 10
+  # .reso <- 0.05
 
   .sct |>
     Seurat::RunPCA(dim = .npcs) |>
-    Seurat::FindNeighbors(reduction = "pca", dims = 1:.npcs) |>
-    Seurat::FindClusters(resolution = 0.1) |>
+    Seurat::FindNeighbors(reduction = "pca", dims = 1:(.npcs)) |>
+    Seurat::FindClusters(resolution = .reso) |>
     Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs)) |>
-    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
+    Seurat::RunTSNE(reduction = "pca", dims = 1:(.npcs)) ->
   .scta
 
   .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
@@ -394,7 +411,8 @@ fn_sctransform <- function(.sc) {
   .scta[["celltype"]] <- .celltype
   .scta[["celltype_name"]] <- .celltype_collapse
 
-  # fn_plot_azimuth_umap(.scta, .plottype = "tsne")$plot_umap
+  # fn_plot_azimuth_umap(.scta)$plot_umap
+  # fn_allmarkers_heatmap(.scta)$heatmap
 
   .scta
 }
@@ -421,6 +439,7 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
 }
 
 fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
   .xxx |>
     dplyr::group_by(celltype) |>
     tidyr::nest() |>
@@ -543,6 +562,7 @@ fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
 }
 
 fn_celltype_pie_plot <- function(.xxx_celltype) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
   .xxx_celltype |>
     dplyr::ungroup() %>%
     dplyr::mutate(csum = rev(cumsum(rev(n)))) %>%

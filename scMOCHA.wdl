@@ -529,7 +529,7 @@ task cell_cluster_annotation {
     File mt_bulk_bam_index = "MT_bulk.bam.bai"
     File plot_mt_cluster_depth = "plot-mt-cluster-depth.pdf"
     File allmarkers = "allmarkers.tsv"
-    File plot_heatmap = "plot-makergenes-heatmap.pdf"
+    File plot_heatmap = "plot-markergenes-heatmap.pdf"
   }
 
 
