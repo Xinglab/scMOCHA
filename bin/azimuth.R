@@ -160,19 +160,20 @@ fn_metrics_mito <- function(.sc) {
     .df
   
   .df |> 
-    ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.mt)) +
-    geom_point() +
+    ggplot() +
+    geom_point(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) +
     scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
     ggtitle("Mito of plotting QC metrics") +
     geom_hline(yintercept = nFeature_RNA_min, color = "red") +
     geom_hline(yintercept = nFeature_RNA_max, color = "red") +
-    # geom_text(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min, vjust = -1) +
-    # geom_text(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max, vjust = -1) +
-    # scale_y_continuous(
-    #   breaks = sort(
-    #     c(seq(0, max(.df$nFeature_RNA), length.out = 5), nFeature_RNA_min, nFeature_RNA_max)
-    #   )
-    # )+
+    geom_text(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min, vjust = -1) +
+    geom_text(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max, vjust = -1) +
+    scale_y_continuous(
+      labels = scales::label_comma()
+    )+
+    scale_x_continuous(
+      labels = scales::label_comma()
+    ) +
     theme_bw() ->
   .metrics_mito;.metrics_mito
 }
@@ -390,7 +391,7 @@ fn_sctransform <- function(.sc) {
   # npcs <- 10
   # reso <- 0.05
   # 
-  .sc <- fn_load_sc_10x(h5file)$sc_filter
+  # .sc <- fn_load_sc_10x(h5file)$sc_filter
   
   .sct <- Seurat::SCTransform(
     object = .sc,
