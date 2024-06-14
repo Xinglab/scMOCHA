@@ -27,7 +27,7 @@ library(logger)
 # refname <- args[4]
 # celllevel <- args[5]
 
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/8bbfa98f-e4c2-42ef-9bee-005442d2f066/call-cell_cluster_annotation/inputs/-462422120/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/06a9516a-61c1-4e71-bd1a-602bf8f0b789/call-cell_cluster_annotation/inputs/1948015536/filtered_feature_bc_matrix.h5"
 # npcs <- 10
 # reso <- 0.1
 # refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
@@ -45,7 +45,7 @@ refname_celllevel <- list(
   refname = NA_character_,
   celllevel = NA_character_
 )
-nFeature_RNA_min <- 200
+nFeature_RNA_min <- 500
 nFeature_RNA_max <- 12000
 percent_mt_max <- 75
 percent_ribo_max <- 50
@@ -88,6 +88,7 @@ log_layout(layout_glue_colors)
 # print(celllevel)
 refname <- refname_celllevel$refname
 celllevel <- refname_celllevel$celllevel
+x10_version <- stringr::str_to_lower(x10_version)
 # nFeature_RNA_min <- setup_10x_version[[x10_version]][[1]]
 # nFeature_RNA_max <- setup_10x_version[[x10_version]][[2]]
 
@@ -384,7 +385,12 @@ fn_scnorm <- function(.sc) {
 
 fn_sctransform <- function(.sc) {
   
-  # .sc <- fn_load_sc_10x(h5file)$sc_filter
+  # nFeature_RNA_min <- 500
+  # nFeature_RNA_max <- 10000
+  # npcs <- 10
+  # reso <- 0.05
+  # 
+  .sc <- fn_load_sc_10x(h5file)$sc_filter
   
   .sct <- Seurat::SCTransform(
     object = .sc,
