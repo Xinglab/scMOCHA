@@ -31,25 +31,16 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # @: array
 # %: hash
 # default: default value specified here.
-
-# barcode_cluster_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/393971319/barcode_cluster.tsv"
-
-# cell_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1023831751/cell.cell_heteroplasmic_df.tsv.gz"
-
-# cell_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1023831751/cell.coverage.txt.gz"
-
-# cluster_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/-1360301021/cluster.cell_heteroplasmic_df.tsv.gz"
-
-# cluster_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/-1360301021/cluster.coverage.txt.gz"
-
-# cell_hetero_raw_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1023831751/cell.cell_heteroplasmic_df_raw.tsv.gz"
-
-# perlscript <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1463544024/get_variants_info.pl"
-
-# jar_path <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/1606835458/haplogrep3"
-
-# sqlite_path <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e3bce3e-271d-470a-908d-2e68371e8f89/call-plot_scMOCHA/inputs/406118411/mitomap_sqlite_20230525.sqlite3"
-
+# 
+# barcode_cluster_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
+# cell_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
+# cluster_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-cell_cluster_annotation/execution/cell.cell_heteroplasmic_df_raw.tsv.gz"
+# perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
+# jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
+# sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
 
 conda_root <- "/home/liuc9/tools/anaconda3"
@@ -77,31 +68,6 @@ Options:
 GetoptLong.options(help_style = "two-column")
 GetoptLong(spec, template_control = list(opt_width = 50))
 
-# args <- commandArgs(TRUE)
-#
-# barcode_cluster_file <- args[1]
-# cell_hetero_file <- args[2]
-# cell_coverage_file <- args[3]
-#
-# cluster_hetero_file <- args[4]
-# cluster_coverage_file <- args[5]
-#
-# cell_hetero_raw_file <- args[6]
-#
-# perlscript <- args[7]
-# jar_path <- args[8]
-# sqlite_path <- args[9]
-
-#
-# barcode_cluster_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/144388986/barcode_cluster.tsv"
-# cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/212984394/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/212984394/cell.coverage.txt.gz"
-# cluster_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/1877126592/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/1877126592/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-celline/cromwell-executions/scMOCHA/9fbebe4a-97d4-46be-ab57-04bb0a301a4d/call-plot_scMOCHA/inputs/212984394/cell.cell_heteroplasmic_df_raw.tsv.gz"
-# perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
-# jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
-# sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
 
 # header ------------------------------------------------------------------
@@ -123,7 +89,8 @@ fn_load_hetero <- function(.filename) {
       cols = -barcode,
       names_to = "variant",
       values_to = "af"
-    )
+    ) |> 
+    dplyr::filter(af > 0.05) # filter variants which AF < 0.05
 }
 
 fn_load_coverage <- function(.filename) {
