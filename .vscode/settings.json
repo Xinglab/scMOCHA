@@ -19,12 +19,13 @@
     "titleBar.inactiveForeground": "#e7e7e799"
   },
   "peacock.remoteColor": "#dd0531",
+  "search.followSymlinks": false,
   "search.exclude": {
     "data": true,
     ".vscode": true,
     ".Rproj.user": true,
     ".git": true,
-    "0*/": true
+    "0*-/": true
   },
   "files.watcherExclude": {
     "data": true
