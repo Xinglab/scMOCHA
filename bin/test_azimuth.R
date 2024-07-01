@@ -1,0 +1,673 @@
+#!/usr/bin/env Rscript
+# Metainfo ----------------------------------------------------------------
+
+# @AUTHOR: Chun-Jie Liu
+# @CONTACT: chunjie.sam.liu.at.gmail.com
+# @DATE: Tue Jun 25 16:48:35 2024
+# @DESCRIPTION: filename
+
+# Library -----------------------------------------------------------------
+
+suppressPackageStartupMessages(library(magrittr))
+library(ggplot2)
+library(patchwork)
+library(prismatic)
+library(paletteer)
+library(data.table)
+#library(rlang)
+library(GetoptLong)
+library(logger)
+
+# args --------------------------------------------------------------------
+
+# s: string, i: integer, f: float, !: boolean
+# @: array
+# %: hash
+# default: default value specified here.
+verbose <- FALSE
+spec <- "
+Usage: Rscript foorbar.R [options]
+
+Options:
+<verbose!> Print messages
+"
+
+GetoptLong.options(help_style = "two-column")
+GetoptLong(spec, template_control = list(opt_width = 21))
+
+# src ---------------------------------------------------------------------
+
+
+# header ------------------------------------------------------------------
+log_threshold(TRACE)
+log_layout(layout_glue_colors)
+
+# log_info('Starting the script...')
+# log_debug('This is the second log line')
+# log_trace('Note that the 2nd line is being placed right after the 1st one.')
+# log_success('Doing pretty well so far!')
+# log_warn('But beware, as some errors might come :/')
+# log_error('This is a problem')
+# log_debug('Note that getting an error is usually bad')
+# log_error('This is another problem')
+# log_fatal('The last problem')
+
+# future::plan(future::multisession, workers = 10)
+
+# function ----------------------------------------------------------------
+
+fn_metrics_mito <- function(.sc) {
+  .sc@meta.data %>%
+    dplyr::arrange(percent.mt) ->
+    .df
+  
+  .df |> 
+    ggplot() +
+    geom_point(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) +
+    scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
+    ggtitle("Mito of plotting QC metrics") +
+    geom_hline(yintercept = nFeature_RNA_min, color = "red") +
+    geom_hline(yintercept = nFeature_RNA_max, color = "red") +
+    geom_text(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min, vjust = -1) +
+    geom_text(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max, vjust = -1) +
+    scale_y_continuous(
+      labels = scales::label_comma()
+    )+
+    scale_x_continuous(
+      labels = scales::label_comma()
+    ) +
+    theme_bw() ->
+    .metrics_mito;.metrics_mito
+}
+
+fn_metrics_ribo <- function(.sc) {
+  .sc@meta.data %>%
+    dplyr::arrange(percent.ribo) %>%
+    ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.ribo)) +
+    geom_point() +
+    scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
+    ggtitle("Ribo of plotting QC metrics") +
+    geom_hline(yintercept = nFeature_RNA_min, color = "red") +
+    geom_hline(yintercept = nFeature_RNA_max, color = "red") +
+    theme_bw() ->
+    .metrics_ribo
+}
+
+fn_percent_mt_ribo_lg <- function(.sc) {
+  .sc@meta.data %>%
+    ggplot(aes(percent.mt)) +
+    geom_histogram(binwidth = 0.5, fill = "red") +
+    ggtitle("Distribution of Percentage Mitochondrion") +
+    geom_vline(xintercept = percent_mt_max) +
+    theme_bw() ->
+    .percent_mt
+  
+  .sc@meta.data %>%
+    ggplot(aes(percent.ribo)) +
+    geom_histogram(binwidth = 0.5, fill = "green") +
+    ggtitle("Distribution of Percentage Ribosome") +
+    geom_vline(xintercept = percent_ribo_max) +
+    theme_bw() ->
+    .percent_ribo
+  
+  .sc@meta.data %>%
+    ggplot(aes(Percent.Largest.Gene)) +
+    geom_histogram(binwidth = 0.7, fill = "blue") +
+    ggtitle("Distribution of Percentage Largest Gene") +
+    geom_vline(xintercept = percent_Lagest_Gene_max) +
+    theme_bw() ->
+    .percent_largest_gene
+  
+  (.percent_mt | .percent_ribo | .percent_largest_gene)
+}
+
+fn_create_sc <- function(.x, .project = "singlecell") {
+  .counts <- tryCatch(
+    expr = {
+      Seurat::Read10X_h5(filename = .x)
+    },
+    error = function(e) {
+      .xx <- gsub(pattern = ".h5", replacement = "", x = .x)
+      Seurat::Read10X(data.dir = .xx)
+    }
+  )
+  # .counts <- Seurat::Read10X_h5(filename = .x)
+  
+  .sc <- Seurat::CreateSeuratObject(
+    counts = .counts,
+    project = .project,
+    # min.cells = 3,
+    # min.features = 200
+  )
+  
+  .sc <- Seurat::PercentageFeatureSet(
+    object = .sc,
+    pattern = "^MT-",
+    col.name = "percent.mt"
+  )
+  
+  .sc <- Seurat::PercentageFeatureSet(
+    object = .sc,
+    pattern = "^RP[SL][[:digit:]]|^RPLP[[:digit:]]|^RPSA",
+    # pattern = "^Rp[sl][[:digit:]]|^Rplp[[:digit:]]|^Rpsa",
+    col.name = "percent.ribo"
+  )
+  
+  if (packageVersion("Seurat") >= "5") {
+    apply(
+      # .sc@assays$RNA@counts, # Seurat version 4
+      .sc@assays$RNA@layers$counts, # Seurat version 5
+      2,
+      function(x) (100 * max(x)) / sum(x)
+    ) ->
+      .sc$Percent.Largest.Gene
+  } else {
+    apply(
+      .sc@assays$RNA@counts, # Seurat version 4
+      # .sc@assays$RNA@layers$counts, # Seurat version 5
+      2,
+      function(x) (100 * max(x)) / sum(x)
+    ) ->
+      .sc$Percent.Largest.Gene
+  }
+  
+  .sc
+}
+
+fn_load_sc_10x <- function(.x, .project = "singlecell") {
+  .sc <- fn_create_sc(.x, .project)
+  
+  .plot_2 <- (fn_metrics_mito(.sc) + fn_metrics_ribo(.sc)) +
+    plot_annotation(
+      title = glue::glue("Quality control {.project}"),
+      tag_levels = "A"
+    )
+  
+  .plot_3 <- fn_percent_mt_ribo_lg(.sc) +
+    plot_annotation(
+      title = glue::glue("Quality control {.project}"),
+      tag_levels = "A"
+    )
+  
+  .sc_sub <- subset(
+    x = .sc,
+    subset = nFeature_RNA > nFeature_RNA_min &
+      nFeature_RNA < nFeature_RNA_max &
+      percent.mt < percent_mt_max &
+      percent.ribo < percent_ribo_max &
+      Percent.Largest.Gene < percent_Lagest_Gene_max
+  )
+  
+  list(
+    sc = .sc,
+    sc_filter = .sc_sub,
+    plot_metrics = .plot_2,
+    plot_qc = .plot_3
+  )
+}
+
+fn_stat_cell <- function(.x, .y) {
+  # .x <- project_sct$sc[[1]]
+  # .y <- project_sct$sct[[1]]
+  
+  .xd <- .x@meta.data
+  .yd <- .y@meta.data
+  
+  .n_x_cells <- nrow(.xd)
+  .median_umicount_per_cell <- median(.xd$nCount_RNA)
+  .median_gene_per_cell <- median(.xd$nFeature_RNA)
+  .n_y_cells <- nrow(.yd)
+  
+  tibble::tibble(
+    `estimated number of cells` = .n_x_cells,
+    # `mean reads per cell` = .mean_reads_per_cell,
+    `median UMI counts per cell` = .median_umicount_per_cell,
+    `median genes per cell` = .median_gene_per_cell,
+    `number of cells after filtering` = .n_y_cells,
+    `Preserve ratio` = .n_y_cells / .n_x_cells
+  )
+}
+
+fn_azimuth <- function(.sc, .ref, .celllevel) {
+  # .sc <- sc$sc_filter
+  # .sc <- sc$sc
+  
+  .sca <- Azimuth::RunAzimuth(
+    query = .sc,
+    reference = .ref
+  )
+  
+  .celltype <- .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
+  
+  .celltype_collapse <- gsub(
+    pattern = "[[:punct:]]| ",
+    replacement = "_",
+    x = .celltype
+  ) |> factor()
+  
+  .sca[["celltype"]] <- .celltype
+  .sca[["celltype_name"]] <- .celltype_collapse
+  
+  .sca
+}
+
+fn_scnorm <- function(.sc) {
+  .sc |> Seurat::NormalizeData() -> .scn
+  
+  .scn <- Seurat::FindVariableFeatures(
+    .scn,
+    selection.method = "vst",
+    nfeatures = 2000
+  )
+  
+  .allgenes <- rownames(.scn)
+  .scn <- Seurat::ScaleData(
+    .scn,
+    features = .allgenes
+  )
+  
+  .npcs <- as.numeric(npcs)
+  .reso <- as.numeric(reso)
+  
+  .scn |>
+    Seurat::RunPCA(features = VariableFeatures(.scn)) |>
+    Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |>
+    Seurat::FindClusters(resolution = .reso) |>
+    Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
+    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
+    .scna
+  
+  .celltype <- glue::glue("cluster_{.scna[['seurat_clusters']][, 1]}") |> factor()
+  .celltype_collapse <- .celltype
+  
+  .scna[["celltype"]] <- .celltype
+  .scna[["celltype_name"]] <- .celltype_collapse
+  
+  .scna
+}
+
+fn_sctransform <- function(.sc) {
+  
+  # nFeature_RNA_min <- 500
+  # nFeature_RNA_max <- 10000
+  # npcs <- 10
+  # reso <- 0.05
+  # 
+  # .sc <- fn_load_sc_10x(h5file)$sc_filter
+  
+  .sct <- Seurat::SCTransform(
+    object = .sc,
+    vars.to.regress = c("percent.mt", "percent.ribo")
+  )
+  
+  .npcs <- as.numeric(npcs)
+  .reso <- as.numeric(reso)
+  
+  # .npcs <- 10
+  # .reso <- 0.05
+  
+  .sct |>
+    Seurat::RunPCA(dim = .npcs) |>
+    Seurat::FindNeighbors(reduction = "pca", dims = 1:(.npcs)) |>
+    Seurat::FindClusters(resolution = .reso) |>
+    Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs)) |>
+    Seurat::RunTSNE(reduction = "pca", dims = 1:(.npcs)) ->
+    .scta
+  
+  .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
+  .celltype_collapse <- .celltype
+  
+  .scta[["celltype"]] <- .celltype
+  .scta[["celltype_name"]] <- .celltype_collapse
+  
+  # fn_plot_azimuth_umap(.scta)$plot_umap
+  # fn_allmarkers_heatmap(.scta)$heatmap
+  
+  .scta
+}
+
+fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
+  # .sc <- sc$sc_filter
+  # .sc <- sc$sc
+  
+  if (.use_azimuth) {
+    .sca <-
+      tryCatch(
+        expr = {
+          fn_azimuth(.sc, .ref, .celllevel)
+        },
+        error = \(e) {
+          fn_sctransform(.sc)
+        }
+      )
+  } else {
+    .sca <- fn_sctransform(.sc)
+  }
+  
+  .sca
+}
+
+fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
+  .xxx |>
+    dplyr::group_by(celltype) |>
+    tidyr::nest() |>
+    dplyr::ungroup() |>
+    dplyr::mutate(u = purrr::map(.x = data, .f = function(.m) {
+      # d |>
+      #   dplyr::filter(cluster == 14) |>
+      #   dplyr::pull(data) |>
+      #   .[[1]] ->
+      #   .m
+      
+      .m |>
+        dplyr::summarise(u1 = mean(UMAP_1), u2 = mean(UMAP_2)) ->
+        .mm
+      
+      .m |>
+        dplyr::mutate(u1 = UMAP_1 > .mm$u1, u2 = UMAP_2 > .mm$u2) ->
+        .mmd
+      
+      .mmd |>
+        dplyr::group_by(u1, u2) |>
+        dplyr::count() |>
+        dplyr::ungroup() |>
+        dplyr::arrange(-n) ->
+        .mmm
+      
+      if (nrow(.mmm) == 1) {
+        return(
+          .mmd |>
+            # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
+            dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
+        )
+      }
+      
+      .fc <- .mmm$n[[1]] / .mmm$n[[2]] # 1.1
+      
+      if (.fc > 1.1) {
+        .mmd |>
+          dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
+          dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
+      } else {
+        .mmd |>
+          # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
+          dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
+      }
+    })) |>
+    dplyr::select(-data) |>
+    tidyr::unnest(cols = u) |>
+    dplyr::arrange(celltype) ->
+    .xxx_label
+  
+  ggplot() +
+    geom_point(
+      data = .xxx,
+      aes(
+        x = UMAP_1,
+        y = UMAP_2,
+        colour = celltype,
+        shape = NULL,
+        alpha = NULL
+      ),
+      size = 0.7
+    ) +
+    geom_text(
+      data = .xxx_label,
+      aes(
+        label = celltype,
+        x = UMAP_1,
+        y = UMAP_2,
+      ),
+      size = 6
+    ) +
+    scale_colour_manual(
+      name = "Cell type",
+      values = pcc$color,
+      labels = .xxx_label$celltype,
+      guide = guide_legend(
+        ncol = 1,
+        override.aes = list(size = 4)
+      )
+    ) +
+    theme(
+      panel.background = element_blank(),
+      axis.line = element_line(
+        colour = "black",
+        linewidth = 0.5,
+        arrow = grid::arrow(
+          angle = 5,
+          length = unit(5, "npc"),
+          type = "closed"
+        )
+      ),
+      axis.ticks = element_blank(),
+      axis.text = element_blank(),
+      axis.title = element_text(
+        size = 12,
+        face = "bold",
+        hjust = 0.05
+      ),
+      legend.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_text(
+        face = "bold",
+        color = "black",
+        size = 14
+      ),
+      legend.text = element_text(
+        face = "bold",
+        color = "black",
+        size = 12
+      )
+    ) +
+    labs(
+      x = .xy_labels[[1]],
+      y = .xy_labels[[2]]
+    ) +
+    coord_fixed(
+      ratio = 1
+    )
+}
+
+fn_celltype_pie_plot <- function(.xxx_celltype) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
+  .xxx_celltype |>
+    dplyr::ungroup() %>%
+    dplyr::mutate(csum = rev(cumsum(rev(n)))) %>%
+    dplyr::mutate(pos = n / 2 + dplyr::lead(csum, 1)) %>%
+    dplyr::mutate(pos = dplyr::if_else(is.na(pos), n / 2, pos)) %>%
+    dplyr::mutate(percentage = n / sum(n)) %>%
+    ggplot(aes(x = "", y = n, fill = celltype)) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    # scale_fill_brewer(palette = "Dark2", name = NULL) +
+    scale_fill_manual(
+      name = NULL,
+      values = pcc$color,
+    ) +
+    # scale_color_manual(
+    #   name = NULL,
+    #   values = pcc$color
+    # ) +
+    ggrepel::geom_label_repel(
+      aes(
+        y = pos,
+        label = glue::glue("{celltype}\n{n} ({scales::percent(percentage)})"),
+        fill = celltype,
+        # color = celltype
+      ),
+      size = 6,
+      # fill = "white",
+      nudge_x = 1,
+      show.legend = FALSE,
+    ) +
+    coord_polar(theta = "y", start = 0) +
+    theme_void() +
+    theme(
+      plot.title = element_text(
+        # vjust = -2,
+        hjust = 0.5,
+        size = 22,
+      ),
+      legend.position = "none"
+    )
+}
+
+fn_plot_azimuth_umap <- function(.x) {
+  .col_names <- c("UMAP_1", "UMAP_2")
+  
+  if ("ref.umap" %in% names(.x@reductions)) {
+    .umap <- .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
+    colnames(.umap) <- .col_names
+    .tsne <- NULL
+  } else {
+    .umap <- .x@reductions$umap@cell.embeddings |> data.table::as.data.table()
+    colnames(.umap) <- .col_names
+    .tsne <- .x@reductions$tsne@cell.embeddings |> data.table::as.data.table()
+    colnames(.tsne) <- .col_names
+  }
+  
+  # .umap
+  .x@meta.data |>
+    dplyr::select(
+      celltype
+    ) |>
+    data.table::as.data.table() ->
+    .xx
+  
+  .xxx <- dplyr::bind_cols(.umap, .xx)
+  
+  .xxx |>
+    dplyr::group_by(celltype) |>
+    dplyr::count() |>
+    dplyr::ungroup() |>
+    dplyr::mutate(ratio = n / sum(n)) ->
+    .xxx_celltype
+  
+  .plot_pie <- fn_celltype_pie_plot(.xxx_celltype)
+  
+  .plot_umap <- fn_plot_cluster(.xxx)
+  .plot_tsne <- if (is.null(.tsne)) {
+    NULL
+  } else {
+    .xxx <- dplyr::bind_cols(.tsne, .xx)
+    fn_plot_cluster(.xxx, .xy_labels = c("tSNE_1", "tSNE_2"))
+  }
+  
+  list(
+    plot_umap = .plot_umap,
+    plot_tsne = .plot_tsne,
+    plot_celltype_pie = .plot_pie,
+    cell_ratio = .xxx_celltype
+  )
+}
+
+fn_check_cellref <- function(.refname) {
+  # SeuratData::InstalledData() |> dplyr::glimpse()
+  if (dir.exists(.refname)) {
+    message(glue::glue("Azimuth reference {.refname} installed"))
+    use_azimuth <<- TRUE
+    return(1)
+  }
+  
+  .sd <- SeuratData::AvailableData() |>
+    dplyr::filter(
+      grepl("Azimuth Reference", x = Summary)
+    )
+  
+  .ref <- .sd |>
+    dplyr::filter(Dataset == .refname)
+  
+  if (length(.ref$Installed) != 0 && .ref$Installed) {
+    message(glue::glue("Azimuth reference {.refname} installed"))
+  } else {
+    tryCatch(
+      expr = {
+        SeuratData::InstallData(
+          ds = .refname
+        )
+      },
+      warning = \(w) {
+        use_azimuth <<- FALSE
+      },
+      error = \(e) {
+        use_azimuth <<- FALSE
+      }
+    )
+  }
+}
+
+fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
+  future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
+  .allmarkers <- Seurat::FindAllMarkers(
+    object = .sc,
+    # assay = "RNA",
+    only.pos = TRUE,
+    min.pct = 0.25,
+    logfc.threshold = 0.25
+  )
+  future::plan(future::sequential)
+  
+  
+  
+  .allmarkers |>
+    dplyr::group_by(cluster) |>
+    dplyr::top_n(.topn, wt = avg_log2FC) ->
+    .top
+  
+  p <- Seurat::DoHeatmap(.sc, features = .top$gene) + Seurat::NoLegend()
+  
+  list(
+    allmarkers = .allmarkers,
+    heatmap = p
+  )
+}
+
+
+# load data ---------------------------------------------------------------
+d <- readr::read_rds("/mnt/isilon/u01_project/PT/PBMC_10K_output/sc_azimuth.rds.gz")
+library(Seurat)
+library(Azimuth)
+library(patchwork)
+
+# source("/home/liuc9/github/scMOCHA/bin/azimuth.R")
+
+# body --------------------------------------------------------------------
+
+# d$plot_qc
+# d$sc_azimuth
+# fn_plot_azimuth_umap(.x = d$sc_azimuth) ->p
+# 
+# p$plot_umap
+# p$plot_celltype_pie
+# 
+# d$sc_azimuth@meta.data
+# 
+# sca <- Azimuth::RunAzimuth(
+#   query = d$sc_filter,
+#   reference = "pbmcref"
+# )
+h5file <- "/mnt/isilon/u01_project/PT/PBMC_10K_output/filtered_feature_bc_matrix.h5"
+sc <- fn_load_sc_10x(h5file)
+sc$cell_stats <- fn_stat_cell(
+  .x = sc$sc,
+  .y = sc$sc_filter
+)
+
+sc$sc_azimuth <- fn_cluster_anno(
+  .sc = sc$sc_filter,
+  .use_azimuth = use_azimuth,
+  .ref = refname,
+  .celllevel = celllevel
+)
+
+.sca <- Azimuth::RunAzimuth(
+  query = sc$sc_filter,
+  reference = "pbmcref"
+)
+
+# footer ------------------------------------------------------------------
+
+# future::plan(future::sequential)
+
+# save image --------------------------------------------------------------
