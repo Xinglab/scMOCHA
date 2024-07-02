@@ -157,9 +157,9 @@ log_success("percent_Lagest_Gene_max ", percent_Lagest_Gene_max, " ", class(perc
 fn_metrics_mito <- function(.sc) {
   .sc@meta.data %>%
     dplyr::arrange(percent.mt) ->
-    .df
-  
-  .df |> 
+  .df
+
+  .df |>
     ggplot() +
     geom_point(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) +
     scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
@@ -170,12 +170,13 @@ fn_metrics_mito <- function(.sc) {
     geom_text(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max, vjust = -1) +
     scale_y_continuous(
       labels = scales::label_comma()
-    )+
+    ) +
     scale_x_continuous(
       labels = scales::label_comma()
     ) +
     theme_bw() ->
-  .metrics_mito;.metrics_mito
+  .metrics_mito
+  .metrics_mito
 }
 
 fn_metrics_ribo <- function(.sc) {
@@ -230,7 +231,7 @@ fn_create_sc <- function(.x, .project = "singlecell") {
     }
   )
   # .counts <- Seurat::Read10X_h5(filename = .x)
-
+  # options("Seurat.object.assay.version" = "v3")
   .sc <- Seurat::CreateSeuratObject(
     counts = .counts,
     project = .project,
@@ -385,14 +386,13 @@ fn_scnorm <- function(.sc) {
 }
 
 fn_sctransform <- function(.sc) {
-  
   # nFeature_RNA_min <- 500
   # nFeature_RNA_max <- 10000
   # npcs <- 10
   # reso <- 0.05
-  # 
+  #
   # .sc <- fn_load_sc_10x(h5file)$sc_filter
-  
+
   .sct <- Seurat::SCTransform(
     object = .sc,
     vars.to.regress = c("percent.mt", "percent.ribo")
@@ -400,7 +400,7 @@ fn_sctransform <- function(.sc) {
 
   .npcs <- as.numeric(npcs)
   .reso <- as.numeric(reso)
-  
+
   # .npcs <- 10
   # .reso <- 0.05
 

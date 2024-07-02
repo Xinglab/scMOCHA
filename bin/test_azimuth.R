@@ -132,7 +132,7 @@ fn_create_sc <- function(.x, .project = "singlecell") {
     }
   )
   # .counts <- Seurat::Read10X_h5(filename = .x)
-  
+  options("Seurat.object.assay.version" = "v3")
   .sc <- Seurat::CreateSeuratObject(
     counts = .counts,
     project = .project,
@@ -648,23 +648,35 @@ library(patchwork)
 #   reference = "pbmcref"
 # )
 h5file <- "/mnt/isilon/u01_project/PT/PBMC_10K_output/filtered_feature_bc_matrix.h5"
+options("Seurat.object.assay.version" = "v3")
 sc <- fn_load_sc_10x(h5file)
 sc$cell_stats <- fn_stat_cell(
   .x = sc$sc,
   .y = sc$sc_filter
 )
 
-sc$sc_azimuth <- fn_cluster_anno(
-  .sc = sc$sc_filter,
-  .use_azimuth = use_azimuth,
-  .ref = refname,
-  .celllevel = celllevel
-)
+use_azimuth <- TRUE
+refname <- "pbmcref"
+celllevel <- "l1"
+
+# sc$sc_azimuth <- fn_cluster_anno(
+#   .sc = sc$sc_filter,
+#   .use_azimuth = use_azimuth,
+#   .ref = refname,
+#   .celllevel = celllevel
+# )
+# 
+
+options("Seurat.object.assay.version" = "v3")
 
 .sca <- Azimuth::RunAzimuth(
-  query = sc$sc_filter,
+  query = "/mnt/isilon/u01_project/PT/PBMC_10K_output/filtered_feature_bc_matrix.h5",
   reference = "pbmcref"
 )
+# 
+# sc$sc_azimuth@meta.data |> 
+#   tibble::as_tibble()
+
 
 # footer ------------------------------------------------------------------
 
