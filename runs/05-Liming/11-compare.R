@@ -315,9 +315,8 @@ fasta$chrM |> as.data.frame() |>
   fasta_df
 
 cluster_n |> 
-  dplyr::filter(pos %in% thepos) |> 
   dplyr::left_join(fasta_df, by = "pos") |> 
-  dplyr::mutate(pos = as.character(pos)) |> 
+  # dplyr::mutate(pos = as.character(pos)) |> 
   dplyr::mutate(gt = factor(gt, levels = c("A", "G", "C", "T"))) |> 
   dplyr::group_by(group, pos) |> 
   # dplyr::group_by(pos, gt) |> 
@@ -332,6 +331,8 @@ cluster_n |>
   cluster_n_forplot
 
 cluster_n_forplot |> 
+  dplyr::filter(pos %in% thepos) |> 
+  dplyr::mutate(pos = as.character(pos)) |> 
   ggplot(aes(x = posref, y = gt)) +
   geom_tile(aes(fill = nv)) +
   geom_text(aes(label= label), size = 3.5) +
@@ -376,4 +377,160 @@ ggsave(
   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2",
   height = 6,
   width = 9
+)
+
+dd |> 
+  dplyr::filter(group != "common") |> 
+  dplyr::filter(celltype == "143B") |> 
+  tidyr::unnest(cols = d) |> 
+  dplyr::select(v = Variant, group2) |> 
+  dplyr::mutate(
+    pos = gsub(
+      ">|[AGCT]",
+      "", x = v
+    )
+  ) |> 
+  dplyr::select(pos, tech = group2) |> 
+  dplyr::mutate(
+    pos = as.integer(pos),
+    tech = as.character(tech)
+  ) |> 
+  dplyr::distinct(pos) |> 
+  dplyr::arrange(pos) ->
+  c_143B
+
+cluster_n_forplot |> 
+  dplyr::inner_join(c_143B, by = "pos") |> 
+  dplyr::arrange(pos) |> 
+  dplyr::mutate(
+    posref = forcats::fct_reorder(
+      .f = posref,
+      .x = pos
+    )
+  ) |> 
+  ggplot(aes(x = posref, y = gt)) +
+  geom_tile(aes(fill = nv)) +
+  geom_text(aes(label= label), size = 3.5) +
+  scale_fill_gradient(
+    low = "white",
+    high = "red"
+  ) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    # axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(
+      color = "black",
+      size = 18
+    ),
+    legend.position = "none ",
+    plot.title = element_text(
+      size = 16,
+      hjust = 0.5
+    ),
+    strip.background = element_rect(
+      fill = NA,
+      color = "black",
+    ),
+    strip.text = element_text(
+      color = "black",
+      size = 14,
+      face = "bold"
+    ),
+    axis.line = element_line(
+      color = "black"
+    )
+  ) +
+  facet_wrap(~group2, ncol = 1, strip.position = "right") ->
+  p_tile;p_tile
+
+ggsave(
+  filename = "PacBio-specific-143B.pdf",
+  plot = p_tile,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2",
+  height = 6,
+  width = 11
+)
+
+
+
+dd |> 
+  dplyr::filter(group != "common") |> 
+  dplyr::filter(celltype == "HEK293") |> 
+  tidyr::unnest(cols = d) |> 
+  dplyr::select(v = Variant, group2) |> 
+  dplyr::mutate(
+    pos = gsub(
+      ">|[AGCT]",
+      "", x = v
+    )
+  ) |> 
+  dplyr::select(pos, tech = group2) |> 
+  dplyr::mutate(
+    pos = as.integer(pos),
+    tech = as.character(tech)
+  ) |> 
+  dplyr::distinct(pos, .keep_all = T) |> 
+  dplyr::arrange(pos) ->
+  c_HEK293
+
+cluster_n_forplot |> 
+  dplyr::inner_join(
+    c_HEK293 |> 
+      dplyr::filter(tech == "scRNASeq"), 
+    by = "pos"
+  ) |> 
+  dplyr::arrange(pos) |> 
+  dplyr::mutate(
+    posref = forcats::fct_reorder(
+      .f = posref,
+      .x = pos
+    )
+  ) |> 
+  ggplot(aes(x = posref, y = gt)) +
+  geom_tile(aes(fill = nv)) +
+  geom_text(aes(label= label), size = 3.5) +
+  scale_fill_gradient(
+    low = "white",
+    high = "red"
+  ) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    # axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(
+      color = "black",
+      size = 18
+    ),
+    legend.position = "none ",
+    plot.title = element_text(
+      size = 16,
+      hjust = 0.5
+    ),
+    strip.background = element_rect(
+      fill = NA,
+      color = "black",
+    ),
+    strip.text = element_text(
+      color = "black",
+      size = 14,
+      face = "bold"
+    ),
+    axis.line = element_line(
+      color = "black"
+    )
+  ) +
+  facet_wrap(~group2, ncol = 1, strip.position = "right") ->
+  p_tile;p_tile
+
+ggsave(
+  filename = "PacBio-specific-HEK293-scRNASeq.pdf",
+  plot = p_tile,
+  device = "pdf",
+  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2",
+  height = 6,
+  width = 19
 )
