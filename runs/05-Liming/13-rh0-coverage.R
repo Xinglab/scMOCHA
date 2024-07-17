@@ -198,6 +198,7 @@ fn_plot_gggene <- function(.coverage) {
     ) +
     scale_y_continuous(
       expand = c(0.01, 0),
+      # limits = c(0, 520000),
       label = scales::label_number()
     ) +
     # ggsci::scale_color_jco(
@@ -332,10 +333,10 @@ tibble::tibble(
 
 
 p_ggene <- fn_plot_gene()
-fn_plot_gggene(coverage) ->p_rh0
+fn_plot_gggene(coverage_rh0) ->p_rh0
 fn_plot_gggene(coverage_wt) ->p_wt
 
-p_wt / p_rh0 / p_ggene + plot_layout(
+fn_plot_gggene(coverage_wt) / fn_plot_gggene(coverage_rh0)  / fn_plot_gene() + plot_layout(
   heights = c(8,8,1)
 ) ->
   p_merge;p_merge
