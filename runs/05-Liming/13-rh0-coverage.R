@@ -159,7 +159,7 @@ fn_plot_gene <- function() {
     scale_color_brewer(palette = "Set1") + 
     scale_x_continuous(
       limits = c(0, 17000),
-      breaks = seq(0, 17000, 1000),
+      breaks = seq(0, 17000, 2000),
       expand = expansion(mult = c(0, 0.03)),
     ) +
     scale_y_discrete(
@@ -289,7 +289,7 @@ tibble::tibble(
 
 
 
-p_rh0
+# p_rh0
 
 # WT ----------------------------------------------------------------------
 wt_path <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/0f65a458-3982-4c90-b85e-83dd074a99ce/call-cell_cluster_annotation/execution"
@@ -332,6 +332,8 @@ tibble::tibble(
   coverage_wt
 
 
+p_ggene 
+
 p_ggene <- fn_plot_gene()
 fn_plot_gggene(coverage_rh0) ->p_rh0
 fn_plot_gggene(coverage_wt) ->p_wt
@@ -340,6 +342,8 @@ fn_plot_gggene(coverage_wt) / fn_plot_gggene(coverage_rh0)  / fn_plot_gene() + p
   heights = c(8,8,1)
 ) ->
   p_merge;p_merge
+
+
 ggplot2::ggsave(
   filename = "combined_read_depth_WT_Rh0.pdf",
   plot = p_merge,
@@ -365,8 +369,27 @@ ggplot2::ggsave(
 #   height = 7
 # )
 
+gtf_gene_df |>
+  dplyr::select(1:4, gene_name)
+
+coverage_rh0 |> 
+  dplyr::select(pos) |> 
+  dplyr::distinct() |> 
+  tail()
 
 
+
+fasta <- Biostrings::readDNAStringSet("/home/liuc9/github/scMOCHA/fasta/rCRS.chrM.fasta")
+
+fasta$chrM |> as.data.frame() |> 
+  tibble::rownames_to_column(var = "pos") |> 
+  dplyr::rename(ref = x) |> 
+  dplyr::mutate(posref = glue::glue("{pos}{ref}")) |> 
+  dplyr::mutate(pos = as.integer(pos)) ->
+  fasta_df
+
+fasta_df |> 
+  tail()
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
