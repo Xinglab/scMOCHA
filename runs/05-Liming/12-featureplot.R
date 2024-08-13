@@ -147,15 +147,15 @@ fn_plot_vaf_featureplot<- function(.thevariant, cell_hetero_coverage, umap_coord
 }
 # load data ---------------------------------------------------------------
 library(Seurat)
-azimuth_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/8b0486c9-def1-40ed-896f-ea6dc9be39ca/call-cell_cluster_annotation/cacheCopy/execution/sc_azimuth.rds.gz"
-cell_hetero_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/8b0486c9-def1-40ed-896f-ea6dc9be39ca/call-call_mt_variants/cacheCopy/execution/cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
-cell_coverage_file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/8b0486c9-def1-40ed-896f-ea6dc9be39ca/call-call_mt_variants/cacheCopy/execution/cell/final/cell.coverage.txt.gz"
+azimuth_file <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT/sc_azimuth.rds.gz"
+cell_hetero_file <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT/cell.cell_heteroplasmic_df_raw.tsv.gz"
+cell_coverage_file <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT/cell.coverage.txt.gz"
 
 
 
 # body --------------------------------------------------------------------
 sc <- readr::read_rds(azimuth_file)
-hetero <- data.table::fread(hetero_file)
+# hetero <- data.table::fread(hetero_file)
 
 
 sc$umap_coord <- fn_umap_coord(.x = sc$sc_azimuth)
@@ -195,6 +195,20 @@ ggsave(
   height = 5
   
 )
+
+
+tibble::tibble(
+  Variant = "6776T>C"
+) |> 
+  dplyr::mutate(
+    p = purrr::map(
+      .x = Variant, .f = fn_plot_vaf_featureplot,
+      cell_hetero_coverage, umap_coord = sc$umap_coord
+    )
+  ) ->
+  p;p
+
+p$p
 
 # A549
 variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_A549.txt"
