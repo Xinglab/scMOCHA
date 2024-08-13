@@ -89,6 +89,21 @@ dd |>
   ) |> 
   dplyr::select(1, 2, 3) |> 
   plotme::count_to_sunburst()
+
+
+dd |> 
+  dplyr::count(projectId) |> 
+  dplyr::arrange(-n) |> 
+  dplyr::filter(grepl("GSE", projectId)) |> 
+  dplyr::filter(n >5) ->
+  dd_n_samples
+
+dd |> 
+  dplyr::filter(projectId %in% dd_n_samples$projectId) |> 
+  dplyr::select(disease, projectId) |> 
+  dplyr::count(projectId, disease)
+
+
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
