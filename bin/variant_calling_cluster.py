@@ -142,7 +142,10 @@ variant_vmr = variant_var / (variant_mean + 0.00000000001)
 # compute other summary stats
 variant_positon = [x[0] for x in variants]
 variant_nucleotide = ["{}>{}".format(x[1], x[2]) for x in variants]
+
+# C.J. This is important for downstream analysis
 variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 2) & (rev_cell_variant_df >= 2)).sum()
+
 variant_n_cells_over_5 = (heteroplasmic_df >= 0.05).sum()
 variant_n_cells_over_10 = (heteroplasmic_df >= 0.1).sum()
 variant_n_cells_over_20 = (heteroplasmic_df >= 0.2).sum()
@@ -172,7 +175,7 @@ variant_output = pd.DataFrame(
 variant_output.columns = ["position", "nucleotide", "variant", "vmr", "mean", "variance", "n_cells_conf_detected", "n_cells_over_5", "n_cells_over_10", "n_cells_over_20", "n_cells_over_95", "max_heteroplasmy", "strand_correlation", "mean_coverage"]
 variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]] = variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]].astype(float)
 
-# exclude variants with less than three cells
+# exclude variants with less than one cluster detected
 multi_cell_variants = variant_output[variant_output["n_cells_conf_detected"] >= 1]["variant"]
 heteroplasmic_df = heteroplasmic_df[multi_cell_variants]
 
