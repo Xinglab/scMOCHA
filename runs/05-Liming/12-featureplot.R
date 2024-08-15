@@ -382,6 +382,7 @@ cluster_n |>
     group2 = plyr::revalue(x = group, replace = c("cluster_0" = "WAL2A-1", "cluster_1" = "WAL2A-2", "cluster_2" = "HEK293", "cluster_3" = "A549", "cluster_4" = "143B"))
   ) ->
   cluster_n_forplot
+thepos = 6776
 
 cluster_n_forplot |> 
   dplyr::filter(pos %in% thepos) |> 
