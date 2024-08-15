@@ -145,6 +145,7 @@ fn_plot_vaf_featureplot<- function(.thevariant, cell_hetero_coverage, umap_coord
       )
     )
 }
+
 # load data ---------------------------------------------------------------
 library(Seurat)
 azimuth_file <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT/sc_azimuth.rds.gz"
@@ -209,6 +210,218 @@ tibble::tibble(
   p;p
 
 p$p
+
+
+vhc_umap |> 
+  dplyr::filter(!is.na(variant)) ->
+  vhc_umap_filter
+
+
+vhc_umap_filter |> 
+  dplyr::arrange(celltype, -af)  ->
+  thesort
+
+vhc_umap_filter |> 
+  dplyr::mutate(barcode = factor(barcode, thesort$barcode)) |> 
+  ggplot(aes(
+    x = barcode,
+    y = variant
+  )) +
+  geom_tile(
+    aes(fill = af)
+  ) +
+  scale_fill_gradient(
+    low = "white",
+    high = "red"
+  ) +
+  scale_y_discrete(
+    expand = c(0, 0)
+  ) +
+  theme(
+    panel.background = element_rect(
+      color = "black",
+      fill = NA
+    ),
+    panel.grid = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_text(size = 16, color = 'black'),
+    axis.title.y = element_text(size = 18, color = "black")
+  ) +
+  labs(
+    y = "AF"
+  ) ->
+  v_p_af;v_p_af
+
+vhc_umap_filter |> 
+  dplyr::mutate(barcode = factor(barcode, thesort$barcode)) |> 
+  ggplot(aes(
+    x = barcode,
+    y = variant
+  )) +
+  geom_tile(
+    aes(fill = depth)
+  ) +
+  scale_fill_gradient(
+    low = "#FDE725FF",
+    high = "#440154FF"
+  ) +
+  scale_y_discrete(
+    expand = c(0, 0)
+  ) +
+  theme(
+    panel.background = element_rect(
+      color = "black",
+      fill = NA
+    ),
+    panel.grid = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 16, color = 'black'),
+    axis.title.y = element_text(size = 18, color = "black")
+  ) +
+  labs(
+    y = "DP"
+  ) ->
+  v_p_dp;v_p_dp
+
+vhc_umap_filter |> 
+  dplyr::mutate(barcode = factor(barcode, thesort$barcode)) |>
+  ggplot(aes(
+    x = barcode, 
+    y = variant
+  )) +
+  geom_tile(
+    aes(fill = celltype)
+  ) +
+  scale_fill_brewer(palette = "Set3") +
+  scale_y_discrete(
+    expand = c(0, 0)
+  ) +
+  theme(
+    panel.background = element_rect(
+      color = "black",
+      fill = NA
+    ),
+    panel.grid = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 16, color = 'black'),
+    axis.title.y = element_text(size = 18, color = "black")
+  ) +
+  labs(
+    y = "Cell type"
+  ) ->
+  v_p_ct;v_p_ct
+
+wrap_plots(
+  v_p_dp, v_p_af , v_p_ct
+) +
+plot_layout(
+  heights = c(10, 10, 2),
+  guides = "collect"
+) ->
+  p_collect;p_collect
+ggsave(
+  filename = "variant_6776_cell_level.pdf",
+  plot = p_collect,
+  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2",
+  height = 7,
+  width = 10
+  
+)
+
+
+# cell level 
+
+tibble::tibble(
+  path = list.files(
+    "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-call_mt_variants/execution/cluster/final",
+    "*cluster.*.txt.gz*",
+    full.names = T
+  )
+) |> 
+  dplyr::mutate(d = purrr::map(path, data.table::fread)) |> 
+  dplyr::mutate(n = basename(path)) |> 
+  dplyr::mutate(n = gsub("cluster.|.txt.gz", "", n)) |> 
+  dplyr::select(n, d) ->
+  cluster
+
+cluster |> 
+  dplyr::filter(n != "coverage") |> 
+  tidyr::unnest(cols = d) |> 
+  dplyr::mutate(nv = V3 + V4) |> 
+  dplyr::select(gt = n, pos = V1, group = V2, nv) ->
+  cluster_n
+
+
+fasta <- Biostrings::readDNAStringSet("/home/liuc9/github/scMOCHA/fasta/rCRS.chrM.fasta")
+
+fasta$chrM |> as.data.frame() |> 
+  tibble::rownames_to_column(var = "pos") |> 
+  dplyr::rename(ref = x) |> 
+  dplyr::mutate(posref = glue::glue("{pos}{ref}")) |> 
+  dplyr::mutate(pos = as.integer(pos)) ->
+  fasta_df
+
+cluster_n |> 
+  dplyr::left_join(fasta_df, by = "pos") |> 
+  # dplyr::mutate(pos = as.character(pos)) |> 
+  dplyr::mutate(gt = factor(gt, levels = c("A", "G", "C", "T"))) |> 
+  dplyr::group_by(group, pos) |> 
+  # dplyr::group_by(pos, gt) |> 
+  dplyr::mutate(ratio = nv / sum(nv)) |> 
+  dplyr::ungroup() |> 
+  dplyr::mutate(
+    label = glue::glue("{nv}\n({round(ratio, 3) * 100}%)")
+  ) |> 
+  dplyr::mutate(
+    group2 = plyr::revalue(x = group, replace = c("cluster_0" = "WAL2A-1", "cluster_1" = "WAL2A-2", "cluster_2" = "HEK293", "cluster_3" = "A549", "cluster_4" = "143B"))
+  ) ->
+  cluster_n_forplot
+
+cluster_n_forplot |> 
+  dplyr::filter(pos %in% thepos) |> 
+  dplyr::mutate(pos = as.character(pos)) |> 
+  ggplot(aes(x = posref, y = gt)) +
+  geom_tile(aes(fill = nv)) +
+  geom_text(aes(label= label), size = 3.5) +
+  scale_fill_gradient(
+    low = "white",
+    high = "red"
+  ) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    # axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(
+      color = "black",
+      size = 18
+    ),
+    legend.position = "none ",
+    plot.title = element_text(
+      size = 16,
+      hjust = 0.5
+    ),
+    strip.background = element_rect(
+      fill = NA,
+      color = "black",
+    ),
+    strip.text = element_text(
+      color = "black",
+      size = 14,
+      face = "bold"
+    ),
+    axis.line = element_line(
+      color = "black"
+    )
+  ) +
+  facet_wrap(~group2, ncol = 1, strip.position = "right") ->
+  p_tile;p_tile
 
 # A549
 variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_A549.txt"
