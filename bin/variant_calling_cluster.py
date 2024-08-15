@@ -144,6 +144,7 @@ variant_positon = [x[0] for x in variants]
 variant_nucleotide = ["{}>{}".format(x[1], x[2]) for x in variants]
 
 # C.J. This is important for downstream analysis
+# C.J. This the number of reads supporting the variant, it requires at least 2 reads on both strands
 variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 2) & (rev_cell_variant_df >= 2)).sum()
 
 variant_n_cells_over_5 = (heteroplasmic_df >= 0.05).sum()

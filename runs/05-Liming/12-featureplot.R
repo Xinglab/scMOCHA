@@ -357,6 +357,11 @@ cluster |>
   dplyr::select(gt = n, pos = V1, group = V2, nv) ->
   cluster_n
 
+cluster |> 
+  dplyr::filter(n != "coverage") |> 
+  tidyr::unnest(cols = d) |> 
+  dplyr::mutate(nv = V3 + V4) |> 
+  dplyr::select(gt = n, pos = V1, group = V2, fw = V3, rv = V4, nv) ->cluster_n
 
 fasta <- Biostrings::readDNAStringSet("/home/liuc9/github/scMOCHA/fasta/rCRS.chrM.fasta")
 
@@ -376,7 +381,7 @@ cluster_n |>
   dplyr::mutate(ratio = nv / sum(nv)) |> 
   dplyr::ungroup() |> 
   dplyr::mutate(
-    label = glue::glue("{nv}\n({round(ratio, 3) * 100}%)")
+    label = glue::glue("total coverage = {nv} \n forward = {fw}, reverse = {rv} \n ratio = ({round(ratio, 3) * 100}%)")
   ) |> 
   dplyr::mutate(
     group2 = plyr::revalue(x = group, replace = c("cluster_0" = "WAL2A-1", "cluster_1" = "WAL2A-2", "cluster_2" = "HEK293", "cluster_3" = "A549", "cluster_4" = "143B"))
