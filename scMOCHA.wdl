@@ -1,18 +1,16 @@
 
 workflow scMOCHA {
   # version of this pipeline
-  String version = "CellRanger v7.0.1"
+  String version = "v0.2.1"
 
-  # MitoScape
-  Boolean use_mitoscape = false
 
   # Cell ranger inpunts
   String output_id
   String fastqs
   String sample_id
+
   String transcriptome = "/home/liuc9/data/refdata/mgatk_index/Human"
   File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
-
   File mt_exons_df = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
   File mt_features_gmoviz = "/home/liuc9/github/scMOCHA/fasta/mt_features.grange.gmoviz.rds.gz"
 
