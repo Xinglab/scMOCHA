@@ -27,11 +27,15 @@ library(logger)
 # refname <- args[4]
 # celllevel <- args[5]
 
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/06a9516a-61c1-4e71-bd1a-602bf8f0b789/call-cell_cluster_annotation/inputs/1948015536/filtered_feature_bc_matrix.h5"
+# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/06-bigdata/GSE163668/cromwell-executions/scMOCHABatch/ebadef22-61c1-4d03-b27a-abe7d53f6aac/call-scMOCHA/shard-0/sub.scMOCHA/d756d06e-9a0b-4167-aa73-24de53dfc1cc/call-cell_cluster_annotation/inputs/-1616044811/filtered_feature_bc_matrix.h5"
 # npcs <- 10
 # reso <- 0.1
-# refname <- "/home/liuc9/github/scMOCHA/03-ADKP/forrefs/azimuth_syn21438358"
-# celllevel <- "annotation.l1"
+# refname <- "pbmcref"
+# celllevel <- "celltype.l1"
+# refname_celllevel <- list(
+#   refname = "pbmcref",
+#   celllevel = "celltype.l1"
+# )
 
 # s: string, i: integer, f: float, !: boolean
 # @: array
@@ -429,16 +433,20 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
   # .sc <- sc$sc
 
   if (.use_azimuth) {
+   
     .sca <-
       tryCatch(
         expr = {
+          log_warn("fn_cluster_anno:try:Azimuth")
           fn_azimuth(.sc, .ref, .celllevel)
         },
         error = \(e) {
+          log_error("fn_cluster_anno:error:sctransform")
           fn_sctransform(.sc)
         }
       )
   } else {
+    log_warn("fn_cluster_anno:sctransform")
     .sca <- fn_sctransform(.sc)
   }
 
@@ -696,7 +704,8 @@ fn_check_cellref <- function(.refname) {
 }
 
 fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
-  future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
+  Seurat::Idents(.sc) <- "celltype_name"
+  # future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
     object = .sc,
     # assay = "RNA",
@@ -704,7 +713,7 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
     min.pct = 0.25,
     logfc.threshold = 0.25
   )
-  future::plan(future::sequential)
+  # future::plan(future::sequential)
 
 
 
@@ -756,7 +765,6 @@ sc$sc_azimuth <- fn_cluster_anno(
   .celllevel = celllevel
 )
 log_success("Notice: fn_cluster_anno is done")
-
 
 
 # Cell barcode ------------------------------------------------------------
