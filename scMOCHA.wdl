@@ -331,6 +331,8 @@ workflow scMOCHA {
       File cluster_variant_stats_tsv_gz = call_mt_variants.cluster_variant_stats_tsv_gz
       File cluster_vmr_strand_plot_png = call_mt_variants.cluster_vmr_strand_plot_png
       File passingBarcodes_tsv = call_mt_variants.passingBarcodes_tsv
+      Array[File] ready_bam = call_mt_variants.ready_bam
+      Array[File] ready_bam_index = call_mt_variants.ready_bam_index
 
       # plot scMOCHA
       File scMOCHA_rda = plot_scMOCHA.scMOCHA_rda
