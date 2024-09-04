@@ -218,6 +218,8 @@ workflow scMOCHA {
       cluster_variant_stats_tsv_gz = call_mt_variants.cluster_variant_stats_tsv_gz,
       cluster_vmr_strand_plot_png = call_mt_variants.cluster_vmr_strand_plot_png,
       passingBarcodes_tsv = call_mt_variants.passingBarcodes_tsv,
+      ready_bam = call_mt_variants.ready_bam,
+      ready_bam_index = call_mt_variants.ready_bam_index,
       # cell_cluster_annotation
       azimuth_rda = cell_cluster_annotation.azimuth_rda,
       barcode_cluster = cell_cluster_annotation.barcode_cluster,
@@ -639,6 +641,8 @@ task call_mt_variants {
     File cluster_variant_stats_tsv_gz = "cluster/final/cluster.variant_stats.tsv.gz"
     File cluster_vmr_strand_plot_png = "cluster/final/cluster.vmr_strand_plot.png"
     File passingBarcodes_tsv = "cluster/final/passingBarcodes.tsv"
+    Array[File] ready_bam = glob("cluster/temp/ready_bam/*.qc.bam")
+    Array[File] ready_bam_index = glob("cluster/temp/ready_bam/*.qc.bam.bai")
 
   }
 
@@ -748,6 +752,8 @@ task gather_outputfiles {
   File cluster_variant_stats_tsv_gz
   File cluster_vmr_strand_plot_png
   File passingBarcodes_tsv
+  Array[File] ready_bam
+  Array[File] ready_bam_index
 
   # cell_cluster_annotation
   File azimuth_rda
@@ -834,6 +840,10 @@ task gather_outputfiles {
     cp ${cluster_variant_stats_tsv_gz} ${output_dir}
     cp ${cluster_vmr_strand_plot_png} ${output_dir}
     cp ${passingBarcodes_tsv} ${output_dir}
+    # cp ready_bam files into output_dir folder
+    for file in ${sep=" " ready_bam};do cp $file ${output_dir}; done
+    for file in ${sep=" " ready_bam_index};do cp $file ${output_dir}; done
+
 
     # cell_cluster_annotation
     cp ${azimuth_rda} ${output_dir}
