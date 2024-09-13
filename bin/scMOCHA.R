@@ -32,12 +32,12 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # %: hash
 # default: default value specified here.
 # 
-# barcode_cluster_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-cell_cluster_annotation/execution/barcode_cluster.tsv"
-# cell_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cell/final/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cell/final/cell.coverage.txt.gz"
-# cluster_hetero_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-call_mt_variants/execution/cluster/final/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <-"/scr1/users/liuc9/mitochondrial/realdata/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5a20ad8c-f524-4c73-9e0a-d2abe42df138/call-cell_cluster_annotation/execution/cell.cell_heteroplasmic_df_raw.tsv.gz"
+# barcode_cluster_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/-883407297/barcode_cluster.tsv"
+# cell_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/829295247/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/829295247/cell.coverage.txt.gz"
+# cluster_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/1408557915/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/1408557915/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/829295247/cell.cell_heteroplasmic_df_raw.tsv.gz"
 # perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
 # jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
 # sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
