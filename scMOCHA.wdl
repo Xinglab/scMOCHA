@@ -438,7 +438,7 @@ task cellranger_count {
         File mt_depth_plot = "${output_id}/outs/possorted_genome_bam.MT.depth.pdf"
         File mt_bam = "${output_id}/outs/possorted_genome_bam.MT.bam"
         File mt_bam_index = "${output_id}/outs/possorted_genome_bam.MT.bam.bai"
-        File chemistry = "${output_id}/outs/chemistry.txt"
+        File chemistry_csv = "${output_id}/outs/chemistry.csv"
     }
 
 
