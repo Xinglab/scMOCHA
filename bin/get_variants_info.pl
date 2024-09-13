@@ -42,8 +42,8 @@ getopts('o:') or usage();
 
 usage() if @ARGV < 2;
 
-$tmpin = "/tmp/$$.hsd";
-$tmpout = "/tmp/$$.out";
+$tmpin = "$$.hsd";
+$tmpout = "$$.out";
 
 # $jar = '/scr1/users/liuc9/tools/haplogrep3/haplogrep3.jar';
 $jar = shift;
@@ -57,7 +57,7 @@ if(! -s $jar)
 
 $cmd = "java -jar $jar classify --extend-report --in $tmpin --out $tmpout --tree phylotree-rcrs\@17.2  > output.log 2>&1";
 
-$file = "/tmp/$0.log";
+$file = "$0.log";
 open(LOG, ">$file") or die "Can't write $file\n";
 
 $db = shift;
@@ -542,7 +542,7 @@ sub usage
 
     -o <file>: specify output file (default screen)
 
-  Error messages are logged in /tmp/$0.log
+  Error messages are logged in $0.log
 END
     $usage .= "\n";
 
