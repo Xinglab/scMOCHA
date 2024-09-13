@@ -419,6 +419,9 @@ task cellranger_count {
         -o ${output_id}/outs/possorted_genome_bam.MT.depth.pdf \
         -m ${mt_exons_df}
 
+      # extract chemistry
+      ${bindir}/chemistry.R --output_id ${output_id}
+
     }
 
     output {
@@ -435,6 +438,7 @@ task cellranger_count {
         File mt_depth_plot = "${output_id}/outs/possorted_genome_bam.MT.depth.pdf"
         File mt_bam = "${output_id}/outs/possorted_genome_bam.MT.bam"
         File mt_bam_index = "${output_id}/outs/possorted_genome_bam.MT.bam.bai"
+        File chemistry = "${output_id}/outs/chemistry.txt"
     }
 
 
