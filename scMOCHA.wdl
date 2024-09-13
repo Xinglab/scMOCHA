@@ -8,6 +8,7 @@ workflow scMOCHA {
   String output_id
   String fastqs
   String sample_id
+  String chemistry = "auto"
 
   String transcriptome = "/home/liuc9/data/refdata/mgatk_index/Human"
   File rCRS = "/home/liuc9/github/scMOCHA/fasta/rCRS.MT.fasta"
@@ -74,6 +75,7 @@ workflow scMOCHA {
         output_id = output_id,
         fastqs = fastqs,
         sample_id = sample_id,
+        chemistry = chemistry,
         transcriptome = transcriptome,
         chrM = chrM,
         mt_exons_df = mt_exons_df,
@@ -361,6 +363,7 @@ task cellranger_count {
     String output_id
     String fastqs
     String sample_id
+    String chemistry
     String transcriptome
 
     String chrM = "MT"
@@ -394,6 +397,7 @@ task cellranger_count {
         --fastqs=${fastqs} \
         --sample=${sample_id} \
         --transcriptome=${transcriptome} \
+        --chemistry=${chemistry} \
         --create-bam=true \
         --nosecondary \
         --disable-ui \
