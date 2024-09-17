@@ -74,9 +74,9 @@ chemistry_config <- tibble::tibble(
   "SC3Pv3LT" = c(400, 7000),
   "SC3Pv3HT" = c(400, 7000),
   "SC3Pv4" = c(500, 10000),
-  "SC5P-PE" = c(200, 8000),
+  "SC5P-PE" = c(400, 8000),
   "SC5P-PE-v3" = c(400, 8000),
-  "SC5P-R2" = c(200, 8000),
+  "SC5P-R2" = c(400, 8000),
   "SC5P-R2-v3" = c(400, 8000)
 )
 
