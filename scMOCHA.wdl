@@ -1,5 +1,4 @@
 
-version 1.0
 workflow scMOCHA {
   # version of this pipeline
   String version = "v0.2.1"
