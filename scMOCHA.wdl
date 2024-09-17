@@ -108,7 +108,7 @@ workflow scMOCHA {
       percent_mt_max = percent_mt_max,
       percent_ribo_max = percent_ribo_max,
       percent_Lagest_Gene_max = percent_Lagest_Gene_max,
-      x10_version = x10_version,
+      chemistry_name = cellranger_count.chemistry_name,
       mt_rcrs_fasta = rCRS,
       mt_exons_df = mt_exons_df,
       mt_features_gmoviz = mt_features_gmoviz,
@@ -182,7 +182,7 @@ workflow scMOCHA {
   call gather_outputfiles {
     input:
       output_dir = output_dir,
-      # plot_scmth
+      # plot_scMOCHA
       scMOCHA_rda = plot_scMOCHA.scMOCHA_rda,
       cell_af_heatmap = plot_scMOCHA.cell_af_heatmap,
       cell_depth_heatmap = plot_scMOCHA.cell_depth_heatmap,
@@ -251,6 +251,8 @@ workflow scMOCHA {
       mt_depth_plot = cellranger_count.mt_depth_plot,
       mt_bam = cellranger_count.mt_bam,
       mt_bam_index = cellranger_count.mt_bam_index,
+      chemistry_csv = cellranger_count.chemistry_csv,
+      # environment
       memory = memory,
       boot_disk_size_gb = boot_disk_size_gb,
       disk_space = disk_space,
@@ -439,6 +441,7 @@ task cellranger_count {
         File mt_bam = "${output_id}/outs/possorted_genome_bam.MT.bam"
         File mt_bam_index = "${output_id}/outs/possorted_genome_bam.MT.bam.bai"
         File chemistry_csv = "${output_id}/outs/chemistry.csv"
+        String chemistry_name =read_string("${output_id}/outs/chemistry_name.txt")
     }
 
 
@@ -458,7 +461,7 @@ task cell_cluster_annotation {
   Float percent_mt_max = 75
   Float percent_ribo_max = 50
   Float percent_Lagest_Gene_max = 50
-  String x10_version = "v3"
+  String chemistry_name = "SC3Pv3"
 
   File mt_rcrs_fasta
   File mt_exons_df
@@ -495,7 +498,7 @@ task cell_cluster_annotation {
       -percent_mt_max ${percent_mt_max} \
       -percent_ribo_max ${percent_ribo_max} \
       -percent_Lagest_Gene_max ${percent_Lagest_Gene_max} \
-      -x10_version ${x10_version}
+      -chemistry_name ${chemistry_name}
 
 
     # addtags for cluster
@@ -733,6 +736,8 @@ task gather_outputfiles {
   File cluster_depth_heatmap
   File cluster_cell_af_heatmap
   File cluster_cell_depth_heatmap
+  File cell_variant_annotation_tsv
+  File cell_variant_annotation_xlsx
 
   # call_mt_variants
   # cell level
@@ -795,9 +800,9 @@ task gather_outputfiles {
   File mt_depth_plot
   File mt_bam
   File mt_bam_index
-  File cell_variant_annotation_tsv
-  File cell_variant_annotation_xlsx
+  File chemistry_csv
 
+  # environment
   String memory
   Int boot_disk_size_gb
   String disk_space
@@ -821,6 +826,8 @@ task gather_outputfiles {
     cp ${cluster_depth_heatmap} ${output_dir}
     cp ${cluster_cell_af_heatmap} ${output_dir}
     cp ${cluster_cell_depth_heatmap} ${output_dir}
+    cp ${cell_variant_annotation_tsv} ${output_dir}
+    cp ${cell_variant_annotation_xlsx} ${output_dir}
 
     # call_mt_variants
     # cell level
@@ -885,8 +892,7 @@ task gather_outputfiles {
     cp ${mt_depth_plot} ${output_dir}
     cp ${mt_bam} ${output_dir}
     cp ${mt_bam_index} ${output_dir}
-    cp ${cell_variant_annotation_tsv} ${output_dir}
-    cp ${cell_variant_annotation_xlsx} ${output_dir}
+    cp ${chemistry_csv} ${output_dir}
 
 
     tar -czf ${output_dir}.tar.gz ${output_dir}

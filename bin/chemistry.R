@@ -14,7 +14,7 @@ library(patchwork)
 library(prismatic)
 library(paletteer)
 library(data.table)
-#library(rlang)
+# library(rlang)
 library(GetoptLong)
 library(logger)
 
@@ -93,6 +93,15 @@ outfile <- file.path(
 readr::write_csv(
   x = chem_df,
   file = outfile
+)
+
+readr::write_lines(
+  x = chem_name,
+  path = file.path(
+    output_id,
+    "outs",
+    "chemistry_name.txt"
+  )
 )
 
 # footer ------------------------------------------------------------------

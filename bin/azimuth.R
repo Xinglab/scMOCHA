@@ -49,20 +49,35 @@ refname_celllevel <- list(
   refname = NA_character_,
   celllevel = NA_character_
 )
-nFeature_RNA_min <- 500
-nFeature_RNA_max <- 12000
+nFeature_RNA_min <- 400
+nFeature_RNA_max <- 7000
 percent_mt_max <- 75
 percent_ribo_max <- 50
 percent_Lagest_Gene_max <- 50
-x10_version <- "v3"
+chemistry_name <- "SC3Pv3"
+# x10_version <- "v3"
 
 setup_10x_version <- tibble::tibble(
   "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
   "v1" = c(200, 2500),
   "v2" = c(200, 6000),
-  "v3" = c(400, 7000),
-  "v3.1" = c(500, 7000),
+  "v3" = c(400, 8000),
+  "v3.1" = c(500, 8000),
   "v4" = c(500, 10000)
+)
+
+chemistry_config <- tibble::tibble(
+  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
+  "SC3Pv1" = c(200, 2500),
+  "SC3Pv2" = c(200, 6000),
+  "SC3Pv3" = c(400, 7000),
+  "SC3Pv4" = c(500, 10000),
+  "SC3Pv3LT" = c(200, 6000),
+  "SC3Pv3HT" = c(200, 6000),
+  "SC5P-PE" = c(400, 8000),
+  "SC5P-PE-v3" = c(500, 8000),
+  "SC5P-R2" = c(400, 8000),
+  "SC5P-R2-v3" = c(500, 8000)
 )
 
 
@@ -79,7 +94,7 @@ Options:
 <percent_mt_max=f> default 75
 <percent_ribo_max=f> default 50
 <percent_Lagest_Gene_max=f> default 50
-<x10_version=s> default v3
+<chemistry_name=s> default SC3Pv3
 <verbose!> Print messages
 "
 
@@ -92,9 +107,13 @@ log_layout(layout_glue_colors)
 # print(celllevel)
 refname <- refname_celllevel$refname
 celllevel <- refname_celllevel$celllevel
-x10_version <- stringr::str_to_lower(x10_version)
+# x10_version <- stringr::str_to_lower(x10_version)
 # nFeature_RNA_min <- setup_10x_version[[x10_version]][[1]]
 # nFeature_RNA_max <- setup_10x_version[[x10_version]][[2]]
+if (chemistry_name != "") {
+  nFeature_RNA_min <- chemistry_config[[chemistry_name]][[1]]
+  nFeature_RNA_max <- chemistry_config[[chemistry_name]][[2]]
+}
 
 use_azimuth <- TRUE
 
@@ -141,7 +160,7 @@ log_success("refname ", refname, " ", class(refname))
 log_success("celllevel ", celllevel, " ", class(celllevel))
 log_success("nFeature_RNA_min ", nFeature_RNA_min, " ", class(nFeature_RNA_min))
 log_success("nFeature_RNA_max ", nFeature_RNA_max, " ", class(nFeature_RNA_max))
-log_success("10x version ", x10_version, " ", class(x10_version))
+log_success("10x chemistry_name ", chemistry_name, " ", class(chemistry_name))
 log_success("percent_mt_max ", percent_mt_max, " ", class(percent_mt_max))
 log_success("percent_ribo_max ", percent_ribo_max, " ", class(percent_ribo_max))
 log_success("percent_Lagest_Gene_max ", percent_Lagest_Gene_max, " ", class(percent_Lagest_Gene_max))
@@ -433,7 +452,6 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
   # .sc <- sc$sc
 
   if (.use_azimuth) {
-   
     .sca <-
       tryCatch(
         expr = {
