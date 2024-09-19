@@ -15,51 +15,53 @@ dependencies:
   - bcftools=1.20=h8b25389_1
   - binutils_impl_linux-64=2.40=hf600244_0
   - binutils_linux-64=2.40=hbdbef99_1
-  - bioconductor-annotationdbi=1.62.2=r43hdfd78af_0
-  - bioconductor-beachmat=2.16.0=r43hf17093f_0
-  - bioconductor-biobase=2.60.0=r43ha9d7317_0
-  - bioconductor-biocfilecache=2.8.0=r43hdfd78af_0
-  - bioconductor-biocgenerics=0.46.0=r43hdfd78af_0
-  - bioconductor-biocio=1.10.0=r43hdfd78af_0
-  - bioconductor-biocparallel=1.34.2=r43hf17093f_0
-  - bioconductor-biomart=2.56.1=r43hdfd78af_0
-  - bioconductor-biostrings=2.68.1=r43ha9d7317_0
-  - bioconductor-complexheatmap=2.16.0=r43hdfd78af_0
+  - bioconductor-annotationdbi=1.64.1=r43hdfd78af_0
+  - bioconductor-beachmat=2.18.0=r43hf17093f_1
+  - bioconductor-biobase=2.62.0=r43ha9d7317_2
+  - bioconductor-biocfilecache=2.10.1=r43hdfd78af_0
+  - bioconductor-biocgenerics=0.48.1=r43hdfd78af_2
+  - bioconductor-biocio=1.12.0=r43hdfd78af_0
+  - bioconductor-biocparallel=1.36.0=r43hf17093f_2
+  - bioconductor-biomart=2.58.0=r43hdfd78af_0
+  - bioconductor-biostrings=2.70.1=r43ha9d7317_2
+  - bioconductor-complexheatmap=2.18.0=r43hdfd78af_0
   - bioconductor-data-packages=20230718=hdfd78af_1
-  - bioconductor-delayedarray=0.26.6=r43ha9d7317_0
-  - bioconductor-delayedmatrixstats=1.22.1=r43hdfd78af_0
-  - bioconductor-genomeinfodb=1.36.1=r43hdfd78af_0
+  - bioconductor-delayedarray=0.28.0=r43ha9d7317_2
+  - bioconductor-delayedmatrixstats=1.24.0=r43hdfd78af_0
+  - bioconductor-genomeinfodb=1.38.1=r43hdfd78af_1
   - bioconductor-genomeinfodbdata=1.2.10=r43hdfd78af_0
-  - bioconductor-genomicalignments=1.36.0=r43ha9d7317_0
-  - bioconductor-genomicfeatures=1.52.1=r43hdfd78af_0
-  - bioconductor-genomicranges=1.52.0=r43ha9d7317_0
-  - bioconductor-glmgampoi=1.12.2=r43hf17093f_0
-  - bioconductor-gmoviz=1.12.0=r43hdfd78af_0
-  - bioconductor-hdf5array=1.28.1=r43ha9d7317_0
-  - bioconductor-iranges=2.34.1=r43ha9d7317_0
-  - bioconductor-keggrest=1.40.0=r43hdfd78af_0
+  - bioconductor-genomicalignments=1.38.0=r43ha9d7317_1
+  - bioconductor-genomicfeatures=1.54.1=r43hdfd78af_0
+  - bioconductor-genomicranges=1.54.1=r43ha9d7317_2
+  - bioconductor-geoquery=2.70.0=r43hdfd78af_0
+  - bioconductor-glmgampoi=1.14.0=r43hf17093f_0
+  - bioconductor-gmoviz=1.14.0=r43hdfd78af_0
+  - bioconductor-hdf5array=1.30.0=r43ha9d7317_1
+  - bioconductor-iranges=2.36.0=r43ha9d7317_2
+  - bioconductor-keggrest=1.42.0=r43hdfd78af_0
   - bioconductor-limma=3.58.1=r43ha9d7317_0
-  - bioconductor-matrixgenerics=1.12.2=r43hdfd78af_0
-  - bioconductor-plyranges=1.20.0=r43hdfd78af_0
-  - bioconductor-rhdf5=2.44.0=r43hf17093f_0
-  - bioconductor-rhdf5filters=1.12.1=r43hf17093f_0
-  - bioconductor-rhdf5lib=1.22.0=r43ha9d7317_0
-  - bioconductor-rhtslib=2.2.0=r43ha9d7317_0
-  - bioconductor-rsamtools=2.16.0=r43hf17093f_0
-  - bioconductor-rtracklayer=1.60.0=r43ha9d7317_0
-  - bioconductor-s4arrays=1.0.4=r43ha9d7317_0
-  - bioconductor-s4vectors=0.38.1=r43ha9d7317_0
-  - bioconductor-singlecellexperiment=1.22.0=r43hdfd78af_0
-  - bioconductor-sparsematrixstats=1.12.2=r43hf17093f_0
-  - bioconductor-summarizedexperiment=1.30.2=r43hdfd78af_0
-  - bioconductor-xvector=0.40.0=r43ha9d7317_0
-  - bioconductor-zlibbioc=1.46.0=r43ha9d7317_0
+  - bioconductor-matrixgenerics=1.14.0=r43hdfd78af_3
+  - bioconductor-plyranges=1.22.0=r43hdfd78af_0
+  - bioconductor-rhdf5=2.46.1=r43hf17093f_1
+  - bioconductor-rhdf5filters=1.14.1=r43hf17093f_1
+  - bioconductor-rhdf5lib=1.24.0=r43ha9d7317_2
+  - bioconductor-rhtslib=2.4.0=r43ha9d7317_2
+  - bioconductor-rsamtools=2.18.0=r43hf17093f_2
+  - bioconductor-rtracklayer=1.62.0=r43ha9d7317_1
+  - bioconductor-s4arrays=1.2.0=r43ha9d7317_2
+  - bioconductor-s4vectors=0.40.2=r43ha9d7317_2
+  - bioconductor-singlecellexperiment=1.24.0=r43hdfd78af_0
+  - bioconductor-sparsearray=1.2.2=r43ha9d7317_2
+  - bioconductor-sparsematrixstats=1.14.0=r43hf17093f_1
+  - bioconductor-summarizedexperiment=1.32.0=r43hdfd78af_0
+  - bioconductor-xvector=0.42.0=r43ha9d7317_2
+  - bioconductor-zlibbioc=1.48.0=r43ha9d7317_2
   - brotli=1.0.9=h166bdaf_9
   - brotli-bin=1.0.9=h166bdaf_9
   - bwidget=1.9.14=ha770c72_1
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.32.2=h4bc722e_0
-  - ca-certificates=2024.7.4=hbcca054_0
+  - ca-certificates=2024.8.30=hbcca054_0
   - cairo=1.16.0=hbbf8b49_1016
   - contourpy=1.1.0=py311h9547e67_0
   - curl=8.8.0=he654da7_1
@@ -173,7 +175,7 @@ dependencies:
   - nss=3.89=he45b914_0
   - oniguruma=6.9.8=h166bdaf_0
   - openjpeg=2.5.0=hfec8fc6_2
-  - openssl=3.3.1=h4bc722e_2
+  - openssl=3.3.1=hb9d3cd8_3
   - packaging=23.1=pyhd8ed1ab_0
   - pandoc=2.19.2=h32600fe_2
   - pango=1.50.14=heaa33ce_1
@@ -477,6 +479,7 @@ dependencies:
   - six=1.16.0=pyh6c4a22f_0
   - subread=2.0.6=he4a0461_0
   - sysroot_linux-64=2.12=he073ed8_16
+  - tapi=1100.0.11=h1bb5118_0
   - tbb=2020.2=h4bd325d_4
   - tk=8.6.12=h27826a3_0
   - tktable=2.10=hb7b940f_3
