@@ -353,11 +353,15 @@ fn_stat_cell <- function(.x, .y) {
 fn_azimuth <- function(.sc, .ref, .celllevel) {
   # .sc <- sc$sc_filter
   # .sc <- sc$sc
+  log_info("Azimuth is running")
+  log_success("Azimuth reference ", .ref, " and cell level ", .celllevel)
 
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
     reference = .ref
   )
+  log_success("Azimuth reference ", .ref, " and cell level ", .celllevel)
+  log_success("Azimuth done")
 
   .celltype <- .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
 
@@ -723,6 +727,10 @@ fn_check_cellref <- function(.refname) {
 
 fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
   Seurat::Idents(.sc) <- "celltype_name"
+  if (packageVersion("Seurat") >= "5" && use_azimuth) {
+    log_success("Seurat version 5")
+    .sc[["RNA"]]$data <- .sc[["RNA"]]$counts
+  }
   # future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
     object = .sc,
