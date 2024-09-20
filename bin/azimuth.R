@@ -730,6 +730,7 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
   if (packageVersion("Seurat") >= "5" && use_azimuth) {
     log_success("Seurat version 5")
     .sc[["RNA"]]$data <- .sc[["RNA"]]$counts
+    .sc <- ScaleData(.sc, features = rownames(.sc), assay = "RNA", verbose = FALSE)
   }
   # future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
@@ -740,7 +741,7 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
     logfc.threshold = 0.25
   )
   # future::plan(future::sequential)
-
+  log_success("Seurat findallmarkers on version 5 done!!!")
 
 
   .allmarkers |>
