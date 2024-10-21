@@ -158,7 +158,7 @@ The test scRNA-seq v3 data can be downloaded from [10X GENOMICS](https://support
 
 ### 3.3 Outputs
 
-#### 3.3.1 Cell Range summary
+#### 3.3.1 Cell Ranger summary
 ![](img/PBMC-10k-scRNAseq.png)
 
 #### 3.3.2 Cell QC and clustering
