@@ -74,7 +74,7 @@ conda activate scmocha
 
 ### 2.5 R package installation
 
-The `scmocha` conda environment can be created by [scmocha.prod.yaml](./scmocha.prod.yaml), it includes python and R packages. Some of R packages are not deposited in the conda repositories. Users should verify if the following packages are installed. If not, they can be installed using the commands provided below.
+The `scmocha` conda environment can be created by [scmocha.prod.yaml](./scmocha.prod.yaml), it includes python and R packages. Some of R packages are not deposited in the conda repositories. Users should verify whether the following packages are installed. If not, they can be installed using the commands provided below.
 
 ```R
 # install R packages
