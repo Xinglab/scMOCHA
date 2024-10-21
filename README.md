@@ -148,7 +148,9 @@ java -Dconfig.file=/path/to/scMOCHA/config/slurm.conf \
   "scMOCHA.npcs": "Int (optional, default = 10)",
   "scMOCHA.nFeature_RNA_max": "Int (optional, default = 8000)",
   "scMOCHA.memory": "String (optional, default = \"50 GB\")",
-  "scMOCHA.account": "String (optional, default = \"userID\")"
+  "scMOCHA.account": "String (optional, default = \"userID\")",
+  "scMOCHA.chemistry":"String (optional, default = \"auto\")", 
+  "scMOCHA.x10_version":"String"
 }
 ```
 
@@ -165,8 +167,13 @@ It will provides a summary on each sample, including estimated cell numbers, mea
 
 
 #### 3.3.2 Cell QC and clustering
-The main output for this section includes:
-(1) plot-qc.pdf: Displays the distribution of mitochondrial content, ribosomal content, and the largest gene percentage.  (2) plot-metrics.pdf: Shows a QC plot, including the distribution of mitochondrial and ribosomal content.  (3) plot-mt-cluster-depth.pdf: Displays the depth of mtDNA sequencing across each cell type.  (4) plot-umap.pdf: Displays the UMAP and cell type classifications.  (5) plot-pie-celltype.pdf and celltype_ratio.tsv: Show the composition of each cell type.  (6) sc_azimuth.rds.gz: Contains the processed data from Seurat or Azimuth analysis. 
+The main output for this section includes:  
+**(1) plot-qc.pdf:** displays the distribution of mitochondrial content, ribosomal content, and the largest gene percentage.  
+ **(2) plot-metrics.pdf:** shows a QC plot, including the distribution of mitochondrial and ribosomal content.  
+ **(3) plot-mt-cluster-depth.pdf:** displays the depth of mtDNA sequencing across each cell type.  
+ **(4) plot-umap.pdf:** displays the UMAP and cell type classifications.  
+ **(5) plot-pie-celltype.pdf and celltype_ratio.tsv:** show the composition of each cell type.  
+ **(6) sc_azimuth.rds.gz:** contains the processed data from Seurat or Azimuth analysis. 
 
 ![](img/Read-depth.png)
 
@@ -177,6 +184,9 @@ The main output for this section includes:
 
 
 #### 3.3.3 Cell level heteroplasmy
-This section contains variant calling results at both the cluster and single-cell levels, distinguishable by the file names that start with either "cell" or "cluster". Main output files include: (1) cluster_af_heatmap.pdf and cluster_cell_af_heatmap.pdf: Display heatmaps of allele frequency at both the cluster and single-cell levels. (2) cluster_depth_heatmap.pdf and cluster_cell_depth_heatmap.pdf: Show heatmaps of sequencing depth at the cluster and single-cell levels. (3) cell_variant_annotation.xlsx and cell_variant_annotation.tsv: Provide detailed information for each variant identified by the pipeline at the single cell level
+This section contains variant calling results at both the cluster and single-cell levels, distinguishable by the file names that start with either "cell" or "cluster". Main output files include:   
+**(1) cluster_af_heatmap.pdf and cluster_cell_af_heatmap.pdf:** display heatmaps of allele frequency at both the cluster and single-cell levels.   
+ **(2) cluster_depth_heatmap.pdf and cluster_cell_depth_heatmap.pdf:** show heatmaps of sequencing depth at the cluster and single-cell levels.   
+**(3) cell_variant_annotation.xlsx and cell_variant_annotation.tsv**: provide detailed information for each variant identified by the pipeline at the single cell level
 
 ![](img/Heteroplasmy.png)
