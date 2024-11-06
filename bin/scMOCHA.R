@@ -31,13 +31,13 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # @: array
 # %: hash
 # default: default value specified here.
-# 
-# barcode_cluster_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/-883407297/barcode_cluster.tsv"
-# cell_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/829295247/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/829295247/cell.coverage.txt.gz"
-# cluster_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/1408557915/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/1408557915/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE163668/cromwell-executions/scMOCHABatch/794e2468-32d1-4021-b5f7-b8e71553db20/call-scMOCHA/shard-1/sub.scMOCHA/32a71d2b-b433-402a-ad63-b3ca9aff4f70/call-plot_scMOCHA/inputs/829295247/cell.cell_heteroplasmic_df_raw.tsv.gz"
+#
+# barcode_cluster_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/722149735/barcode_cluster.tsv"
+# cell_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.coverage.txt.gz"
+# cluster_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/613722931/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/613722931/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.cell_heteroplasmic_df_raw.tsv.gz"
 # perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
 # jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
 # sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
@@ -89,12 +89,11 @@ fn_load_hetero <- function(.filename) {
       cols = -barcode,
       names_to = "variant",
       values_to = "af"
-    ) |> 
+    ) |>
     dplyr::filter(af > 0.05) # filter variants which AF < 0.05
 }
 
 fn_load_coverage <- function(.filename) {
-
   data.table::fread(
     input = .filename,
     sep = ",",
@@ -138,7 +137,7 @@ fn_forplot <- function(.af, .coverage) {
     dplyr::summarise(s_af = sum(af, na.rm = T)) |>
     dplyr::ungroup() |>
     dplyr::arrange(cluster, -s_af) ->
-    .rank
+  .rank
 
   .af |>
     dplyr::select(barcode, dplyr::contains(">")) |>
@@ -162,7 +161,7 @@ fn_forplot <- function(.af, .coverage) {
     ) |>
     dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
     dplyr::arrange(pos) ->
-    .forplot
+  .forplot
 
   list(
     rank = .rank,
@@ -171,9 +170,8 @@ fn_forplot <- function(.af, .coverage) {
 }
 
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
-
   .forplot$forplot |>
-    dplyr::select(barcode, variant, af)  |>
+    dplyr::select(barcode, variant, af) |>
     tidyr::pivot_wider(
       names_from = "variant",
       values_from = af
@@ -184,16 +182,16 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     tibble::column_to_rownames(var = "barcode") |>
     as.matrix() |>
     t() ->
-    .af_mtx
+  .af_mtx
 
 
 
   tibble::tibble(
     variants = rownames(.af_mtx)
   ) ->
-    .for_gcol
+  .for_gcol
 
-  .gcol <- if(is.null(.cell_variants)) {
+  .gcol <- if (is.null(.cell_variants)) {
     .for_gcol |>
       dplyr::mutate(
         cell_variants = "black"
@@ -221,7 +219,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     tibble::column_to_rownames(var = "barcode") |>
     as.matrix() |>
     t() ->
-    .depth_mtx
+  .depth_mtx
 
   .forplot$rank |>
     dplyr::select(barcode, cluster) |>
@@ -230,7 +228,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     ) |>
     tibble::column_to_rownames(var = "barcode") |>
     dplyr::select(Cluster = cluster) ->
-    .af_cluster
+  .af_cluster
 
 
   col_clusters <- levels(.af_cluster$Cluster)
@@ -240,13 +238,12 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
 
   chm_top <- ComplexHeatmap::HeatmapAnnotation(
     df = .af_cluster,
-    gap = unit(c(2,2), "mm"),
+    gap = unit(c(2, 2), "mm"),
     col = list(Cluster = col_colors),
     which = "column"
   )
 
-  ch_af <- if(!is.null(.variant_annotation)) {
-
+  ch_af <- if (!is.null(.variant_annotation)) {
     hma_right <- ComplexHeatmap::rowAnnotation(
       df = .variant_annotation |>
         dplyr::select(-Conservation)
@@ -286,12 +283,10 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       # clustering_method_columns = "ward.D",
       show_column_names = FALSE,
       row_names_side = "left",
-
       top_annotation = chm_top,
       left_annotation = hma_left,
       right_annotation = hma_right
     )
-
   } else {
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
@@ -324,10 +319,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       # clustering_method_columns = "ward.D",
       show_column_names = FALSE,
       row_names_side = "left",
-
       top_annotation = chm_top,
     )
-
   }
 
 
@@ -363,10 +356,9 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     # clustering_method_columns = "ward.D",
     show_column_names = FALSE,
     row_names_side = "left",
-
     top_annotation = chm_top
   ) ->
-    ch_depth
+  ch_depth
 
   list(
     ch_af = ch_af,
@@ -402,7 +394,7 @@ cell_cluster_forplot <- fn_forplot(
 
 ch_af_depth <- fn_heatmap(
   .forplot = cell_cluster_forplot
-  )
+)
 
 
 
@@ -451,19 +443,19 @@ cluster_coverage <- fn_load_coverage(
 
 cluster_cluster_af <-
   cluster_hetero |> tidyr::pivot_wider(
-      names_from  = variant,
-      values_from = af
+    names_from  = variant,
+    values_from = af
   )
 
 cluster_cluster_forplot <- fn_forplot(
   .af = cluster_cluster_af,
   .coverage = cluster_coverage
-  )
+)
 
 
 cluster_ch_af_depth <- fn_heatmap(
   .forplot = cluster_cluster_forplot
-  )
+)
 
 {
   pdf(
@@ -540,7 +532,7 @@ cell_raw_cluster_forplot$forplot |>
     names_from = rowid,
     values_from = v
   ) ->
-  cell_variants
+cell_variants
 
 readr::write_delim(
   x = cell_variants,
@@ -654,7 +646,7 @@ cmd <- "source {conda_root}/etc/profile.d/conda.sh; conda activate {conda_env}; 
 message(cmd)
 system(command = cmd)
 
-variant_annotation <- if(file.exists("cell_variant_annotation.tsv")) {
+variant_annotation <- if (file.exists("cell_variant_annotation.tsv")) {
   cell_anno <- readr::read_tsv("cell_variant_annotation.tsv")
   writexl::write_xlsx(
     x = cell_anno,
@@ -719,14 +711,16 @@ variant_annotation <- if(file.exists("cell_variant_annotation.tsv")) {
       `Mitomap freq` = mito_freq,
       `Gnomad freq` = gnomad_freq
     )
-} else {NULL}
+} else {
+  NULL
+}
 
 
 cell_raw_ch_af_depth <- fn_heatmap(
   .forplot = cell_raw_cluster_forplot,
   .cell_variants = cell_cluster_forplot$forplot$variant,
   .variant_annotation = variant_annotation
-  )
+)
 
 {
   pdf(
