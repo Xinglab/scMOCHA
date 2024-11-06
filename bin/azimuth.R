@@ -827,7 +827,7 @@ log_success("Plot umap!")
 sc$markers <- fn_allmarkers_heatmap(sc$sc_azimuth)
 log_success("All marker genes")
 # readr -------------------------------------------------------------------
-log_info("save meta.data")
+log_success("save meta.data")
 readr::write_tsv(
   x = sc$sc_filter@meta.data |> tibble::rownames_to_column(var = "cellbarcode"),
   file = "cell_meta_data.tsv"
