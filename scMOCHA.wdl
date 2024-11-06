@@ -228,6 +228,7 @@ workflow scMOCHA {
       barcode_cell = cell_cluster_annotation.barcode_cell,
       barcode_bulk = cell_cluster_annotation.barcode_bulk,
       celltype_ratio = cell_cluster_annotation.celltype_ratio,
+      cell_meta_data = cell_cluster_annotation.cell_meta_data,
       plot_metrics = cell_cluster_annotation.plot_metrics,
       plot_pie_celltype = cell_cluster_annotation.plot_pie_celltype,
       plot_qc = cell_cluster_annotation.plot_qc,
@@ -295,6 +296,7 @@ workflow scMOCHA {
       File barcode_cell = cell_cluster_annotation.barcode_cell
       File barcode_bulk = cell_cluster_annotation.barcode_bulk
       File celltype_ratio = cell_cluster_annotation.celltype_ratio
+      File cell_meta_data = cell_cluster_annotation.cell_meta_data
       File plot_metrics = cell_cluster_annotation.plot_metrics
       File plot_pie_celltype = cell_cluster_annotation.plot_pie_celltype
       File plot_qc = cell_cluster_annotation.plot_qc
@@ -530,6 +532,7 @@ task cell_cluster_annotation {
     File barcode_cluster = "barcode_cluster.tsv"
     File barcode_bulk = "barcode_bulk.tsv"
     File celltype_ratio = "celltype_ratio.tsv"
+    File cell_meta_data = "cell_meta_data.tsv"
     File plot_metrics = "plot-metrics.pdf"
     File plot_pie_celltype = "plot-pie-celltype.pdf"
     File plot_qc = "plot-qc.pdf"
@@ -776,6 +779,7 @@ task gather_outputfiles {
   File barcode_cell
   File barcode_bulk
   File celltype_ratio
+  File cell_meta_data
   File plot_metrics
   File plot_pie_celltype
   File plot_qc
@@ -868,6 +872,7 @@ task gather_outputfiles {
     cp ${barcode_cell} ${output_dir}
     cp ${barcode_bulk} ${output_dir}
     cp ${celltype_ratio} ${output_dir}
+    cp ${cell_meta_data} ${output_dir}
     cp ${plot_metrics} ${output_dir}
     cp ${plot_pie_celltype} ${output_dir}
     cp ${plot_qc} ${output_dir}
