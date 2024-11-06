@@ -31,7 +31,8 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # @: array
 # %: hash
 # default: default value specified here.
-#
+# 
+# cell_meta_data_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-cell_cluster_annotation/execution/cell_meta_data.tsv"
 # barcode_cluster_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/722149735/barcode_cluster.tsv"
 # cell_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.cell_heteroplasmic_df.tsv.gz"
 # cell_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.coverage.txt.gz"
@@ -51,6 +52,7 @@ spec <- "
 Usage: Rscript scMOCHA.R [options]
 
 Options:
+<cell_meta_data_file|meta=s> cell_meta_data.tsv
 <barcode_cluster_file=s> barcode_cluster.tsv
 <cell_hetero_file|ceh=s> cell.cell_heteroplasmic_df.tsv.gz
 <cell_coverage_file|cec=s> cell.coverage.txt.gz
@@ -113,6 +115,17 @@ fn_load_cluster <- function(.filename) {
     dplyr::select(-tag)
 }
 
+fn_load_meta <- function(.filename) {
+  data.table::fread(
+    input = .filename,
+    sep = "\t"
+  ) |> 
+    dplyr::rename(
+      barcode = cellbarcode
+    ) |> 
+    dplyr::select(-orig.ident)
+}
+
 fn_af <- function(.cluster, .hetero) {
   .cluster |>
     dplyr::rename(cluster = celltype) |>
@@ -125,7 +138,7 @@ fn_af <- function(.cluster, .hetero) {
     )
 }
 
-fn_forplot <- function(.af, .coverage) {
+fn_forplot <- function(.af, .coverage, .meta) {
   .af |>
     dplyr::select(barcode, cluster, dplyr::contains(">")) |>
     tidyr::pivot_longer(
@@ -165,11 +178,15 @@ fn_forplot <- function(.af, .coverage) {
 
   list(
     rank = .rank,
-    forplot = .forplot
+    forplot = .forplot,
+    meta = metadata
   )
 }
 
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
+    dplyr::arrange(cancer_types)
+  
   .forplot$forplot |>
     dplyr::select(barcode, variant, af) |>
     tidyr::pivot_wider(
@@ -226,8 +243,13 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     dplyr::slice(
       match(colnames(.af_mtx), barcode)
     ) |>
+    dplyr::left_join(
+      .forplot$meta |> 
+        dplyr::select(barcode, `MT%` = percent.mt),
+      by = "barcode"
+    ) |> 
     tibble::column_to_rownames(var = "barcode") |>
-    dplyr::select(Cluster = cluster) ->
+    dplyr::rename(Cluster = cluster) ->
   .af_cluster
 
 
@@ -238,8 +260,16 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
 
   chm_top <- ComplexHeatmap::HeatmapAnnotation(
     df = .af_cluster,
-    gap = unit(c(2, 2), "mm"),
-    col = list(Cluster = col_colors),
+    # gap = unit(c(2, 2), "mm"),
+    col = list(
+      Cluster = col_colors,
+      `MT%` = circlize::colorRamp2(
+        breaks = c(0, 10),
+        colors = c("white", "gold"),
+        # colors =  c("#440154FF", "#FDE725FF"),
+        space = "RGB"
+      )
+    ),
     which = "column"
   )
 
@@ -372,6 +402,10 @@ cluster_umap <- fn_load_cluster(
   .filename = barcode_cluster_file
 )
 
+metadata <- fn_load_meta(
+  .filename = cell_meta_data_file
+)
+
 # Cell allele -------------------------------------------------------------
 
 cell_hetero <- fn_load_hetero(
@@ -389,7 +423,8 @@ cell_cluster_af <- fn_af(
 
 cell_cluster_forplot <- fn_forplot(
   .af = cell_cluster_af,
-  .coverage = cell_coverage
+  .coverage = cell_coverage,
+  .meta = metadata
 )
 
 ch_af_depth <- fn_heatmap(

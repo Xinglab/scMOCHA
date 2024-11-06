@@ -157,6 +157,7 @@ workflow scMOCHA {
   call plot_scMOCHA {
     input:
       barcode_cluster_file = cell_cluster_annotation.barcode_cluster,
+      cell_meta_data_file = cell_cluster_annotation.cell_meta_data,
       cell_hetero_file = call_mt_variants.cell_cell_heteroplasmic_df_tsv_gz,
       cell_coverage_file = call_mt_variants.cell_coverage_txt_gz,
       cluster_hetero_file = call_mt_variants.cluster_cell_heteroplasmic_df_tsv_gz,
@@ -668,6 +669,7 @@ task call_mt_variants {
 task plot_scMOCHA {
 
   File barcode_cluster_file
+  File cell_meta_data_file
   File cell_hetero_file
   File cell_coverage_file
 
@@ -701,6 +703,7 @@ task plot_scMOCHA {
     conda activate ${conda_env}
 
     ${bindir}/scMOCHA.R \
+      -m ${cell_meta_data_file} \
       -b ${barcode_cluster_file} \
       -ceh ${cell_hetero_file} \
       -cec ${cell_coverage_file} \
