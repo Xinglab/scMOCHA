@@ -264,8 +264,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     col = list(
       Cluster = col_colors,
       `MT%` = circlize::colorRamp2(
-        breaks = c(0, 10),
-        colors = c("white", "gold"),
+        breaks = c(0, 2, 10),
+        colors = c("grey", "white", "gold"),
         # colors =  c("#440154FF", "#FDE725FF"),
         space = "RGB"
       )
