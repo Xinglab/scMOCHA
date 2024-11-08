@@ -139,6 +139,7 @@ fn_af <- function(.cluster, .hetero) {
 }
 
 fn_forplot <- function(.af, .coverage, .meta) {
+  # print(.meta)
   .af |>
     dplyr::select(barcode, cluster, dplyr::contains(">")) |>
     tidyr::pivot_longer(
@@ -175,13 +176,20 @@ fn_forplot <- function(.af, .coverage, .meta) {
     dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
     dplyr::arrange(pos) ->
   .forplot
+  
+  .coverage |> 
+    dplyr::group_by(barcode) |> 
+    dplyr::summarise(sum_depth = sum(depth, na.rm = TRUE)) ->
+    .coverage_cell
 
   list(
     rank = .rank,
     forplot = .forplot,
-    meta = metadata
+    meta = .meta,
+    coverage_cell = .coverage_cell
   )
 }
+
 
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
@@ -237,6 +245,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     as.matrix() |>
     t() ->
   .depth_mtx
+  
+  
 
   .forplot$rank |>
     dplyr::select(barcode, cluster) |>
@@ -246,6 +256,12 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     dplyr::left_join(
       .forplot$meta |> 
         dplyr::select(barcode, `MT%` = percent.mt),
+      by = "barcode"
+    ) |> 
+    dplyr::left_join(
+      .forplot$coverage_cell |> 
+        dplyr::mutate(sum_depth = log10(sum_depth + 1)) |> 
+        dplyr::rename(`log10(Total reads)` = sum_depth),
       by = "barcode"
     ) |> 
     tibble::column_to_rownames(var = "barcode") |>
@@ -264,9 +280,14 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     col = list(
       Cluster = col_colors,
       `MT%` = circlize::colorRamp2(
-        breaks = c(0, 2, 10),
-        colors = c("grey", "white", "gold"),
+        breaks = c(2, 7, 10),
+        colors = c("gold", "red", "black"),
         # colors =  c("#440154FF", "#FDE725FF"),
+        space = "RGB"
+      ),
+      `log10(Total reads)` = circlize::colorRamp2(
+        breaks =quantile(.af_cluster$`log10(Total reads)`, c(0.15, 0.75, 0.9), na.rm = T),
+        colors = c("gold", "red", "blue"),
         space = "RGB"
       )
     ),
@@ -405,7 +426,7 @@ cluster_umap <- fn_load_cluster(
 metadata <- fn_load_meta(
   .filename = cell_meta_data_file
 )
-
+log_info("load metadata")
 # Cell allele -------------------------------------------------------------
 
 cell_hetero <- fn_load_hetero(
@@ -426,6 +447,9 @@ cell_cluster_forplot <- fn_forplot(
   .coverage = cell_coverage,
   .meta = metadata
 )
+
+log_info("fn_heatmap")
+# print(cell_cluster_forplot)
 
 ch_af_depth <- fn_heatmap(
   .forplot = cell_cluster_forplot
@@ -449,6 +473,7 @@ ch_af_depth <- fn_heatmap(
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_depth)
   dev.off()
+  log_success("save image")
 }
 
 
@@ -484,7 +509,8 @@ cluster_cluster_af <-
 
 cluster_cluster_forplot <- fn_forplot(
   .af = cluster_cluster_af,
-  .coverage = cluster_coverage
+  .coverage = cluster_coverage,
+  .meta = metadata
 )
 
 
@@ -529,7 +555,8 @@ cell_raw_cluster_af <- cluster_umap |>
 
 cell_raw_cluster_forplot <- fn_forplot(
   .af = cell_raw_cluster_af,
-  .coverage = cell_coverage
+  .coverage = cell_coverage,
+  .meta = metadata
 )
 
 
