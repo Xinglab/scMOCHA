@@ -157,7 +157,6 @@ cluster_n_forplot <- fn_load_count(thepath, type = "cluster")
 #
 fn_plot_count(cluster_n_forplot, thepos = 217)
 
-
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
