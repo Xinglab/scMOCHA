@@ -173,7 +173,7 @@ fn_forplot <- function(.af, .coverage, .meta) {
         af = 0
       )
     ) |>
-    dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
+    dplyr::mutate(af = ifelse(is.na(depth) | depth < log2(10 + 1), NA, af)) |>
     dplyr::arrange(pos) ->
   .forplot
   
@@ -280,14 +280,16 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     col = list(
       Cluster = col_colors,
       `MT%` = circlize::colorRamp2(
-        breaks = c(2, 7, 10),
-        colors = c("gold", "red", "black"),
+        breaks = c(2,  10),
+        # colors = c("gold", "red", "black"),
+        colors = c("white", "green"),
         # colors =  c("#440154FF", "#FDE725FF"),
         space = "RGB"
       ),
       `log10(Total reads)` = circlize::colorRamp2(
-        breaks =quantile(.af_cluster$`log10(Total reads)`, c(0.15, 0.75, 0.9), na.rm = T),
-        colors = c("gold", "red", "blue"),
+        # breaks = quantile(.af_cluster$`log10(Total reads)`, c(0.15, 0.75, 0.9), na.rm = T),
+        breaks = quantile(.af_cluster$`log10(Total reads)`, c(0.15, 0.9), na.rm = T),
+        colors = c("white", "blue"),
         space = "RGB"
       )
     ),
