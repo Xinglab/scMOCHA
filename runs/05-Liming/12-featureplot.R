@@ -117,13 +117,13 @@ fn_load_coverage <- function(.filename) {
     dplyr::mutate(depth = log2(depth + 1))
 }
 
-fn_plot_vaf_featureplot<- function(.thevariant, cell_hetero_coverage, umap_coord) {
-  cell_hetero_coverage |> 
+fn_plot_vaf_featureplot<- function(.thevariant, sc) {
+  sc$cell_hetero_coverage |> 
     dplyr::filter(variant == .thevariant) ->
     vhc
   
   
-  umap_coord|> 
+  sc$umap_coord|> 
     dplyr::left_join(vhc, by = "barcode") ->
     vhc_umap
   
@@ -146,56 +146,94 @@ fn_plot_vaf_featureplot<- function(.thevariant, cell_hetero_coverage, umap_coord
     )
 }
 
+
+fn_load_by_path <- function(.dir) {
+  library(Seurat)
+  azimuth_file <- file.path(.dir, "sc_azimuth.rds.gz")
+  cell_hetero_file <- file.path(.dir, "cell.cell_heteroplasmic_df_raw.tsv.gz")
+  cell_coverage_file <- file.path(.dir, "cell.coverage.txt.gz")
+  
+  sc <- readr::read_rds(azimuth_file)
+  sc$umap_coord <- fn_umap_coord(.x = sc$sc_azimuth)
+  sc$cell_hetero <- fn_load_hetero(cell_hetero_file)
+  sc$cell_coverage <- fn_load_coverage(cell_coverage_file)
+  sc$cell_hetero_coverage <- sc$cell_hetero |> 
+    dplyr::mutate(pos = as.integer(pos)) |> 
+    dplyr::inner_join(sc$cell_coverage, by = c("barcode", "pos"))
+  
+  sc
+}
+
+fn_plot_vaf_featureplot_multi <- function(.thevariants, sc) {
+  purrr::map(
+    .thevariants,
+    fn_plot_vaf_featureplot,
+    sc = sc
+  ) |> 
+    wrap_plots() +
+    guide_area() +
+    plot_layout(guides = "collect") 
+}
+
+
 # load data ---------------------------------------------------------------
 library(Seurat)
 azimuth_file <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT/sc_azimuth.rds.gz"
 cell_hetero_file <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT/cell.cell_heteroplasmic_df_raw.tsv.gz"
 cell_coverage_file <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT/cell.coverage.txt.gz"
 
+thepath <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT"
 
 
 # body --------------------------------------------------------------------
-sc <- readr::read_rds(azimuth_file)
-# hetero <- data.table::fread(hetero_file)
+# sc <- readr::read_rds(azimuth_file)
+# # hetero <- data.table::fread(hetero_file)
+# 
+# 
+# sc$umap_coord <- fn_umap_coord(.x = sc$sc_azimuth)
+# cell_hetero <- fn_load_hetero(cell_hetero_file)
+# cell_coverage <- fn_load_coverage(cell_coverage_file)
+# cell_hetero_coverage <- cell_hetero |> 
+#   dplyr::mutate(pos = as.integer(pos)) |> 
+#   dplyr::inner_join(cell_coverage, by = c("barcode", "pos"))
 
-
-sc$umap_coord <- fn_umap_coord(.x = sc$sc_azimuth)
-cell_hetero <- fn_load_hetero(cell_hetero_file)
-cell_coverage <- fn_load_coverage(cell_coverage_file)
-cell_hetero_coverage <- cell_hetero |> 
-  dplyr::mutate(pos = as.integer(pos)) |> 
-  dplyr::inner_join(cell_coverage, by = c("barcode", "pos"))
-
+sc <- fn_load_by_path(thepath)
 
 
  # 143B
-variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_143B.txt"
+variant_list_file <- "/mnt/isilon/u01_project/Ting/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_143B.txt"
 variant_list <- data.table::fread(variant_list_file)
 
-variant_list |> 
-  dplyr::mutate(
-    p = purrr::map(
-      .x = Variant, .f = fn_plot_vaf_featureplot,
-      cell_hetero_coverage, umap_coord = sc$umap_coord
-    )
-  ) ->
-  variant_list_p
+# fn_plot_vaf_featureplot(variant_list$Variant[[1]], sc= sc)
+# 
+# variant_list |> 
+#   dplyr::mutate(
+#     p = purrr::map(
+#       .x = Variant, 
+#       .f = fn_plot_vaf_featureplot,
+#       cell_hetero_coverage, 
+#       umap_coord = sc$umap_coord
+#     )
+#   ) ->
+#   variant_list_p
+# 
+# 
+# wrap_plots(
+#   variant_list_p$p
+# ) +
+#   guide_area() +
+#   plot_layout(guides = "collect") ->p;p
 
+fn_plot_vaf_featureplot_multi(variant_list$Variant, sc) ->p;p
 
-wrap_plots(
-  variant_list_p$p
-) +
-  guide_area() +
-  plot_layout(guides = "collect") ->p;p
-
-ggsave(
-  filename = "143B-featureplot.pdf",
-  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot",
-  plot = p,
-  width = 9, 
-  height = 5
-  
-)
+# ggsave(
+#   filename = "143B-featureplot.pdf",
+#   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot",
+#   plot = p,
+#   width = 9, 
+#   height = 5
+#   
+# )
 
 
 tibble::tibble(
@@ -203,14 +241,23 @@ tibble::tibble(
 ) |> 
   dplyr::mutate(
     p = purrr::map(
-      .x = Variant, .f = fn_plot_vaf_featureplot,
-      cell_hetero_coverage, umap_coord = sc$umap_coord
+      .x = Variant, 
+      .f = fn_plot_vaf_featureplot,
+      cell_hetero_coverage, 
+      umap_coord = sc$umap_coord
     )
   ) ->
   p;p
 
 p$p
 
+sc$cell_hetero_coverage |> 
+  dplyr::inner_join(
+    sc$umap_coord, 
+    by = "barcode"
+  ) |> 
+  dplyr::filter(variant == "6776T>C") ->
+  vhc_umap
 
 vhc_umap |> 
   dplyr::filter(!is.na(variant)) ->
@@ -325,14 +372,14 @@ plot_layout(
   guides = "collect"
 ) ->
   p_collect;p_collect
-ggsave(
-  filename = "variant_6776_cell_level.pdf",
-  plot = p_collect,
-  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2",
-  height = 7,
-  width = 10
-  
-)
+# ggsave(
+#   filename = "variant_6776_cell_level.pdf",
+#   plot = p_collect,
+#   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2",
+#   height = 7,
+#   width = 10
+#   
+# )
 
 
 # cell level 
@@ -387,6 +434,7 @@ cluster_n |>
     group2 = plyr::revalue(x = group, replace = c("cluster_0" = "WAL2A-1", "cluster_1" = "WAL2A-2", "cluster_2" = "HEK293", "cluster_3" = "A549", "cluster_4" = "143B"))
   ) ->
   cluster_n_forplot
+
 thepos = 6776
 
 cluster_n_forplot |> 
@@ -428,98 +476,98 @@ cluster_n_forplot |>
   ) +
   facet_wrap(~group2, ncol = 1, strip.position = "right") ->
   p_tile;p_tile
-
-# A549
-variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_A549.txt"
-variant_list <- data.table::fread(variant_list_file)
-
-variant_list |> 
-  dplyr::mutate(
-    p = purrr::map(
-      .x = Variant, .f = fn_plot_vaf_featureplot,
-      cell_hetero_coverage, umap_coord = sc$umap_coord
-    )
-  ) ->
-  variant_list_p
-
-
-
-wrap_plots(
-  variant_list_p$p
-) +
-  guide_area() +
-  plot_layout(guides = "collect") ->p;p
-ggsave(
-  filename = "A549-featureplot.pdf",
-  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot",
-  plot = p,
-  width = 12, 
-  height = 7
-  
-)
-
-
-# HEK293
-variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_HEK293.txt"
-variant_list <- data.table::fread(variant_list_file)
-
-variant_list |> 
-  dplyr::mutate(
-    p = purrr::map(
-      .x = Variant, .f = fn_plot_vaf_featureplot,
-      cell_hetero_coverage, umap_coord = sc$umap_coord
-    )
-  ) ->
-  variant_list_p
-
-
-
-wrap_plots(
-  variant_list_p$p,
-  ncol = 4
-) +
-  guide_area() +
-  plot_layout(guides = "collect") ->p;p
-ggsave(
-  filename = "HEK293-featureplot.pdf",
-  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot/",
-  plot = p,
-  width = 12, 
-  height = 13
-  
-)
-
-
-
-# WAL2A
-variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_WAL2A.txt"
-variant_list <- data.table::fread(variant_list_file)
-
-variant_list |> 
-  dplyr::mutate(
-    p = purrr::map(
-      .x = Variant, .f = fn_plot_vaf_featureplot,
-      cell_hetero_coverage, umap_coord = sc$umap_coord
-    )
-  ) ->
-  variant_list_p
-
-
-
-wrap_plots(
-  variant_list_p$p,
-  ncol = 3
-) +
-  guide_area() +
-  plot_layout(guides = "collect") ->p;p
-ggsave(
-  filename = "WAL2A-featureplot.pdf",
-  path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot/",
-  plot = p,
-  width = 9, 
-  height = 5
-  
-)
+# 
+# # A549
+# variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_A549.txt"
+# variant_list <- data.table::fread(variant_list_file)
+# 
+# variant_list |> 
+#   dplyr::mutate(
+#     p = purrr::map(
+#       .x = Variant, .f = fn_plot_vaf_featureplot,
+#       cell_hetero_coverage, umap_coord = sc$umap_coord
+#     )
+#   ) ->
+#   variant_list_p
+# 
+# 
+# 
+# wrap_plots(
+#   variant_list_p$p
+# ) +
+#   guide_area() +
+#   plot_layout(guides = "collect") ->p;p
+# ggsave(
+#   filename = "A549-featureplot.pdf",
+#   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot",
+#   plot = p,
+#   width = 12, 
+#   height = 7
+#   
+# )
+# 
+# 
+# # HEK293
+# variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_HEK293.txt"
+# variant_list <- data.table::fread(variant_list_file)
+# 
+# variant_list |> 
+#   dplyr::mutate(
+#     p = purrr::map(
+#       .x = Variant, .f = fn_plot_vaf_featureplot,
+#       cell_hetero_coverage, umap_coord = sc$umap_coord
+#     )
+#   ) ->
+#   variant_list_p
+# 
+# 
+# 
+# wrap_plots(
+#   variant_list_p$p,
+#   ncol = 4
+# ) +
+#   guide_area() +
+#   plot_layout(guides = "collect") ->p;p
+# ggsave(
+#   filename = "HEK293-featureplot.pdf",
+#   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot/",
+#   plot = p,
+#   width = 12, 
+#   height = 13
+#   
+# )
+# 
+# 
+# 
+# # WAL2A
+# variant_list_file <- "/mnt/isilon/u01_project/PT/Comparison_from_different_cutoff_combinations_0708/Comparison_result_500_8000_2nd_C0.05_S0.2/Chunjie_specific_WAL2A.txt"
+# variant_list <- data.table::fread(variant_list_file)
+# 
+# variant_list |> 
+#   dplyr::mutate(
+#     p = purrr::map(
+#       .x = Variant, .f = fn_plot_vaf_featureplot,
+#       cell_hetero_coverage, umap_coord = sc$umap_coord
+#     )
+#   ) ->
+#   variant_list_p
+# 
+# 
+# 
+# wrap_plots(
+#   variant_list_p$p,
+#   ncol = 3
+# ) +
+#   guide_area() +
+#   plot_layout(guides = "collect") ->p;p
+# ggsave(
+#   filename = "WAL2A-featureplot.pdf",
+#   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/featureplot/",
+#   plot = p,
+#   width = 9, 
+#   height = 5
+#   
+# )
 
 # footer ------------------------------------------------------------------
 
