@@ -153,9 +153,9 @@ fn_plot_count <- function(cluster_n_forplot, thepos, group_sel = NA) {
 thepath <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-gather_outputfiles/execution/GSM4762177"
 
 # body --------------------------------------------------------------------
-cluster_n_forplot <- fn_load_count(thepath, type = "cell")
+cluster_n_forplot <- fn_load_count(thepath, type = "cluster")
 #
-fn_plot_count(cluster_n_forplot, thepos = 217, group_sel = c("AATGGAAGTAGAAACT-1"))
+fn_plot_count(cluster_n_forplot, thepos = 217)
 
 
 # footer ------------------------------------------------------------------
