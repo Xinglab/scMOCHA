@@ -31,7 +31,7 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # @: array
 # %: hash
 # default: default value specified here.
-# 
+#
 # cell_meta_data_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-cell_cluster_annotation/execution/cell_meta_data.tsv"
 # barcode_cluster_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/722149735/barcode_cluster.tsv"
 # cell_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.cell_heteroplasmic_df.tsv.gz"
@@ -119,10 +119,10 @@ fn_load_meta <- function(.filename) {
   data.table::fread(
     input = .filename,
     sep = "\t"
-  ) |> 
+  ) |>
     dplyr::rename(
       barcode = cellbarcode
-    ) |> 
+    ) |>
     dplyr::select(-orig.ident)
 }
 
@@ -173,14 +173,15 @@ fn_forplot <- function(.af, .coverage, .meta) {
         af = 0
       )
     ) |>
-    dplyr::mutate(af = ifelse(is.na(depth) | depth < log2(10 + 1), NA, af)) |>
+    dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
+    dplyr::mutate(af = ifelse(depth < log2(10), -0.1, af)) |>
     dplyr::arrange(pos) ->
   .forplot
-  
-  .coverage |> 
-    dplyr::group_by(barcode) |> 
+
+  .coverage |>
+    dplyr::group_by(barcode) |>
     dplyr::summarise(sum_depth = sum(depth, na.rm = TRUE)) ->
-    .coverage_cell
+  .coverage_cell
 
   list(
     rank = .rank,
@@ -194,7 +195,8 @@ fn_forplot <- function(.af, .coverage, .meta) {
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
-  
+  library(ComplexHeatmap)
+
   .forplot$forplot |>
     dplyr::select(barcode, variant, af) |>
     tidyr::pivot_wider(
@@ -245,8 +247,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     as.matrix() |>
     t() ->
   .depth_mtx
-  
-  
+
+
 
   .forplot$rank |>
     dplyr::select(barcode, cluster) |>
@@ -254,16 +256,16 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       match(colnames(.af_mtx), barcode)
     ) |>
     dplyr::left_join(
-      .forplot$meta |> 
+      .forplot$meta |>
         dplyr::select(barcode, `MT%` = percent.mt),
       by = "barcode"
-    ) |> 
+    ) |>
     dplyr::left_join(
-      .forplot$coverage_cell |> 
-        dplyr::mutate(sum_depth = log10(sum_depth + 1)) |> 
+      .forplot$coverage_cell |>
+        dplyr::mutate(sum_depth = log10(sum_depth + 1)) |>
         dplyr::rename(`log10(Total reads)` = sum_depth),
       by = "barcode"
-    ) |> 
+    ) |>
     tibble::column_to_rownames(var = "barcode") |>
     dplyr::rename(Cluster = cluster) ->
   .af_cluster
@@ -280,7 +282,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     col = list(
       Cluster = col_colors,
       `MT%` = circlize::colorRamp2(
-        breaks = c(2,  10),
+        breaks = c(2, 10),
         # colors = c("gold", "red", "black"),
         colors = c("white", "green"),
         # colors =  c("#440154FF", "#FDE725FF"),
@@ -308,12 +310,12 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
       col = circlize::colorRamp2(
-        breaks = c(0, 0.98, 1),
-        colors = c("white", "red", "#440154FF"),
+        breaks = c(-0.1, 0, 1),
+        colors = c("lightgrey", "gold", "blue"),
         space = "RGB"
       ),
       name = "Allele Freq",
-      na_col = "grey",
+      na_col = "white",
       color_space = "LAB",
       rect_gp = gpar(col = NA),
       border = NA,
@@ -338,18 +340,25 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       row_names_side = "left",
       top_annotation = chm_top,
       left_annotation = hma_left,
-      right_annotation = hma_right
+      right_annotation = hma_right,
+      heatmap_legend_param = list(
+        title = "Allele Freq",
+        at = c(0, 0.5, 1),
+        labels = c("0", "0.5", "1"),
+        legend_direction = "vertical",
+        title_gp = gpar(fontsize = 10)
+      )
     )
   } else {
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
       col = circlize::colorRamp2(
-        breaks = c(0, 0.98, 1),
-        colors = c("white", "red", "#440154FF"),
+        breaks = c(-0.1, 0, 1),
+        colors = c("lightgrey", "gold", "blue"),
         space = "RGB"
       ),
       name = "Allele Freq",
-      na_col = "grey",
+      na_col = "white",
       color_space = "LAB",
       rect_gp = gpar(col = NA),
       border = NA,
@@ -373,6 +382,13 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       show_column_names = FALSE,
       row_names_side = "left",
       top_annotation = chm_top,
+      heatmap_legend_param = list(
+        title = "Allele Freq",
+        at = c(0, 0.5, 1),
+        labels = c("0", "0.5", "1"),
+        legend_direction = "vertical",
+        title_gp = gpar(fontsize = 10)
+      )
     )
   }
 
@@ -386,7 +402,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       space = "RGB"
     ),
     name = "log2(Depth+1)",
-    na_col = "grey",
+    na_col = "white",
     color_space = "LAB",
     rect_gp = gpar(col = NA),
     border = NA,
