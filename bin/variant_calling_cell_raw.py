@@ -142,7 +142,13 @@ variant_vmr = variant_var / (variant_mean + 0.00000000001)
 # compute other summary stats
 variant_positon = [x[0] for x in variants]
 variant_nucleotide = ["{}>{}".format(x[1], x[2]) for x in variants]
+
+# C.J. This is important for downstream analysis
+# C.J. This the number of reads supporting the variant, it requires at least 2 reads on both strands
+# C.J. minimum total coverage >=10
 variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 2) & (rev_cell_variant_df >= 2)).sum()
+
+
 variant_n_cells_over_5 = (heteroplasmic_df >= 0.05).sum()
 variant_n_cells_over_10 = (heteroplasmic_df >= 0.1).sum()
 variant_n_cells_over_20 = (heteroplasmic_df >= 0.2).sum()
@@ -172,7 +178,7 @@ variant_output = pd.DataFrame(
 variant_output.columns = ["position", "nucleotide", "variant", "vmr", "mean", "variance", "n_cells_conf_detected", "n_cells_over_5", "n_cells_over_10", "n_cells_over_20", "n_cells_over_95", "max_heteroplasmy", "strand_correlation", "mean_coverage"]
 variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]] = variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]].astype(float)
 
-# keep raw without filtering by the cells
+# C.J. keep raw without filtering by the cells
 heteroplasmic_df.to_csv(MGATK_OUT_DIR + sample_prefix + ".cell_heteroplasmic_df_raw.tsv.gz", sep="\t", compression="gzip")
 
 
