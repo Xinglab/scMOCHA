@@ -102,7 +102,9 @@ for nt in base_coverage_dict:
     total_coverage += base_coverage_dict[nt][1]
 
 # exclude low coverage cells from variant calling
-cell_barcodes = total_coverage.index[total_coverage.mean(axis=1) > low_coverage_threshold]
+# C.J. This is important for downstream analysis, exclude cells with low coverage less than 4
+# cell_barcodes = total_coverage.index[total_coverage.mean(axis=1) >= 4]
+# cell_barcodes = total_coverage.index[total_coverage.mean(axis=1) >= low_coverage_threshold]
 for nt in base_coverage_dict:
     base_coverage_dict[nt] = (base_coverage_dict[nt][0].loc[cell_barcodes, :], base_coverage_dict[nt][1].loc[cell_barcodes, :])
 total_coverage = total_coverage.loc[cell_barcodes, :]
@@ -146,7 +148,8 @@ variant_nucleotide = ["{}>{}".format(x[1], x[2]) for x in variants]
 # C.J. This is important for downstream analysis
 # C.J. This the number of reads supporting the variant, it requires at least 2 reads on both strands
 # C.J. minimum total coverage >=10
-variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 2) & (rev_cell_variant_df >= 2)).sum()
+# variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 2) & (rev_cell_variant_df >= 2)).sum()
+variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 2) & (rev_cell_variant_df >= 2) & ((fwd_cell_variant_df + rev_cell_variant_df) >= low_coverage_threshold)).sum()
 
 
 variant_n_cells_over_5 = (heteroplasmic_df >= 0.05).sum()
