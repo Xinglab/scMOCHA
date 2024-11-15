@@ -20,7 +20,7 @@ library(logger)
 ht_opt$message <- FALSE
 
 # src ---------------------------------------------------------------------
-pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
+pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |> # nolint
   dplyr::arrange(cancer_types)
 
 
@@ -32,13 +32,13 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # %: hash
 # default: default value specified here.
 #
-# cell_meta_data_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-cell_cluster_annotation/execution/cell_meta_data.tsv"
-# barcode_cluster_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/722149735/barcode_cluster.tsv"
-# cell_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.coverage.txt.gz"
-# cluster_hetero_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/613722931/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/613722931/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <-"/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-plot_scMOCHA/inputs/2020544951/cell.cell_heteroplasmic_df_raw.tsv.gz"
+# cell_meta_data_file <- "/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell_meta_data.tsv"
+# barcode_cluster_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/barcode_cluster.tsv"
+# cell_hetero_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell.coverage.txt.gz"
+# cluster_hetero_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell.cell_heteroplasmic_df_raw.tsv.gz"
 # perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
 # jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
 # sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
@@ -100,8 +100,7 @@ fn_load_coverage <- function(.filename) {
     input = .filename,
     sep = ",",
     col.names = c("pos", "barcode", "depth")
-  ) |>
-    dplyr::mutate(depth = log2(depth + 1))
+  )
 }
 
 fn_load_cluster <- function(.filename) {
@@ -129,7 +128,7 @@ fn_load_meta <- function(.filename) {
 fn_af <- function(.cluster, .hetero) {
   .cluster |>
     dplyr::rename(cluster = celltype) |>
-    dplyr::left_join(
+    dplyr::inner_join(
       .hetero |> tidyr::pivot_wider(
         names_from  = variant,
         values_from = af
@@ -174,7 +173,8 @@ fn_forplot <- function(.af, .coverage, .meta) {
       )
     ) |>
     dplyr::mutate(af = ifelse(is.na(depth), NA, af)) |>
-    dplyr::mutate(af = ifelse(depth < log2(10), -0.1, af)) |>
+    # dplyr::mutate(af = ifelse(depth < log2(10), -0.1, af)) |>
+    dplyr::mutate(af = ifelse(depth < 10, -0.1, af)) |>
     dplyr::arrange(pos) ->
   .forplot
 
@@ -195,7 +195,8 @@ fn_forplot <- function(.af, .coverage, .meta) {
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
-  library(ComplexHeatmap)
+  # library(ComplexHeatmap)
+  suppressPackageStartupMessages(library(ComplexHeatmap))
 
   .forplot$forplot |>
     dplyr::select(barcode, variant, af) |>
@@ -237,6 +238,9 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
 
   .forplot$forplot |>
     dplyr::select(barcode, variant, depth) |>
+    dplyr::mutate(
+      depth = log2(depth + 1)
+    ) |>
     # dplyr::arrange(pos) |>
     tidyr::pivot_wider(
       names_from = variant,
@@ -437,14 +441,15 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
 
 # cell cluster ------------------------------------------------------------
 
+log_info("load cluster_umap")
 cluster_umap <- fn_load_cluster(
   .filename = barcode_cluster_file
 )
 
+log_info("load metadata")
 metadata <- fn_load_meta(
   .filename = cell_meta_data_file
 )
-log_info("load metadata")
 # Cell allele -------------------------------------------------------------
 
 cell_hetero <- fn_load_hetero(
@@ -470,7 +475,9 @@ log_info("fn_heatmap")
 # print(cell_cluster_forplot)
 
 ch_af_depth <- fn_heatmap(
-  .forplot = cell_cluster_forplot
+  .forplot = cell_cluster_forplot,
+  .cell_variants = NULL,
+  .variant_annotation = NULL
 )
 
 
@@ -535,6 +542,7 @@ cluster_cluster_forplot <- fn_forplot(
 cluster_ch_af_depth <- fn_heatmap(
   .forplot = cluster_cluster_forplot
 )
+
 
 {
   pdf(
@@ -618,111 +626,11 @@ readr::write_delim(
   x = cell_variants,
   file = "cell_snvlist.tsv",
   delim = " ",
-  col_names = F
+  col_names = FALSE
 )
-# readr::write_tsv(
-#   x = cell_variants,
-#   file = "cell_snvlist.tsv"
-# )
 
-# fn_http_request <- function() {
-#   cell_variant_response <- tryCatch(
-#     {
-#       POST(
-#         "https://mitomap.org/mitomaster/websrvc.cgi",
-#         body = list(
-#           file = upload_file("cell_snvlist.tsv"),
-#           fileType = "snvlist",
-#           output = "detail"
-#         ),
-#         encode = "multipart"
-#       )
-#     },
-#     error = function(err) {
-#       print(paste("HTTP error:", err$message))
-#       # "error"
-#     },
-#     warning = function(w) {
-#       print(paste("Warning:", w$message))
-#     },
-#     finally = {
-#       print("Done.")
-#     }
-#   )
-
-#   status <- tryCatch(
-#     expr = {
-#       httr::status_code(cell_variant_response)
-#     },
-#     error = function(err) {
-#       0
-#     }
-#   )
-
-
-
-#   variant_annotation <- if(status == 200) {
-#     cell_anno <- content(
-#       x = cell_variant_response,
-#       as = "text",
-#       encoding = "UTF-8"
-#     ) |>
-#       data.table::fread(
-#         sep = "\t"
-#       )
-
-#     readr::write_tsv(
-#       x = cell_anno,
-#       file = "cell_variant_annotation.tsv"
-#     )
-
-#     writexl::write_xlsx(
-#       x = cell_anno,
-#       path = "cell_variant_annotation.xlsx"
-#     )
-
-
-#     cell_anno |>
-#       dplyr::mutate(
-#         variant = glue::glue("{tpos}{tnt}>{qnt}")
-#       ) |>
-#       dplyr::select(
-#         variant, ntchange, calc_locus, patientphenotype,
-#         conservation, verbose_haplogroup
-#       ) |>
-#       dplyr::mutate(
-#         calc_locus = gsub(
-#           pattern = "<br>.*",
-#           replace = "",
-#           x = calc_locus
-#         )
-#       ) |>
-#       dplyr::mutate(
-#         conservation = gsub(
-#           pattern = "%",
-#           replacement = "",
-#           x = conservation
-#         )
-#       ) |>
-#       dplyr::mutate(
-#         patientphenotype = stringr::str_wrap(
-#           stringr::str_to_sentence(string = patientphenotype),
-#           width = 30
-#         )
-#       ) |>
-#       dplyr::mutate(conservation = as.numeric(conservation)) |>
-#       dplyr::select(
-#         Ntchange = ntchange,
-#         Locus = calc_locus,
-#         Conservation = conservation,
-#         Haplogroup = verbose_haplogroup,
-#         Phenotype = patientphenotype
-#       )
-#   } else {NULL}
-# }
 
 cmd <- "source {conda_root}/etc/profile.d/conda.sh; conda activate {conda_env}; perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
-# cmd <- "~/tools/anaconda3/envs/scmocha/bin/perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
 message(cmd)
 system(command = cmd)
 

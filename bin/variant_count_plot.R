@@ -103,8 +103,8 @@ fn_plot_count <- function(cluster_n_forplot, thepos, group_sel = NA) {
       dplyr::filter(group %in% group_sel) ->
     cluster_n_forplot
   }
-  if (length(unique(cluster_n_forplot$group)) > 20) {
-    stop("The number of unique groups exceeds 20.")
+  if (length(unique(cluster_n_forplot$group)) > 50) {
+    stop("The number of unique groups exceeds 50.")
   }
 
   cluster_n_forplot |>
@@ -144,7 +144,7 @@ fn_plot_count <- function(cluster_n_forplot, thepos, group_sel = NA) {
         color = "black"
       )
     ) +
-    facet_wrap(~group, ncol = 4, strip.position = "top") ->
+    facet_wrap(~group, ncol = 6, strip.position = "top") ->
   p_tile
   p_tile
 }
@@ -155,14 +155,14 @@ thepath <- "/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/
 # body --------------------------------------------------------------------
 cluster_n_forplot <- fn_load_count(thepath, type = "cell")
 #
-fn_plot_count(cluster_n_forplot, thepos = 1888, group_sel = head(mm$barcode, 12)) -> pp
+fn_plot_count(cluster_n_forplot, thepos = 8469, group_sel = head(mm$barcode, 24)) -> pp
 pp
 
 ggsave(
   filename = "varaints.pdf",
   plot = pp,
-  width = 13,
-  height = 8
+  width = 17,
+  height = 10
 )
 
 
