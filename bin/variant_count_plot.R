@@ -98,7 +98,7 @@ fn_load_count <- function(thepath, type = c("cluster", "cell")) {
 }
 
 fn_plot_count <- function(cluster_n_forplot, thepos, group_sel = NA) {
-  if (!is.na(group_sel)) {
+  if (!all(is.na(group_sel))) {
     cluster_n_forplot |>
       dplyr::filter(group %in% group_sel) ->
     cluster_n_forplot
@@ -112,7 +112,7 @@ fn_plot_count <- function(cluster_n_forplot, thepos, group_sel = NA) {
     dplyr::mutate(pos = as.character(pos)) |>
     ggplot(aes(x = posref, y = gt)) +
     geom_tile(aes(fill = nv)) +
-    geom_text(aes(label = label), size = 3.5) +
+    geom_text(aes(label = label)) +
     scale_fill_gradient(
       low = "white",
       high = "red"
@@ -144,18 +144,28 @@ fn_plot_count <- function(cluster_n_forplot, thepos, group_sel = NA) {
         color = "black"
       )
     ) +
-    facet_wrap(~group, ncol = 1, strip.position = "right") ->
+    facet_wrap(~group, ncol = 4, strip.position = "top") ->
   p_tile
   p_tile
 }
 
 # load data ---------------------------------------------------------------
-thepath <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE157344/cromwell-executions/scMOCHABatch/87f7e7e9-4e27-491a-9125-19a78cddaf64/call-scMOCHA/shard-15/sub.scMOCHA/4d228407-529c-4b74-bc9e-f189ce7b2274/call-gather_outputfiles/execution/GSM4762177"
+thepath <- "/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019"
 
 # body --------------------------------------------------------------------
-cluster_n_forplot <- fn_load_count(thepath, type = "cluster")
+cluster_n_forplot <- fn_load_count(thepath, type = "cell")
 #
-fn_plot_count(cluster_n_forplot, thepos = 217)
+fn_plot_count(cluster_n_forplot, thepos = 1888, group_sel = head(mm$barcode, 12)) -> pp
+pp
+
+ggsave(
+  filename = "varaints.pdf",
+  plot = pp,
+  width = 13,
+  height = 8
+)
+
+
 
 # footer ------------------------------------------------------------------
 
