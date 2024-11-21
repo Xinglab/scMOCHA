@@ -76,9 +76,9 @@
       "name": "a"
     }
   ],
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  },
+  // "[python]": {
+  //   "editor.defaultFormatter": "ms-python.black-formatter"
+  // },
   "python.formatting.provider": "none",
   "files.maxMemoryForLargeFilesMB": 4096
 }
