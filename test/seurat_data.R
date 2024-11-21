@@ -34,9 +34,9 @@ library(SeuratData)
 # body --------------------------------------------------------------------
 
 # SeuratData::InstalledData()
-SeuratData::AvailableData() |> 
-  dplyr::filter(!Installed) |> 
-  dplyr::pull(Dataset) |> 
+SeuratData::AvailableData() |>
+  dplyr::filter(!Installed) |>
+  dplyr::pull(Dataset) |>
   purrr::map(
     .f = SeuratData::InstallData
   )
