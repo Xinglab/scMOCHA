@@ -257,10 +257,10 @@ mt_features <- readr::read_rds(
 
 mt_features |>
   plyranges::filter(type == "Mt_tRNA") ->
-  mt_features_pc
+mt_features_pc
 mt_features |>
   plyranges::filter(type != "Mt_tRNA") ->
-  mt_features_npc
+mt_features_npc
 
 gmovizInitialise(
   mt_ideogram,
@@ -281,6 +281,3 @@ drawFeatureTrack(
   feature_label_cutoff = 80000,
   # track_height = 0.18
 )
-
-
-
