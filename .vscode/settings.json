@@ -28,57 +28,17 @@
     "0*-/": true
   },
   "files.watcherExclude": {
-    "data": true
+    "data": true,
+    ".Rproj.user": true
   },
-  "python.analysis.typeCheckingMode": "off",
-  "sqltools.connections": [
-    {
-      "mysqlOptions": {
-        "authProtocol": "default"
-      },
-      "previewLimit": 50,
-      "server": "locuscompare-us-west-2a.cvocub39nnri.us-west-2.rds.amazonaws.com",
-      "port": 3306,
-      "driver": "MySQL",
-      "name": "lo",
-      "database": "locuscompare",
-      "username": "locuscomparer",
-      "password": "12345678"
-    },
-    {
-      "previewLimit": 50,
-      "driver": "SQLite",
-      "name": "mitomaster",
-      "database": "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/sqlite.dump.db"
-    },
-    {
-      "previewLimit": 50,
-      "driver": "SQLite",
-      "database": "/mnt/isilon/xing_lab/liuc9/refdata/ensembl/Homo_sapiens.GRCh38.107.gtf.sqlite3",
-      "name": "Enseml107.gtf"
-    },
-    {
-      "previewLimit": 50,
-      "driver": "SQLite",
-      "name": "MITOMAP",
-      "database": "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.db"
-    },
-    {
-      "previewLimit": 50,
-      "driver": "DuckDB",
-      "database": "/mnt/isilon/xing_lab/liuc9/refdata/locuscompare/locuscompare.duckdb",
-      "name": "loduckdb"
-    },
-    {
-      "previewLimit": 50,
-      "driver": "DuckDB",
-      "database": "/scr1/users/liuc9/tmp/chinook.duckdb",
-      "name": "a"
-    }
-  ],
-  // "[python]": {
-  //   "editor.defaultFormatter": "ms-python.black-formatter"
-  // },
-  "python.formatting.provider": "none",
-  "files.maxMemoryForLargeFilesMB": 4096
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.Rproj.user": true
+  },
+  "python.analysis.typeCheckingMode": "off"
 }
