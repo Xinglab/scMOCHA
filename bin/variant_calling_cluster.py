@@ -4,46 +4,47 @@
 # Call mito variants
 ###################################################
 
-import sys
-import gzip
+import concurrent.futures
 import glob
+import gzip
+import sys
+
 import numpy as np
 import pandas as pd
-
-import matplotlib
 from matplotlib import pyplot as plt
+
+
+def process_base_file(base_file, mito_length):
+    cur_base_data = pd.read_csv(gzip.open(base_file), header=None)
+
+    # gather coverage for forward strand
+    fwd_base_df = cur_base_data[[0, 1, 2]].pivot_table(index=1, columns=0)
+    fwd_base_df.columns = [x[1] for x in fwd_base_df.columns.values]  # flatten weird multiindex after pivot
+    fwd_base_df.index.name = None
+    all_columns = list(range(1, mito_length + 1))
+    fwd_base_df = fwd_base_df.reindex(columns=all_columns, fill_value=0)
+    fwd_base_df = fwd_base_df.fillna(0).sort_index(axis=1)  # assume all nan are true zeroes
+
+    # gather coverage for reverse strand
+    rev_base_df = cur_base_data[[0, 1, 3]].pivot_table(index=1, columns=0)
+    rev_base_df.columns = [x[1] for x in rev_base_df.columns.values]
+    rev_base_df.index.name = None
+    rev_base_df = rev_base_df.reindex(columns=all_columns, fill_value=0)
+    rev_base_df = rev_base_df.fillna(0).sort_index(axis=1)
+
+    return fwd_base_df, rev_base_df
 
 
 def load_mgatk_output(output_dir, mito_length):
     # assuming mgatk output naming convention
     base_files = [glob.glob(output_dir + "*.{}.txt.gz".format(nt))[0] for nt in "ATCG"]
 
-    base_coverage_dict = dict()
-    for i, nt in enumerate("ATCG"):
-        cur_base_data = pd.read_csv(gzip.open(base_files[i]), header=None)
-
-        # gather coverage for forward strand
-        fwd_base_df = cur_base_data[[0, 1, 2]].pivot_table(index=1, columns=0)
-        fwd_base_df.columns = [x[1] for x in fwd_base_df.columns.values]  # flatten weird multiindex after pivot
-        fwd_base_df.index.name = None
-        # missing_pos = [x for x in range(1, mito_length + 1) if x not in fwd_base_df.columns]
-        # fwd_base_df[missing_pos] = 0  # fill in missing positions
-        all_columns = [x for x in range(1, mito_length + 1)]
-        fwd_base_df = fwd_base_df.reindex(columns=all_columns, fill_value=0)
-        fwd_base_df = fwd_base_df.fillna(0).sort_index(axis=1)  # assume all nan are true zeroes
-
-        # gather coverage for forward strand
-        rev_base_df = cur_base_data[[0, 1, 3]].pivot_table(index=1, columns=0)
-        rev_base_df.columns = [x[1] for x in rev_base_df.columns.values]
-        rev_base_df.index.name = None
-        # missing_pos = [x for x in range(1, mito_length + 1) if x not in rev_base_df.columns]
-        # rev_base_df[missing_pos] = 0
-        all_columns = [x for x in range(1, mito_length + 1)]
-        rev_base_df = rev_base_df.reindex(columns=all_columns, fill_value=0)
-        rev_base_df = rev_base_df.fillna(0).sort_index(axis=1)
-
-        # organize base data into a dict
-        base_coverage_dict[nt] = (fwd_base_df, rev_base_df)
+    base_coverage_dict = {}
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = {executor.submit(process_base_file, base_file, mito_length): nt for base_file, nt in zip(base_files, "ATCG")}
+        for future in concurrent.futures.as_completed(futures):
+            nt = futures[future]
+            base_coverage_dict[nt] = future.result()
 
     return base_coverage_dict
 
@@ -66,7 +67,7 @@ def gather_possible_variants(base_coverage_dict, reference_file):
     # make a reference set of tuples (pos, ref_base)
     ref_set = [x.strip().split() for x in open(reference_file, "r").readlines()]
     ref_N_positions = [int(x[0]) for x in ref_set if x[1].upper() not in letters]
-    ref_set = set([(int(x[0]), x[1].upper()) for x in ref_set if x[1].upper() in letters])
+    ref_set = {(int(x[0]), x[1].upper()) for x in ref_set if x[1].upper() in letters}
     ref_dict = dict(ref_set)
 
     # make an observed set of tuples which are nonzero
@@ -74,7 +75,7 @@ def gather_possible_variants(base_coverage_dict, reference_file):
     non_zero_bases = [letters[i] for i in non_zero_idx[0]]
     non_zero_pos = [int(i + 1) for i in non_zero_idx[1]]
     observed_set = list(zip(non_zero_pos, non_zero_bases))
-    observed_set = set([x for x in observed_set if x[0] not in ref_N_positions])  # disregard positions in ref with N
+    observed_set = {x for x in observed_set if x[0] not in ref_N_positions}  # disregard positions in ref with N
 
     # take difference between observed and reference
     variant_set = observed_set - ref_set
