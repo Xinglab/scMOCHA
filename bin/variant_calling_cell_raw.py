@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+# -*- conding:utf-8 -*-
+# @AUTHOR: Chun-Jie Liu
+# @CONTACT: chunjie.sam.liu.at.gmail.com
+# @DATE: 2024-11-26 17:32:27
+# @DESCRIPTION:
 
-###################################################
-# Call mito variants
-###################################################
 
 import concurrent.futures
 import glob
@@ -34,9 +36,9 @@ def process_base_file(base_file, mito_length):
     return fwd_base_df, rev_base_df
 
 
-def load_mgatk_output(output_dir, mito_length):
+def load_mgatk_output(output_dir, mito_length, sample_prefix):
     # assuming mgatk output naming convention
-    base_files = [glob.glob(output_dir + "*.{}.txt.gz".format(nt))[0] for nt in "ATCG"]
+    base_files = [glob.glob(f"{output_dir}/{sample_prefix}.{nt}.txt.gz")[0] for nt in "ATCG"]
 
     base_coverage_dict = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -92,7 +94,7 @@ mito_genome = sys.argv[5]  # chrM
 
 letters = list("ATCG")
 
-base_coverage_dict = load_mgatk_output(MGATK_OUT_DIR, mito_length)
+base_coverage_dict = load_mgatk_output(MGATK_OUT_DIR, mito_length, sample_prefix)
 cell_barcodes = base_coverage_dict["A"][0].index
 
 # total coverage per position per cell
