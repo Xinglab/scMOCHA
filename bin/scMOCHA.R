@@ -31,7 +31,7 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # @: array
 # %: hash
 # default: default value specified here.
-# 
+#
 # cell_meta_data_file <- "/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell_meta_data.tsv"
 # barcode_cluster_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/barcode_cluster.tsv"
 # cell_hetero_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell.cell_heteroplasmic_df.tsv.gz"
@@ -305,17 +305,17 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   ch_af <- if (!is.null(.variant_annotation)) {
     .df_left <- .variant_annotation |>
       dplyr::select(`Mitomap freq`, `Gnomad freq`, Haplogroup)
-    
-    .df_left |> 
-      dplyr::mutate(Haplogroup_col = ifelse(is.na(Haplogroup), "grey", "#3B4992FF")) |> 
-      dplyr::select(dplyr::contains("Haplogroup")) |> 
-      dplyr::filter(!is.na(Haplogroup)) |> 
+
+    .df_left |>
+      dplyr::mutate(Haplogroup_col = ifelse(is.na(Haplogroup), "grey", "#3B4992FF")) |>
+      dplyr::select(dplyr::contains("Haplogroup")) |>
+      dplyr::filter(!is.na(Haplogroup)) |>
       dplyr::distinct() ->
-      .Haplogroup
-    
+    .Haplogroup
+
     .Haplogroup_col <- .Haplogroup$Haplogroup_col
     names(.Haplogroup_col) <- .Haplogroup$Haplogroup
-    
+
     hma_left <- ComplexHeatmap::rowAnnotation(
       df = .df_left,
       col = list(
@@ -332,14 +332,14 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
         )
       )
     )
-    
+
     .df_right <- .variant_annotation |>
       dplyr::select(Conservation, Ntchange, Locus, Disease)
-    
+
     .Ntchange <- unique(.df_right$Ntchange)
     .Ntchange_col <- rev(viridis::viridis_pal()(length(.Ntchange)))
     names(.Ntchange_col) <- .Ntchange
-    
+
     hma_right <- ComplexHeatmap::rowAnnotation(
       df = .df_right,
       col = list(
@@ -351,7 +351,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
         )
       )
     )
-    
+
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
       col = circlize::colorRamp2(
@@ -747,8 +747,8 @@ cell_hetero_raw <- fn_load_hetero(
   .filename = cell_hetero_raw_file
 ) |>
   dplyr::filter(
-    # variant %in% cluster_hetero$variant
-    variant %in% c(cell_hetero$variant, cluster_hetero$variant)
+    variant %in% cluster_hetero$variant # only keep the variants in cluster_hetero
+    # variant %in% c(cell_hetero$variant, cluster_hetero$variant)
   )
 
 cell_raw_cluster_af <- cluster_umap |>
