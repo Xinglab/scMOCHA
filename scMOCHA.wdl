@@ -193,6 +193,8 @@ workflow scMOCHA {
       cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap,
       cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv,
       cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx,
+      cluster_cell_violin = plot_scMOCHA.cluster_cell_violin,
+      venn_cell_cluster = plot_scMOCHA.venn_cell_cluster,
       # call_mt_variants
       # cell level
       cell_A_txt_gz = call_mt_variants.cell_A_txt_gz,
@@ -727,6 +729,8 @@ task plot_scMOCHA {
     File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
     File cell_variant_annotation_tsv = "cell_variant_annotation.tsv"
     File cell_variant_annotation_xlsx = "cell_variant_annotation.xlsx"
+    File cluster_cell_violin = "cluster_cell_violin.pdf"
+    File venn_cell_cluster = "venn_cell_cluster.pdf"
   }
 
 }
@@ -744,6 +748,8 @@ task gather_outputfiles {
   File cluster_cell_depth_heatmap
   File cell_variant_annotation_tsv
   File cell_variant_annotation_xlsx
+  File cluster_cell_violin
+  File venn_cell_cluster
 
   # call_mt_variants
   # cell level
@@ -835,6 +841,8 @@ task gather_outputfiles {
     cp ${cluster_cell_depth_heatmap} ${output_dir}
     cp ${cell_variant_annotation_tsv} ${output_dir}
     cp ${cell_variant_annotation_xlsx} ${output_dir}
+    cp ${cluster_cell_violin} ${output_dir}
+    cp ${venn_cell_cluster} ${output_dir}
 
     # call_mt_variants
     # cell level
