@@ -29,6 +29,7 @@ dependencies:
   - r-brms
   - r-gggenes
   - r-ggh4x
+  - r-ggvenn
   - r-ggbeeswarm
   - bioconductor-gmoviz
   - bioconductor-limma
