@@ -31,7 +31,7 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # @: array
 # %: hash
 # default: default value specified here.
-#
+# 
 # cell_meta_data_file <- "/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell_meta_data.tsv"
 # barcode_cluster_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/barcode_cluster.tsv"
 # cell_hetero_file <-"/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019/cell.cell_heteroplasmic_df.tsv.gz"
@@ -42,6 +42,7 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
 # jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
 # sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
+
 
 
 conda_root <- "/home/liuc9/tools/anaconda3"
@@ -303,14 +304,55 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   )
 
   ch_af <- if (!is.null(.variant_annotation)) {
-    hma_right <- ComplexHeatmap::rowAnnotation(
-      df = .variant_annotation |>
-        dplyr::select(-Conservation)
-    )
+    .df_left <- .variant_annotation |>
+      dplyr::select(`Mitomap freq`, `Gnomad freq`, Haplogroup)
+    
+    .df_left |> 
+      dplyr::mutate(Haplogroup_col = ifelse(is.na(Haplogroup), "grey", "#3B4992FF")) |> 
+      dplyr::select(dplyr::contains("Haplogroup")) |> 
+      dplyr::filter(!is.na(Haplogroup)) |> 
+      dplyr::distinct() ->
+      .Haplogroup
+    
+    .Haplogroup_col <- .Haplogroup$Haplogroup_col
+    names(.Haplogroup_col) <- .Haplogroup$Haplogroup
+    
     hma_left <- ComplexHeatmap::rowAnnotation(
-      df = .variant_annotation |>
-        dplyr::select(Conservation)
+      df = .df_left,
+      col = list(
+        Haplogroup = .Haplogroup_col,
+        `Mitomap freq` = circlize::colorRamp2(
+          breaks = c(0, 1),
+          colors = c("white", "#F39B7FFF"),
+          space = "RGB"
+        ),
+        `Gnomad freq` = circlize::colorRamp2(
+          breaks = c(0, 1),
+          colors = c("white", "#008280FF"),
+          space = "RGB"
+        )
+      )
     )
+    
+    .df_right <- .variant_annotation |>
+      dplyr::select(Conservation, Ntchange, Locus, Disease)
+    
+    .Ntchange <- unique(.df_right$Ntchange)
+    .Ntchange_col <- rev(viridis::viridis_pal()(length(.Ntchange)))
+    names(.Ntchange_col) <- .Ntchange
+    
+    hma_right <- ComplexHeatmap::rowAnnotation(
+      df = .df_right,
+      col = list(
+        Ntchange = .Ntchange_col,
+        Conservation = circlize::colorRamp2(
+          breaks = c(0, 100),
+          colors = c("white", "#7E6148FF"),
+          space = "RGB"
+        )
+      )
+    )
+    
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
       col = circlize::colorRamp2(
@@ -439,6 +481,128 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   )
 }
 
+
+fn_plot_cell_violin <- function(.forplot, .cell_anno) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
+    dplyr::arrange(cancer_types)
+
+  .forplot$forplot |>
+    dplyr::filter(af > 0) |>
+    dplyr::filter(variant %in% .cell_anno$variant) |>
+    dplyr::left_join(
+      .forplot$rank |> dplyr::select(-s_af),
+      by = "barcode"
+    ) ->
+  .theforplot
+
+  .theforplot |>
+    dplyr::group_by(variant) |>
+    dplyr::summarise(maf = mean(af, na.rm = T)) |>
+    dplyr::arrange(-maf) ->
+  .sort_variant
+
+  .theforplot |>
+    dplyr::group_by(cluster, variant) |>
+    dplyr::summarise(mean_cluster_variant_af = mean(af, na.rm = T)) |>
+    dplyr::ungroup() ->
+  .cluster_variant_af
+
+  .cell_anno |>
+    dplyr::filter(variant %in% .sort_variant$variant) |>
+    dplyr::mutate(fill = ifelse(!is.na(Haplogroup), "#3B0049", "white")) |>
+    dplyr::mutate(color = ifelse(!is.na(Haplogroup), "white", "black")) |>
+    dplyr::mutate(
+      variant = factor(variant, .sort_variant$variant)
+    ) |>
+    dplyr::arrange(variant) ->
+  .haplo_variant
+
+  .theforplot |>
+    dplyr::left_join(
+      .cluster_variant_af,
+      by = c("cluster", "variant")
+    ) |>
+    dplyr::mutate(
+      variant = factor(variant, .sort_variant$variant |> unique())
+    ) |>
+    dplyr::arrange(variant) ->
+  .haplo_forplot
+
+
+  library(ggh4x)
+  library(ggbeeswarm)
+  .haplo_forplot |>
+    ggplot(aes(x = cluster, y = af)) +
+    geom_violin(
+      aes(fill = mean_cluster_variant_af),
+      alpha = 0.5,
+      size = 1,
+      color = NA
+    ) +
+    ggbeeswarm::geom_quasirandom(
+      # shape = 21,
+      aes(color = af),
+      size = 1,
+      dodge.width = .75,
+      alpha = .5,
+      show.legend = F,
+    ) +
+    ggh4x::facet_wrap2(
+      ~variant,
+      ncol = 10,
+      strip = ggh4x::strip_themed(
+        background_x = elem_list_rect(
+          fill = .haplo_variant$fill
+        ),
+        text_x = elem_list_text(
+          colour = .haplo_variant$color,
+          face = c("bold")
+        ),
+        by_layer_x = FALSE,
+      )
+    ) +
+    scale_fill_gradient2(
+      name = "AF",
+      low = "white",
+      mid = "red",
+      high = "#3B0049",
+      midpoint = 0.5
+    ) +
+    scale_color_gradient2(
+      name = "AF",
+      low = "white",
+      mid = "red",
+      high = "#3B0049",
+      midpoint = 0.5
+    ) +
+    theme(
+      panel.background = element_blank(),
+      panel.grid = element_blank(),
+      axis.title = element_blank(),
+      axis.text = element_text(
+        color = "black",
+      ),
+      legend.position = "none ",
+      plot.title = element_text(
+        size = 16,
+        hjust = 0.5
+      ),
+      axis.line = element_line(
+        color = "black"
+      ),
+      axis.text.x = element_text(
+        angle = 45,
+        hjust = 1,
+        # color = pcc$color
+      )
+    ) ->
+  p
+  p
+}
+
+
+
+
 # cell cluster ------------------------------------------------------------
 
 log_info("load cluster_umap")
@@ -562,6 +726,21 @@ cluster_ch_af_depth <- fn_heatmap(
   dev.off()
 }
 
+venn_cell_cluster <- ggvenn::ggvenn(
+  data = list(
+    Cell = unique(cell_hetero$variant),
+    Cluster = unique(cluster_hetero$variant)
+  ),
+  fill_color = ggsci::pal_aaas()(2)
+)
+
+ggsave(
+  filename = "venn_cell_cluster.pdf",
+  plot = venn_cell_cluster,
+  device = "pdf",
+  width = 7,
+  height = 5
+)
 
 
 # Cluster cell allele -----------------------------------------------------
@@ -569,7 +748,10 @@ cluster_ch_af_depth <- fn_heatmap(
 cell_hetero_raw <- fn_load_hetero(
   .filename = cell_hetero_raw_file
 ) |>
-  dplyr::filter(variant %in% cluster_hetero$variant)
+  dplyr::filter(
+    # variant %in% cluster_hetero$variant
+    variant %in% c(cell_hetero$variant, cluster_hetero$variant)
+  )
 
 cell_raw_cluster_af <- cluster_umap |>
   dplyr::left_join(cell_hetero_raw, by = "barcode") |>
@@ -631,18 +813,20 @@ readr::write_delim(
 
 
 cmd <- "source {conda_root}/etc/profile.d/conda.sh; conda activate {conda_env}; perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
-message(cmd)
+log_debug(cmd)
 system(command = cmd)
 
-variant_annotation <- if (file.exists("cell_variant_annotation.tsv")) {
-  cell_anno <- readr::read_tsv("cell_variant_annotation.tsv")
+if (file.exists("cell_variant_annotation.tsv")) {
+  cell_anno <- readr::read_tsv("cell_variant_annotation.tsv") |>
+    dplyr::mutate(variant = glue::glue("{Position}{Ref}>{Alt}"))
+
   writexl::write_xlsx(
     x = cell_anno,
     path = "cell_variant_annotation.xlsx"
   )
 
 
-  cell_anno |>
+  variant_annotation <- cell_anno |>
     dplyr::mutate(
       variant = glue::glue("{Position}{Ref}>{Alt}")
     ) |>
@@ -686,7 +870,7 @@ variant_annotation <- if (file.exists("cell_variant_annotation.tsv")) {
     ) |>
     dplyr::mutate(Conservation = as.numeric(Conservation)) |>
     dplyr::mutate(
-      mito_ref = mito_freq / 100,
+      mito_freq = mito_freq / 100,
       gnomad_freq = gnomad_freq / 100
     ) |>
     dplyr::select(
@@ -700,13 +884,14 @@ variant_annotation <- if (file.exists("cell_variant_annotation.tsv")) {
       `Gnomad freq` = gnomad_freq
     )
 } else {
-  NULL
+  variant_annotation <- NULL
 }
 
 
 cell_raw_ch_af_depth <- fn_heatmap(
   .forplot = cell_raw_cluster_forplot,
-  .cell_variants = cell_cluster_forplot$forplot$variant,
+  # .cell_variants = cell_cluster_forplot$forplot$variant,
+  .cell_variants = unique(cell_hetero$variant),
   .variant_annotation = variant_annotation
 )
 
@@ -728,6 +913,21 @@ cell_raw_ch_af_depth <- fn_heatmap(
   dev.off()
 }
 
+
+fn_plot_cell_violin(
+  .forplot = cell_raw_cluster_forplot,
+  .cell_anno = cell_anno
+) -> p_violin
+
+{
+  pdf(
+    file = "cluster_cell_violin.pdf",
+    width = 20,
+    height = 12
+  )
+  print(p_violin)
+  dev.off()
+}
 
 
 
