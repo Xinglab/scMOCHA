@@ -337,7 +337,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       dplyr::select(Conservation, Ntchange, Locus, Disease)
 
     .Ntchange <- unique(.df_right$Ntchange)
-    .Ntchange_col <- rev(viridis::viridis_pal()(length(.Ntchange)))
+    # .Ntchange_col <- rev(viridis::viridis_pal()(length(.Ntchange)))
+    .Ntchange_col <- c("#FDE725FF", "#440154FF")
     names(.Ntchange_col) <- .Ntchange
 
     hma_right <- ComplexHeatmap::rowAnnotation(
