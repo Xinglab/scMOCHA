@@ -192,7 +192,6 @@ fn_forplot <- function(.af, .coverage, .meta) {
   )
 }
 
-
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
@@ -481,7 +480,6 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   )
 }
 
-
 fn_plot_cell_violin <- function(.forplot, .cell_anno) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
@@ -545,11 +543,11 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
       size = 1,
       dodge.width = .75,
       alpha = .5,
-      show.legend = F,
+      show.legend = T,
     ) +
     ggh4x::facet_wrap2(
       ~variant,
-      ncol = 10,
+      ncol = 12,
       strip = ggh4x::strip_themed(
         background_x = elem_list_rect(
           fill = .haplo_variant$fill
@@ -898,7 +896,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
 {
   pdf(
     file = "cluster_cell_af_heatmap.pdf",
-    width = 20,
+    width = 25,
     height = 15
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_af)
@@ -913,6 +911,9 @@ cell_raw_ch_af_depth <- fn_heatmap(
   dev.off()
 }
 
+# violin plot -------------------------------------------------------------
+
+
 
 fn_plot_cell_violin(
   .forplot = cell_raw_cluster_forplot,
@@ -922,7 +923,7 @@ fn_plot_cell_violin(
 {
   pdf(
     file = "cluster_cell_violin.pdf",
-    width = 20,
+    width = 24,
     height = 12
   )
   print(p_violin)
