@@ -192,7 +192,7 @@ fn_forplot <- function(.af, .coverage, .meta) {
   )
 }
 
-fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL, col_option = "viridis") {
+fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL, col_option = "turbo") {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
   # library(ComplexHeatmap)
@@ -303,24 +303,31 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   )
 
 
-  col_start = 0
-  col_end = 1
-  n_break = 100
-  col_pick = viridis::viridis_pal(
-    alpha = 1,
-    begin = 0,
-    end = 1,
-    direction = 1,
-    option = col_option
-  )(
-    n_break
+  # col_start = 0
+  # col_end = 1
+  # n_break = 100
+  sort(unique(as.numeric(.af_mtx))) -> .seq_af
+  col_pick = c(
+    "grey",
+    viridis::viridis_pal(
+      alpha = 1,
+      begin = 0,
+      end = 1,
+      direction = 1,
+      option = col_option
+    )(
+      # n_break
+      length(.seq_af) - 1
+    )
   )
 
+
   col_fun = circlize::colorRamp2(
-    seq(col_start,
-      col_end,
-      length.out = n_break
-    ),
+    # seq(col_start,
+    #   col_end,
+    #   length.out = n_break
+    # ),
+    .seq_af,
     col_pick
   )
 
@@ -973,7 +980,7 @@ fn_for_select_af_color <- function() {
   dev.off()
 }
 
-# fn_for_select_af_color()
+fn_for_select_af_color()
 # violin plot -------------------------------------------------------------
 
 
