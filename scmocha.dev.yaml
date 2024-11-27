@@ -31,6 +31,7 @@ dependencies:
   - r-ggh4x
   - r-ggvenn
   - r-ggbeeswarm
+  - r-viridis
   - bioconductor-gmoviz
   - bioconductor-limma
   - samtools==1.17
