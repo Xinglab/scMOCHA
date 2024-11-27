@@ -40,3 +40,5 @@ lint(
   text = "mean(x, trim = 0.2, na.rm = TRUE)",
   linters = commas_linter()
 )
+
+paletteer::paletteer_c("viridis::viridis", n = 10)
