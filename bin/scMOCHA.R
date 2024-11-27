@@ -192,7 +192,7 @@ fn_forplot <- function(.af, .coverage, .meta) {
   )
 }
 
-fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL) {
+fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL, col_option = "viridis") {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
   # library(ComplexHeatmap)
@@ -302,6 +302,28 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     which = "column"
   )
 
+
+  col_start = 0
+  col_end = 1
+  n_break = 100
+  col_pick = viridis::viridis_pal(
+    alpha = 1,
+    begin = 0,
+    end = 1,
+    direction = 1,
+    option = col_option
+  )(
+    n_break
+  )
+
+  col_fun = circlize::colorRamp2(
+    seq(col_start,
+      col_end,
+      length.out = n_break
+    ),
+    col_pick
+  )
+
   ch_af <- if (!is.null(.variant_annotation)) {
     .df_left <- .variant_annotation |>
       dplyr::select(`Mitomap freq`, `Gnomad freq`, Haplogroup)
@@ -355,11 +377,12 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
 
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
-      col = circlize::colorRamp2(
-        breaks = c(-0.1, 0, 1),
-        colors = c("lightgrey", "gold", "blue"),
-        space = "RGB"
-      ),
+      # col = circlize::colorRamp2(
+      #   breaks = c(-0.1, 0, 1),
+      #   colors = c("lightgrey", "gold", "blue"),
+      #   space = "RGB"
+      # ),
+      col = col_fun,
       name = "Allele Freq",
       na_col = "white",
       color_space = "LAB",
@@ -378,6 +401,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
         col = .gcol$cell_variants
       ),
       # column
+      column_title = paste0("palette = '", col_option, "'"),
+      column_title_gp = gpar(fontsize = 40),
       cluster_columns = FALSE,
       cluster_column_slices = T,
       # clustering_distance_columns = "pearson",
@@ -396,13 +421,16 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       )
     )
   } else {
+    # col_fun = circlize::colorRamp2(c(0, 0.5, 1), hcl_palette = "turbo")
+
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
-      col = circlize::colorRamp2(
-        breaks = c(-0.1, 0, 1),
-        colors = c("lightgrey", "gold", "blue"),
-        space = "RGB"
-      ),
+      # col = circlize::colorRamp2(
+      #   breaks = c(-0.1, 0, 1),
+      #   colors = c("lightgrey", "gold", "blue"),
+      #   space = "RGB"
+      # ),
+      col = col_fun,
       name = "Allele Freq",
       na_col = "white",
       color_space = "LAB",
@@ -421,6 +449,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
         col = .gcol$cell_variants
       ),
       # column
+      column_title = paste0("palette = '", col_option, "'"),
+      column_title_gp = gpar(fontsize = 40),
       cluster_columns = FALSE,
       cluster_column_slices = T,
       # clustering_distance_columns = "pearson",
@@ -912,6 +942,38 @@ cell_raw_ch_af_depth <- fn_heatmap(
   dev.off()
 }
 
+
+fn_for_select_af_color <- function() {
+  pals <- c("magma", "inferno", "plasma", "viridis", "cividis", "rocket", "mako", "turbo")
+  library(grid)
+  parallel::mclapply(
+    X = pals,
+    FUN = function(pal) {
+      fn_heatmap(
+        .forplot = cell_raw_cluster_forplot,
+        .cell_variants = unique(cell_hetero$variant),
+        .variant_annotation = variant_annotation,
+        col_option = pal
+      ) ->
+      .p
+      .p$ch_af
+    },
+    mc.cores = length(pals)
+  ) ->
+  pl
+
+  pdf(
+    file = "af_color_options.pdf",
+    width = 25,
+    height = 15
+  )
+  for (p in pl) {
+    ComplexHeatmap::draw(object = p)
+  }
+  dev.off()
+}
+
+# fn_for_select_af_color()
 # violin plot -------------------------------------------------------------
 
 
