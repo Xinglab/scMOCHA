@@ -281,6 +281,7 @@ dependencies:
   - r-ggridges=0.5.4=r43hc72bb7e_2
   - r-ggsci=3.0.0=r43hc72bb7e_1
   - r-ggthemes=5.1.0=r43hc72bb7e_1
+  - r-ggvenn=0.1.10=r43hc72bb7e_2
   - r-gh=1.4.0=r43hc72bb7e_1
   - r-gitcreds=0.1.2=r43hc72bb7e_2
   - r-globaloptions=0.1.2=r43ha770c72_2
@@ -460,6 +461,7 @@ dependencies:
   - r-uwot=0.1.16=r43ha503ecb_0
   - r-vctrs=0.6.3=r43ha503ecb_0
   - r-vipor=0.4.7=r43hc72bb7e_1
+  - r-viridis=0.6.5=r43hc72bb7e_1
   - r-viridislite=0.4.2=r43hc72bb7e_1
   - r-vroom=1.6.3=r43ha503ecb_1
   - r-waldo=0.5.1=r43hc72bb7e_1
