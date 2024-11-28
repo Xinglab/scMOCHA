@@ -980,7 +980,7 @@ fn_for_select_af_color <- function() {
   dev.off()
 }
 
-fn_for_select_af_color()
+# fn_for_select_af_color()
 # violin plot -------------------------------------------------------------
 
 
