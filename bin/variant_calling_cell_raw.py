@@ -112,7 +112,8 @@ for nt in base_coverage_dict:
 total_coverage = total_coverage.loc[cell_barcodes, :]
 
 # call potential variants
-variants = gather_possible_variants(base_coverage_dict, MGATK_OUT_DIR + mito_genome + "_refAllele.txt")
+variants = gather_possible_variants(base_coverage_dict, f"{MGATK_OUT_DIR}/{mito_genome}_refAllele.txt")
+# variants = gather_possible_variants(base_coverage_dict, "/home/liuc9/github/scMOCHA/fasta/MT_refAllele.txt")
 variant_names = ["{}{}>{}".format(x[0], x[1], x[2]) for x in variants]
 
 # build two <cell by variant tables>, one for each strand
