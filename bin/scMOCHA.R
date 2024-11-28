@@ -408,7 +408,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
         col = .gcol$cell_variants
       ),
       # column
-      column_title = paste0("palette = '", col_option, "'"),
+      # column_title = paste0("palette = '", col_option, "'"),
       column_title_gp = gpar(fontsize = 40),
       cluster_columns = FALSE,
       cluster_column_slices = T,
@@ -456,7 +456,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
         col = .gcol$cell_variants
       ),
       # column
-      column_title = paste0("palette = '", col_option, "'"),
+      # column_title = paste0("palette = '", col_option, "'"),
       column_title_gp = gpar(fontsize = 40),
       cluster_columns = FALSE,
       cluster_column_slices = T,
