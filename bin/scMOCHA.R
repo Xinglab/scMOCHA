@@ -989,7 +989,7 @@ fn_for_select_af_color <- function() {
 
   pdf(
     file = "af_color_options.pdf",
-    width = 25,
+    width = 28,
     height = 15
   )
   for (p in pl) {
