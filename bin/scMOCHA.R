@@ -192,7 +192,7 @@ fn_forplot <- function(.af, .coverage, .meta) {
   )
 }
 
-fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL, col_option = "turbo") {
+fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL, col_option = "turbo", show_column_title = FALSE) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
   # library(ComplexHeatmap)
@@ -211,8 +211,6 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     as.matrix() |>
     t() ->
   .af_mtx
-
-
 
   tibble::tibble(
     variants = rownames(.af_mtx)
@@ -235,7 +233,6 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       )
   }
 
-
   .forplot$forplot |>
     dplyr::select(barcode, variant, depth) |>
     dplyr::mutate(
@@ -251,8 +248,6 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     as.matrix() |>
     t() ->
   .depth_mtx
-
-
 
   .forplot$rank |>
     dplyr::select(barcode, cluster) |>
@@ -303,10 +298,25 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   )
 
 
+
+
   # col_start = 0
   # col_end = 1
   # n_break = 100
   sort(unique(as.numeric(.af_mtx))) -> .seq_af
+  # .seq_af |> hist()
+  # .seq_af_sub <- c(
+  #   -0.1, 0, 0.05, 0.1, 0.15, 0.2,
+  #   .seq_af[(.seq_af > 0.2 & .seq_af < 0.8)],
+  #   0.8, 0.85, 0.9, 0.95, 1
+  # )
+  # .seq_af_sub |> hist()
+  if (show_column_title) {
+    .column_title <- paste0("palette = '", col_option, "'")
+  } else {
+    .column_title <- NULL
+  }
+
   col_pick = c(
     "grey",
     viridis::viridis_pal(
@@ -320,8 +330,9 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       length(.seq_af) - 1
     )
   )
-
-
+  # (a) change the “0” value from dark blue to dark green;
+  # col_pick |> color()
+  #  (b) reverse the color, use red as “0” and violet as “1”
   col_fun = circlize::colorRamp2(
     # seq(col_start,
     #   col_end,
@@ -382,6 +393,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       )
     )
 
+
     ComplexHeatmap::Heatmap(
       matrix = .af_mtx,
       # col = circlize::colorRamp2(
@@ -409,6 +421,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       ),
       # column
       # column_title = paste0("palette = '", col_option, "'"),
+      column_title = .column_title,
       column_title_gp = gpar(fontsize = 40),
       cluster_columns = FALSE,
       cluster_column_slices = T,
@@ -457,6 +470,7 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
       ),
       # column
       # column_title = paste0("palette = '", col_option, "'"),
+      column_title = .column_title,
       column_title_gp = gpar(fontsize = 40),
       cluster_columns = FALSE,
       cluster_column_slices = T,
@@ -924,6 +938,9 @@ if (file.exists("cell_variant_annotation.tsv")) {
 }
 
 
+
+# ! raw --------------------------------------------------------------------
+
 cell_raw_ch_af_depth <- fn_heatmap(
   .forplot = cell_raw_cluster_forplot,
   # .cell_variants = cell_cluster_forplot$forplot$variant,
@@ -960,7 +977,8 @@ fn_for_select_af_color <- function() {
         .forplot = cell_raw_cluster_forplot,
         .cell_variants = unique(cell_hetero$variant),
         .variant_annotation = variant_annotation,
-        col_option = pal
+        col_option = pal,
+        show_column_title = TRUE
       ) ->
       .p
       .p$ch_af
