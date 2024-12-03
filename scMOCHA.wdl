@@ -32,7 +32,6 @@ workflow scMOCHA {
   Float percent_mt_max = 75
   Float percent_ribo_max = 50
   Float percent_Lagest_Gene_max = 50
-  String x10_version = "v3"
 
 
   # Runtime attributes
@@ -40,7 +39,7 @@ workflow scMOCHA {
   Int boot_disk_size_gb = 12
   String disk_space = "50"
   Int cpu = 10
-  Boolean use_ssd = false
+
 
   # docker image
   String scmocha_version = "latest"
@@ -194,6 +193,9 @@ workflow scMOCHA {
       cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv,
       cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx,
       cluster_cell_violin = plot_scMOCHA.cluster_cell_violin,
+      cluster_cell_violin_tables_xlsx = plot_scMOCHA.cluster_cell_violin_tables_xlsx,
+      cluster_cell_violin_haplo_variant_csv = plot_scMOCHA.cluster_cell_violin_haplo_variant_csv,
+      cluster_cell_violin_haplo_forplot_csv = plot_scMOCHA.cluster_cell_violin_haplo_forplot_csv,
       venn_cell_cluster = plot_scMOCHA.venn_cell_cluster,
       # call_mt_variants
       # cell level
@@ -730,6 +732,9 @@ task plot_scMOCHA {
     File cell_variant_annotation_tsv = "cell_variant_annotation.tsv"
     File cell_variant_annotation_xlsx = "cell_variant_annotation.xlsx"
     File cluster_cell_violin = "cluster_cell_violin.pdf"
+    File cluster_cell_violin_tables_xlsx = "cluster_cell_violin_tables.xlsx"
+    File cluster_cell_violin_haplo_variant_csv = "cluster_cell_violin_haplo_variant.csv"
+    File cluster_cell_violin_haplo_forplot_csv = "cluster_cell_violin_haplo_forplot.csv"
     File venn_cell_cluster = "venn_cell_cluster.pdf"
   }
 
@@ -749,6 +754,9 @@ task gather_outputfiles {
   File cell_variant_annotation_tsv
   File cell_variant_annotation_xlsx
   File cluster_cell_violin
+  File cluster_cell_violin_tables_xlsx
+  File cluster_cell_violin_haplo_variant_csv
+  File cluster_cell_violin_haplo_forplot_csv
   File venn_cell_cluster
 
   # call_mt_variants
@@ -842,6 +850,9 @@ task gather_outputfiles {
     cp ${cell_variant_annotation_tsv} ${output_dir}
     cp ${cell_variant_annotation_xlsx} ${output_dir}
     cp ${cluster_cell_violin} ${output_dir}
+    cp ${cluster_cell_violin_tables_xlsx} ${output_dir}
+    cp ${cluster_cell_violin_haplo_variant_csv} ${output_dir}
+    cp ${cluster_cell_violin_haplo_forplot_csv} ${output_dir}
     cp ${venn_cell_cluster} ${output_dir}
 
     # call_mt_variants
