@@ -653,7 +653,13 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
       )
     ) ->
   p
-  p
+
+
+  list(
+    p = p,
+    haplo_variant = .haplo_variant,
+    haplo_forplot = .haplo_forplot
+  )
 }
 
 
@@ -1019,14 +1025,25 @@ fn_plot_cell_violin(
 ) -> p_violin
 
 {
-  pdf(
-    file = "cluster_cell_violin.pdf",
+  ggsave(
+    filename = "cluster_cell_violin.pdf",
+    plot = p_violin$p,
+    device = "pdf",
     width = 20,
     height = 12
   )
-  print(p_violin)
-  dev.off()
   log_success("save cluster cell violin plot")
+  writexl::write_xlsx(
+    x = list(
+      haplo_variant = p_violin$haplo_variant,
+      haplo_forplot = p_violin$haplo_forplot
+    ),
+    path = "cluster_cell_violin_tables.xlsx"
+  )
+  log_success("save cluster cell violin tables")
+  data.table::fwrite(p_violin$haplo_variant, "cluster_cell_violin_haplo_variant.csv")
+  data.table::fwrite(p_violin$haplo_forplot, "cluster_cell_violin_haplo_forplot.csv")
+  log_success("save cluster cell violin data to CSV files")
 }
 
 
