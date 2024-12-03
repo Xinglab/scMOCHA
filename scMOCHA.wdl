@@ -211,6 +211,7 @@ workflow scMOCHA {
       cell_signac_rds = call_mt_variants.cell_signac_rds,
       cell_variant_stats_tsv_gz = call_mt_variants.cell_variant_stats_tsv_gz,
       cell_vmr_strand_plot_png = call_mt_variants.cell_vmr_strand_plot_png,
+      MT_refAllele = call_mt_variants.MT_refAllele,
       # cluster level
       barcodeQuants_tsv = call_mt_variants.barcodeQuants_tsv,
       cluster_A_txt_gz = call_mt_variants.cluster_A_txt_gz,
@@ -327,6 +328,7 @@ workflow scMOCHA {
       File cell_signac_rds = call_mt_variants.cell_signac_rds
       File cell_variant_stats_tsv_gz = call_mt_variants.cell_variant_stats_tsv_gz
       File cell_vmr_strand_plot_png = call_mt_variants.cell_vmr_strand_plot_png
+      File MT_refAllele = call_mt_variants.MT_refAllele
 
       # cluster level
       File barcodeQuants_tsv = call_mt_variants.barcodeQuants_tsv
@@ -355,6 +357,11 @@ workflow scMOCHA {
       File cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap
       File cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv
       File cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx
+      File cluster_cell_violin = plot_scMOCHA.cluster_cell_violin
+      File cluster_cell_violin_tables_xlsx = plot_scMOCHA.cluster_cell_violin_tables_xlsx
+      File cluster_cell_violin_haplo_variant_csv = plot_scMOCHA.cluster_cell_violin_haplo_variant_csv
+      File cluster_cell_violin_haplo_forplot_csv = plot_scMOCHA.cluster_cell_violin_haplo_forplot_csv
+      File venn_cell_cluster = plot_scMOCHA.venn_cell_cluster
 
       # gather_outputfiles
       File output_dir_tar_gz = gather_outputfiles.output_dir_tar_gz
@@ -647,6 +654,7 @@ task call_mt_variants {
     File cell_signac_rds = "cell/final/cell.signac.rds"
     File cell_variant_stats_tsv_gz = "cell/final/cell.variant_stats.tsv.gz"
     File cell_vmr_strand_plot_png = "cell/final/cell.vmr_strand_plot.png"
+    File MT_refAllele = "cell/final/MT_refAllele.txt"
 
     # cluster level
     File barcodeQuants_tsv = "cluster/final/barcodeQuants.tsv"
@@ -773,6 +781,7 @@ task gather_outputfiles {
   File cell_signac_rds
   File cell_variant_stats_tsv_gz
   File cell_vmr_strand_plot_png
+  File MT_refAllele
   # cluster level
   File barcodeQuants_tsv
   File cluster_A_txt_gz
@@ -869,6 +878,7 @@ task gather_outputfiles {
     cp ${cell_signac_rds} ${output_dir}
     cp ${cell_variant_stats_tsv_gz} ${output_dir}
     cp ${cell_vmr_strand_plot_png} ${output_dir}
+    cp ${MT_refAllele} ${output_dir}
     # cluster level
     cp ${barcodeQuants_tsv} ${output_dir}
     cp ${cluster_A_txt_gz} ${output_dir}
