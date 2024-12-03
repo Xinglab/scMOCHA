@@ -551,6 +551,12 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
     dplyr::arrange(-maf) ->
   .sort_variant
 
+  # .theforplot |>
+  #   dplyr::select(variant, pos) |>
+  #   dplyr::distinct() |>
+  #   dplyr::arrange(pos) ->
+  # .sort_variant
+
   .theforplot |>
     dplyr::group_by(cluster, variant) |>
     dplyr::summarise(mean_cluster_variant_af = mean(af, na.rm = T)) |>
@@ -712,7 +718,8 @@ ch_af_depth <- fn_heatmap(
   )
   ComplexHeatmap::draw(object = ch_af_depth$ch_depth)
   dev.off()
-  log_success("save image")
+  # log_success("save image")
+  log_success("save cell allele heatmap")
 }
 
 
@@ -774,6 +781,7 @@ cluster_ch_af_depth <- fn_heatmap(
   )
   ComplexHeatmap::draw(object = cluster_ch_af_depth$ch_depth)
   dev.off()
+  log_success("save cluster allele heatmap")
 }
 
 venn_cell_cluster <- ggvenn::ggvenn(
@@ -791,6 +799,7 @@ ggsave(
   width = 7,
   height = 5
 )
+log_success("save venn diagram")
 
 
 # Cluster cell allele -----------------------------------------------------
@@ -964,6 +973,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)
   dev.off()
+  log_success("save cluster cell allele heatmap")
 }
 
 
@@ -1016,6 +1026,7 @@ fn_plot_cell_violin(
   )
   print(p_violin)
   dev.off()
+  log_success("save cluster cell violin plot")
 }
 
 
