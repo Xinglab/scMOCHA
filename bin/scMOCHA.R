@@ -607,7 +607,7 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
     ) +
     ggh4x::facet_wrap2(
       ~variant,
-      ncol = 10,
+      ncol = 12,
       strip = ggh4x::strip_themed(
         background_x = elem_list_rect(
           fill = .haplo_variant$fill
