@@ -184,20 +184,12 @@ workflow scMOCHA {
       output_dir = output_dir,
       # plot_scMOCHA
       scMOCHA_rda = plot_scMOCHA.scMOCHA_rda,
-      cell_af_heatmap = plot_scMOCHA.cell_af_heatmap,
-      cell_depth_heatmap = plot_scMOCHA.cell_depth_heatmap,
-      cluster_af_heatmap = plot_scMOCHA.cluster_af_heatmap,
-      cluster_depth_heatmap = plot_scMOCHA.cluster_depth_heatmap,
-      cluster_cell_af_heatmap = plot_scMOCHA.cluster_cell_af_heatmap,
-      cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap,
       cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv,
       cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx,
-      cluster_cell_violin_af = plot_scMOCHA.cluster_cell_violin_af,
-      cluster_cell_violin_depth = plot_scMOCHA.cluster_cell_violin_depth,
-      cluster_cell_violin_tables_xlsx = plot_scMOCHA.cluster_cell_violin_tables_xlsx,
-      cluster_cell_violin_haplo_variant_csv = plot_scMOCHA.cluster_cell_violin_haplo_variant_csv,
-      cluster_cell_violin_haplo_forplot_csv = plot_scMOCHA.cluster_cell_violin_haplo_forplot_csv,
       venn_cell_cluster = plot_scMOCHA.venn_cell_cluster,
+      somatic_variant = plot_scMOCHA.somatic_variant,
+      heatmap_plots = plot_scMOCHA.heatmap_plots,
+      violin_plots = plot_scMOCHA.violin_plots,
       # call_mt_variants
       # cell level
       cell_A_txt_gz = call_mt_variants.cell_A_txt_gz,
@@ -350,20 +342,12 @@ workflow scMOCHA {
 
       # plot scMOCHA
       File scMOCHA_rda = plot_scMOCHA.scMOCHA_rda
-      File cell_af_heatmap = plot_scMOCHA.cell_af_heatmap
-      File cell_depth_heatmap = plot_scMOCHA.cell_depth_heatmap
-      File cluster_af_heatmap = plot_scMOCHA.cluster_af_heatmap
-      File cluster_depth_heatmap = plot_scMOCHA.cluster_depth_heatmap
-      File cluster_cell_af_heatmap = plot_scMOCHA.cluster_cell_af_heatmap
-      File cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap
       File cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv
       File cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx
-      File cluster_cell_violin_af = plot_scMOCHA.cluster_cell_violin_af
-      File cluster_cell_violin_depth = plot_scMOCHA.cluster_cell_violin_depth
-      File cluster_cell_violin_tables_xlsx = plot_scMOCHA.cluster_cell_violin_tables_xlsx
-      File cluster_cell_violin_haplo_variant_csv = plot_scMOCHA.cluster_cell_violin_haplo_variant_csv
-      File cluster_cell_violin_haplo_forplot_csv = plot_scMOCHA.cluster_cell_violin_haplo_forplot_csv
       File venn_cell_cluster = plot_scMOCHA.venn_cell_cluster
+      File somatic_variant = plot_scMOCHA.somatic_variant
+      Array[File] heatmap_plots = plot_scMOCHA.heatmap_plots
+      Array[File] violin_plots = plot_scMOCHA.violin_plots
 
       # gather_outputfiles
       File output_dir_tar_gz = gather_outputfiles.output_dir_tar_gz
@@ -733,20 +717,12 @@ task plot_scMOCHA {
 
   output {
     File scMOCHA_rda = "scMOCHA.rda"
-    File cell_af_heatmap = "cell_af_heatmap.pdf"
-    File cell_depth_heatmap = "cell_depth_heatmap.pdf"
-    File cluster_af_heatmap = "cluster_af_heatmap.pdf"
-    File cluster_depth_heatmap = "cluster_depth_heatmap.pdf"
-    File cluster_cell_af_heatmap = "cluster_cell_af_heatmap.pdf"
-    File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
     File cell_variant_annotation_tsv = "cell_variant_annotation.tsv"
     File cell_variant_annotation_xlsx = "cell_variant_annotation.xlsx"
-    File cluster_cell_violin_af = "cluster_cell_violin_af.pdf"
-    File cluster_cell_violin_depth = "cluster_cell_violin_depth.pdf"
-    File cluster_cell_violin_tables_xlsx = "cluster_cell_violin_tables.xlsx"
-    File cluster_cell_violin_haplo_variant_csv = "cluster_cell_violin_haplo_variant.csv"
-    File cluster_cell_violin_haplo_forplot_csv = "cluster_cell_violin_haplo_forplot.csv"
     File venn_cell_cluster = "venn_cell_cluster.pdf"
+    File somatic_variant = "somatic_variant.rds"
+    Array[File] heatmap_plots = glob("heatmap*.pdf")
+    Array[File] violin_plots = glob("violin*.pdf")
   }
 
 }
@@ -756,20 +732,12 @@ task gather_outputfiles {
 
   # plot_scMOCHA
   File scMOCHA_rda
-  File cell_af_heatmap
-  File cell_depth_heatmap
-  File cluster_af_heatmap
-  File cluster_depth_heatmap
-  File cluster_cell_af_heatmap
-  File cluster_cell_depth_heatmap
   File cell_variant_annotation_tsv
   File cell_variant_annotation_xlsx
-  File cluster_cell_violin_af
-  File cluster_cell_violin_depth
-  File cluster_cell_violin_tables_xlsx
-  File cluster_cell_violin_haplo_variant_csv
-  File cluster_cell_violin_haplo_forplot_csv
   File venn_cell_cluster
+  File somatic_variant
+  Array[File] heatmap_plots
+  Array[File] violin_plots
 
   # call_mt_variants
   # cell level
@@ -854,20 +822,12 @@ task gather_outputfiles {
     mkdir -p ${output_dir}
     # plot_scMOCHA
     cp ${scMOCHA_rda} ${output_dir}
-    cp ${cell_af_heatmap} ${output_dir}
-    cp ${cell_depth_heatmap} ${output_dir}
-    cp ${cluster_af_heatmap} ${output_dir}
-    cp ${cluster_depth_heatmap} ${output_dir}
-    cp ${cluster_cell_af_heatmap} ${output_dir}
-    cp ${cluster_cell_depth_heatmap} ${output_dir}
     cp ${cell_variant_annotation_tsv} ${output_dir}
     cp ${cell_variant_annotation_xlsx} ${output_dir}
-    cp ${cluster_cell_violin_af} ${output_dir}
-    cp ${cluster_cell_violin_depth} ${output_dir}
-    cp ${cluster_cell_violin_tables_xlsx} ${output_dir}
-    cp ${cluster_cell_violin_haplo_variant_csv} ${output_dir}
-    cp ${cluster_cell_violin_haplo_forplot_csv} ${output_dir}
     cp ${venn_cell_cluster} ${output_dir}
+    cp ${somatic_variant} ${output_dir}
+    for file in ${sep=" " heatmap_plots};do cp $file ${output_dir}; done
+    for file in ${sep=" " violin_plots};do cp $file ${output_dir}; done
 
     # call_mt_variants
     # cell level
