@@ -542,6 +542,9 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
     dplyr::left_join(
       .forplot$rank |> dplyr::select(-s_af),
       by = "barcode"
+    ) |>
+    dplyr::mutate(
+      depth = log2(depth + 1)
     ) ->
   .theforplot
 
@@ -549,7 +552,10 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
 
   .theforplot |>
     dplyr::group_by(cluster, variant) |>
-    dplyr::summarise(mean_cluster_variant_af = mean(af, na.rm = T)) |>
+    dplyr::summarise(
+      mean_cluster_variant_af = mean(af, na.rm = T),
+      mean_cluster_variant_depth = mean(depth, na.rm = T)
+    ) |>
     dplyr::ungroup() ->
   .cluster_variant_af
 
@@ -595,7 +601,8 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
       aes(fill = mean_cluster_variant_af),
       alpha = 0.5,
       size = 1,
-      color = NA
+      color = NA,
+      show.legend = FALSE
     ) +
     ggbeeswarm::geom_quasirandom(
       # shape = 21,
@@ -603,7 +610,6 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
       size = 1,
       dodge.width = .75,
       alpha = .5,
-      show.legend = T,
     ) +
     ggh4x::facet_wrap2(
       ~variant,
@@ -624,14 +630,14 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
       low = "white",
       mid = "red",
       high = "#3B0049",
-      midpoint = 0.5
+      midpoint = 0.5,
     ) +
     scale_color_gradient2(
       name = "AF",
       low = "white",
       mid = "red",
       high = "#3B0049",
-      midpoint = 0.5
+      midpoint = 0.5,
     ) +
     theme(
       panel.background = element_blank(),
@@ -640,7 +646,7 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
       axis.text = element_text(
         color = "black",
       ),
-      legend.position = "none ",
+      # legend.position = "none ",
       plot.title = element_text(
         size = 16,
         hjust = 0.5
@@ -654,11 +660,79 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
         # color = pcc$color
       )
     ) ->
-  p
+  p_af
+
+  .haplo_forplot |>
+    ggplot(aes(x = cluster, y = depth)) +
+    geom_violin(
+      aes(fill = mean_cluster_variant_depth),
+      alpha = 0.5,
+      size = 1,
+      color = NA,
+      show.legend = FALSE
+    ) +
+    ggbeeswarm::geom_quasirandom(
+      # shape = 21,
+      aes(color = depth),
+      size = 1,
+      dodge.width = .75,
+      alpha = .5,
+    ) +
+    ggh4x::facet_wrap2(
+      ~variant,
+      ncol = 12,
+      strip = ggh4x::strip_themed(
+        background_x = elem_list_rect(
+          fill = .haplo_variant$fill
+        ),
+        text_x = elem_list_text(
+          colour = .haplo_variant$color,
+          face = c("bold")
+        ),
+        by_layer_x = FALSE,
+      )
+    ) +
+    scale_fill_gradient2(
+      name = "log2(Depth+1)",
+      low = "white",
+      mid = "red",
+      high = "#3B0049",
+      midpoint = 0.5,
+    ) +
+    scale_color_gradient2(
+      name = "log2(Depth+1)",
+      low = "white",
+      mid = "red",
+      high = "#3B0049",
+      midpoint = 0.5,
+    ) +
+    theme(
+      panel.background = element_blank(),
+      panel.grid = element_blank(),
+      axis.title = element_blank(),
+      axis.text = element_text(
+        color = "black",
+      ),
+      # legend.position = "none ",
+      plot.title = element_text(
+        size = 16,
+        hjust = 0.5
+      ),
+      axis.line = element_line(
+        color = "black"
+      ),
+      axis.text.x = element_text(
+        angle = 45,
+        hjust = 1,
+        # color = pcc$color
+      )
+    ) ->
+  p_depth
 
 
   list(
-    p = p,
+    p_af = p_af,
+    p_depth = p_depth,
     haplo_variant = .haplo_variant,
     haplo_forplot = .haplo_forplot
   )
@@ -1028,13 +1102,22 @@ fn_plot_cell_violin(
 
 {
   ggsave(
-    filename = "cluster_cell_violin.pdf",
-    plot = p_violin$p,
+    filename = "cluster_cell_violin_af.pdf",
+    plot = p_violin$p_af,
     device = "pdf",
-    width = 20,
+    width = 22,
     height = 12
   )
   log_success("save cluster cell violin plot")
+  ggsave(
+    filename = "cluster_cell_violin_depth.pdf",
+    plot = p_violin$p_depth,
+    device = "pdf",
+    width = 22,
+    height = 12
+  )
+  log_success("save cluster cell violin depth plot")
+
   writexl::write_xlsx(
     x = list(
       haplo_variant = p_violin$haplo_variant,
