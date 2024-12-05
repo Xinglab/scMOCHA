@@ -192,7 +192,8 @@ workflow scMOCHA {
       cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap,
       cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv,
       cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx,
-      cluster_cell_violin = plot_scMOCHA.cluster_cell_violin,
+      cluster_cell_violin_af = plot_scMOCHA.cluster_cell_violin_af,
+      cluster_cell_violin_depth = plot_scMOCHA.cluster_cell_violin_depth,
       cluster_cell_violin_tables_xlsx = plot_scMOCHA.cluster_cell_violin_tables_xlsx,
       cluster_cell_violin_haplo_variant_csv = plot_scMOCHA.cluster_cell_violin_haplo_variant_csv,
       cluster_cell_violin_haplo_forplot_csv = plot_scMOCHA.cluster_cell_violin_haplo_forplot_csv,
@@ -357,7 +358,8 @@ workflow scMOCHA {
       File cluster_cell_depth_heatmap = plot_scMOCHA.cluster_cell_depth_heatmap
       File cell_variant_annotation_tsv = plot_scMOCHA.cell_variant_annotation_tsv
       File cell_variant_annotation_xlsx = plot_scMOCHA.cell_variant_annotation_xlsx
-      File cluster_cell_violin = plot_scMOCHA.cluster_cell_violin
+      File cluster_cell_violin_af = plot_scMOCHA.cluster_cell_violin_af
+      File cluster_cell_violin_depth = plot_scMOCHA.cluster_cell_violin_depth
       File cluster_cell_violin_tables_xlsx = plot_scMOCHA.cluster_cell_violin_tables_xlsx
       File cluster_cell_violin_haplo_variant_csv = plot_scMOCHA.cluster_cell_violin_haplo_variant_csv
       File cluster_cell_violin_haplo_forplot_csv = plot_scMOCHA.cluster_cell_violin_haplo_forplot_csv
@@ -739,7 +741,8 @@ task plot_scMOCHA {
     File cluster_cell_depth_heatmap = "cluster_cell_depth_heatmap.pdf"
     File cell_variant_annotation_tsv = "cell_variant_annotation.tsv"
     File cell_variant_annotation_xlsx = "cell_variant_annotation.xlsx"
-    File cluster_cell_violin = "cluster_cell_violin.pdf"
+    File cluster_cell_violin_af = "cluster_cell_violin_af.pdf"
+    File cluster_cell_violin_depth = "cluster_cell_violin_depth.pdf"
     File cluster_cell_violin_tables_xlsx = "cluster_cell_violin_tables.xlsx"
     File cluster_cell_violin_haplo_variant_csv = "cluster_cell_violin_haplo_variant.csv"
     File cluster_cell_violin_haplo_forplot_csv = "cluster_cell_violin_haplo_forplot.csv"
@@ -761,7 +764,8 @@ task gather_outputfiles {
   File cluster_cell_depth_heatmap
   File cell_variant_annotation_tsv
   File cell_variant_annotation_xlsx
-  File cluster_cell_violin
+  File cluster_cell_violin_af
+  File cluster_cell_violin_depth
   File cluster_cell_violin_tables_xlsx
   File cluster_cell_violin_haplo_variant_csv
   File cluster_cell_violin_haplo_forplot_csv
@@ -858,7 +862,8 @@ task gather_outputfiles {
     cp ${cluster_cell_depth_heatmap} ${output_dir}
     cp ${cell_variant_annotation_tsv} ${output_dir}
     cp ${cell_variant_annotation_xlsx} ${output_dir}
-    cp ${cluster_cell_violin} ${output_dir}
+    cp ${cluster_cell_violin_af} ${output_dir}
+    cp ${cluster_cell_violin_depth} ${output_dir}
     cp ${cluster_cell_violin_tables_xlsx} ${output_dir}
     cp ${cluster_cell_violin_haplo_variant_csv} ${output_dir}
     cp ${cluster_cell_violin_haplo_forplot_csv} ${output_dir}
