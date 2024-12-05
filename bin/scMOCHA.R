@@ -1105,7 +1105,7 @@ fn_plot_cell_violin(
     filename = "cluster_cell_violin_af.pdf",
     plot = p_violin$p_af,
     device = "pdf",
-    width = 22,
+    width = 24,
     height = 12
   )
   log_success("save cluster cell violin plot")
@@ -1113,7 +1113,7 @@ fn_plot_cell_violin(
     filename = "cluster_cell_violin_depth.pdf",
     plot = p_violin$p_depth,
     device = "pdf",
-    width = 22,
+    width = 24,
     height = 12
   )
   log_success("save cluster cell violin depth plot")
