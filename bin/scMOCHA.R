@@ -545,23 +545,25 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
     ) ->
   .theforplot
 
-  .theforplot |>
-    dplyr::group_by(variant) |>
-    dplyr::summarise(maf = mean(af, na.rm = T)) |>
-    dplyr::arrange(-maf) ->
-  .sort_variant
 
-  # .theforplot |>
-  #   dplyr::select(variant, pos) |>
-  #   dplyr::distinct() |>
-  #   dplyr::arrange(pos) ->
-  # .sort_variant
 
   .theforplot |>
     dplyr::group_by(cluster, variant) |>
     dplyr::summarise(mean_cluster_variant_af = mean(af, na.rm = T)) |>
     dplyr::ungroup() ->
   .cluster_variant_af
+
+  # .theforplot |>
+  #   dplyr::group_by(variant) |>
+  #   dplyr::summarise(maf = mean(af, na.rm = T)) |>
+  #   dplyr::arrange(-maf) ->
+  # .sort_variant
+
+  .theforplot |>
+    dplyr::select(variant, pos) |>
+    dplyr::distinct() |>
+    dplyr::arrange(pos) ->
+  .sort_variant
 
   .cell_anno |>
     dplyr::filter(variant %in% .sort_variant$variant) |>
