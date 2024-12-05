@@ -743,15 +743,14 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
   )
 }
 
-fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10) {
-  # .haplo_variant <- srr_out_cell_stats$haplo_variant[[1]]
-  # .haplo_violin <- srr_out_cell_stats$haplo_violin[[1]]
+fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10, .high_af = 0.95) {
+  # .haplo_variant <- srr_out_cell_stats$haplo_variant[[27]]
+  # .haplo_violin <- srr_out_cell_stats$haplo_violin[[27]]
 
   # 1. filter by haplogrep marker variant
   .haplo_variant |>
     dplyr::filter(fill != "white") |>
-    dplyr::pull(variant) |>
-    as.character() ->
+    dplyr::pull(variant) ->
   .v_haplo
 
   # 2. filter by n_cells
@@ -759,8 +758,7 @@ fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10) {
   .haplo_violin |>
     dplyr::count(variant) |>
     dplyr::filter(n < .n_cells) |>
-    dplyr::pull(variant) |>
-    as.character() ->
+    dplyr::pull(variant) ->
   .v_n_cells
 
   # 3. tRNA p9 and RNA editing position
@@ -772,21 +770,31 @@ fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10) {
 
   .haplo_variant |>
     dplyr::filter(Position %in% .editing_pos) |>
-    dplyr::pull(variant) |>
-    as.character() ->
+    dplyr::pull(variant) ->
   .v_editing
 
+  # 4. high af in 95% of cells
+  .haplo_violin |>
+    dplyr::group_by(variant) |>
+    dplyr::summarise(
+      afm = mean(af, na.rm = T)
+    ) |>
+    dplyr::filter(afm > .high_af) |>
+    dplyr::pull(variant) ->
+  .v_high_af
+
+  # somatic variant
   .haplo_variant |>
     dplyr::filter(!variant %in% c(.v_haplo, .v_n_cells, .v_editing)) |>
-    dplyr::pull(variant) |>
-    as.character() ->
+    dplyr::pull(variant) ->
   .v_somatic
 
   list(
     haplo = .v_haplo,
     n_cells = .v_n_cells,
     editing = .v_editing,
-    somatic = .v_somatic
+    somatic = .v_somatic,
+    high_af = .v_high_af
   )
 }
 
