@@ -532,9 +532,14 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
   )
 }
 
-fn_plot_cell_violin <- function(.forplot, .cell_anno) {
+fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
+
+  if (!is.null(.sel_variants)) {
+    .cell_anno <- .cell_anno |>
+      dplyr::filter(variant %in% .sel_variants)
+  }
 
   .forplot$forplot |>
     dplyr::filter(af > 0) |>
@@ -738,6 +743,53 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno) {
   )
 }
 
+fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10) {
+  # .haplo_variant <- srr_out_cell_stats$haplo_variant[[1]]
+  # .haplo_violin <- srr_out_cell_stats$haplo_violin[[1]]
+
+  # 1. filter by haplogrep marker variant
+  .haplo_variant |>
+    dplyr::filter(fill != "white") |>
+    dplyr::pull(variant) |>
+    as.character() ->
+  .v_haplo
+
+  # 2. filter by n_cells
+  .n_cells <- 10
+  .haplo_violin |>
+    dplyr::count(variant) |>
+    dplyr::filter(n < .n_cells) |>
+    dplyr::pull(variant) |>
+    as.character() ->
+  .v_n_cells
+
+  # 3. tRNA p9 and RNA editing position
+  .editing_pos <- c(
+    585, 1610, 3238, 4271, 5520, 7526, 8303, # tRNA p9
+    9999, 10413, 12146, 12274, 14734, 15896, # tRNA p9
+    295, 2617, 13710 # RNA editing
+  )
+
+  .haplo_variant |>
+    dplyr::filter(Position %in% .editing_pos) |>
+    dplyr::pull(variant) |>
+    as.character() ->
+  .v_editing
+
+  .haplo_variant |>
+    dplyr::filter(!variant %in% c(.v_haplo, .v_n_cells, .v_editing)) |>
+    dplyr::pull(variant) |>
+    as.character() ->
+  .v_somatic
+
+  list(
+    haplo = .v_haplo,
+    n_cells = .v_n_cells,
+    editing = .v_editing,
+    somatic = .v_somatic
+  )
+}
+
 
 
 
@@ -786,7 +838,7 @@ ch_af_depth <- fn_heatmap(
 
 {
   pdf(
-    file = "cell_af_heatmap.pdf",
+    file = "heatmap_cell_af.pdf",
     width = 14,
     height = 15
   )
@@ -794,7 +846,7 @@ ch_af_depth <- fn_heatmap(
   dev.off()
 
   pdf(
-    file = "cell_depth_heatmap.pdf",
+    file = "heatmap_cell_depth.pdf",
     width = 14,
     height = 15
   )
@@ -849,7 +901,7 @@ cluster_ch_af_depth <- fn_heatmap(
 
 {
   pdf(
-    file = "cluster_af_heatmap.pdf",
+    file = "heatmap_cluster_af.pdf",
     width = 7,
     height = 15
   )
@@ -857,7 +909,7 @@ cluster_ch_af_depth <- fn_heatmap(
   dev.off()
 
   pdf(
-    file = "cluster_depth_heatmap.pdf",
+    file = "heatmap_cluster_depth.pdf",
     width = 7,
     height = 15
   )
@@ -1041,7 +1093,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
 
 {
   pdf(
-    file = "cluster_cell_af_heatmap.pdf",
+    file = "heatmap_final_af.pdf",
     width = 25,
     height = 15
   )
@@ -1049,7 +1101,7 @@ cell_raw_ch_af_depth <- fn_heatmap(
   dev.off()
 
   pdf(
-    file = "cluster_cell_depth_heatmap.pdf",
+    file = "heatmap_final_depth.pdf",
     width = 14,
     height = 15
   )
@@ -1102,7 +1154,7 @@ fn_plot_cell_violin(
 
 {
   ggsave(
-    filename = "cluster_cell_violin_af.pdf",
+    filename = "violin_final_af.pdf",
     plot = p_violin$p_af,
     device = "pdf",
     width = 24,
@@ -1110,7 +1162,7 @@ fn_plot_cell_violin(
   )
   log_success("save cluster cell violin plot")
   ggsave(
-    filename = "cluster_cell_violin_depth.pdf",
+    filename = "violin_final_depth.pdf",
     plot = p_violin$p_depth,
     device = "pdf",
     width = 24,
@@ -1123,14 +1175,64 @@ fn_plot_cell_violin(
       haplo_variant = p_violin$haplo_variant,
       haplo_forplot = p_violin$haplo_forplot
     ),
-    path = "cluster_cell_violin_tables.xlsx"
+    path = "violin_tables.xlsx"
   )
   log_success("save cluster cell violin tables")
-  data.table::fwrite(p_violin$haplo_variant, "cluster_cell_violin_haplo_variant.csv")
-  data.table::fwrite(p_violin$haplo_forplot, "cluster_cell_violin_haplo_forplot.csv")
+  data.table::fwrite(p_violin$haplo_variant, "violin_haplo_variant.csv")
+  data.table::fwrite(p_violin$haplo_forplot, "violin_haplo_forplot.csv")
   log_success("save cluster cell violin data to CSV files")
 }
 
+
+
+# ! somatic variant --------------------------------------------------------------------
+
+fn_somatic_variant(
+  .haplo_variant = p_violin$haplo_variant,
+  .haplo_violin = p_violin$haplo_forplot,
+  .n_cells = 10
+) -> somatic_variant
+
+readr::write_rds(
+  x = somatic_variant,
+  file = "somatic_variant.rds"
+)
+
+parallel::mclapply(
+  X = names(somatic_variant),
+  FUN = function(.x) {
+    .sel_variants <- somatic_variant[[.x]]
+    fn_plot_cell_violin(
+      .forplot = cell_raw_cluster_forplot,
+      .cell_anno = cell_anno,
+      .sel_variants = .sel_variants
+    ) -> .p_violin
+
+    base_width = 2
+    base_height = 4
+
+    width = base_width * ifelse(length(.sel_variants) > 12, 12, length(.sel_variants))
+    height = base_height * ceiling(length(.sel_variants) / 12)
+
+
+    ggsave(
+      filename = glue::glue("violin_final_af_{.x}.pdf"),
+      plot = .p_violin$p_af,
+      device = "pdf",
+      width = width,
+      height = height
+    )
+
+    ggsave(
+      filename = glue::glue("violin_final_depth_{.x}.pdf"),
+      plot = .p_violin$p_depth,
+      device = "pdf",
+      width = width,
+      height = height
+    )
+  },
+  mc.cores = length(somatic_variant)
+)
 
 
 # footer ------------------------------------------------------------------
