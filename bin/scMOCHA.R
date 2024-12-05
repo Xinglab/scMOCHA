@@ -785,7 +785,7 @@ fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10, .hi
 
   # somatic variant
   .haplo_variant |>
-    dplyr::filter(!variant %in% c(.v_haplo, .v_n_cells, .v_editing)) |>
+    dplyr::filter(!variant %in% c(.v_haplo, .v_n_cells, .v_editing, .v_high_af)) |>
     dplyr::pull(variant) ->
   .v_somatic
 
@@ -797,7 +797,6 @@ fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10, .hi
     high_af = .v_high_af
   )
 }
-
 
 
 
