@@ -27,7 +27,7 @@ library(logger)
 # refname <- args[4]
 # celllevel <- args[5]
 
-# h5file <- "/scr1/users/liuc9/mitochondrial/realdata/06-bigdata/GSE163668/cromwell-executions/scMOCHABatch/ebadef22-61c1-4d03-b27a-abe7d53f6aac/call-scMOCHA/shard-0/sub.scMOCHA/d756d06e-9a0b-4167-aa73-24de53dfc1cc/call-cell_cluster_annotation/inputs/-1616044811/filtered_feature_bc_matrix.h5"
+# h5file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155223/cromwell-executions/scMOCHABatch/011fb2a7-d2b7-46e1-9ee4-1817232b966a/call-scMOCHA/shard-12/sub.scMOCHA/a1d73c2a-6ccb-4fe4-9522-b0a8f614dc4c/call-cell_cluster_annotation/inputs/-1218344150/filtered_feature_bc_matrix.h5"
 # npcs <- 10
 # reso <- 0.1
 # refname <- "pbmcref"
@@ -36,6 +36,12 @@ library(logger)
 #   refname = "pbmcref",
 #   celllevel = "celltype.l1"
 # )
+# nFeature_RNA_min <- 500
+# nFeature_RNA_max <- 8000
+# percent_mt_max <- 75
+# percent_ribo_max <- 50
+# percent_Lagest_Gene_max <- 50
+# chemistry_name <- "SC5P-R2"
 
 # s: string, i: integer, f: float, !: boolean
 # @: array
@@ -49,36 +55,12 @@ refname_celllevel <- list(
   refname = NA_character_,
   celllevel = NA_character_
 )
-nFeature_RNA_min <- 400
-nFeature_RNA_max <- 7000
+nFeature_RNA_min <- 500
+nFeature_RNA_max <- 8000
 percent_mt_max <- 75
 percent_ribo_max <- 50
 percent_Lagest_Gene_max <- 50
 chemistry_name <- "SC3Pv3"
-# x10_version <- "v3"
-
-setup_10x_version <- tibble::tibble(
-  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
-  "v1" = c(200, 2500),
-  "v2" = c(200, 6000),
-  "v3" = c(400, 8000),
-  "v3.1" = c(500, 8000),
-  "v4" = c(500, 10000)
-)
-
-chemistry_config <- tibble::tibble(
-  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
-  "SC3Pv1" = c(200, 2500),
-  "SC3Pv2" = c(200, 6000),
-  "SC3Pv3" = c(400, 7000),
-  "SC3Pv3LT" = c(400, 7000),
-  "SC3Pv3HT" = c(400, 7000),
-  "SC3Pv4" = c(500, 10000),
-  "SC5P-PE" = c(400, 8000),
-  "SC5P-PE-v3" = c(400, 8000),
-  "SC5P-R2" = c(400, 8000),
-  "SC5P-R2-v3" = c(400, 8000)
-)
 
 
 spec <- "
@@ -103,6 +85,30 @@ GetoptLong(spec, template_control = list(opt_width = 50))
 
 log_threshold(TRACE)
 log_layout(layout_glue_colors)
+
+setup_10x_version <- tibble::tibble(
+  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
+  "v1" = c(200, 2500),
+  "v2" = c(200, 6000),
+  "v3" = c(400, 8000),
+  "v3.1" = c(500, 8000),
+  "v4" = c(500, 10000)
+)
+
+chemistry_config <- tibble::tibble(
+  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
+  "SC3Pv1" = c(200, 2500),
+  "SC3Pv2" = c(200, 6000),
+  "SC3Pv3" = c(400, 7000),
+  "SC3Pv3LT" = c(400, 7000),
+  "SC3Pv3HT" = c(400, 7000),
+  "SC3Pv4" = c(500, 10000),
+  "SC5P-PE" = c(400, 8000),
+  "SC5P-PE-v3" = c(400, 8000),
+  "SC5P-R2" = c(400, 8000),
+  "SC5P-R2-v3" = c(400, 8000)
+)
+
 
 # print(celllevel)
 refname <- refname_celllevel$refname
@@ -182,15 +188,14 @@ fn_metrics_mito <- function(.sc) {
     dplyr::arrange(percent.mt) ->
   .df
 
-  .df |>
-    ggplot() +
+  ggplot(data = .df) +
     geom_point(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) +
     scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
     ggtitle("Mito of plotting QC metrics") +
     geom_hline(yintercept = nFeature_RNA_min, color = "red") +
     geom_hline(yintercept = nFeature_RNA_max, color = "red") +
-    geom_text(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min, vjust = -1) +
-    geom_text(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max, vjust = -1) +
+    # geom_text(aes(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min), vjust = -1) +
+    # geom_text(aes(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max), vjust = -1) +
     scale_y_continuous(
       labels = scales::label_comma()
     ) +
@@ -254,7 +259,7 @@ fn_create_sc <- function(.x, .project = "singlecell") {
     }
   )
   # .counts <- Seurat::Read10X_h5(filename = .x)
-  # options("Seurat.object.assay.version" = "v3")
+  # options("Seurat.object.assay.version" = "v5")
   .sc <- Seurat::CreateSeuratObject(
     counts = .counts,
     project = .project,
@@ -319,7 +324,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
       percent.ribo < percent_ribo_max &
       Percent.Largest.Gene < percent_Lagest_Gene_max
   )
-
+  log_success("Load 10x data done!!!")
   list(
     sc = .sc,
     sc_filter = .sc_sub,
@@ -361,7 +366,7 @@ fn_azimuth <- function(.sc, .ref, .celllevel) {
     reference = .ref
   )
   log_success("Azimuth reference ", .ref, " and cell level ", .celllevel)
-  log_success("Azimuth done")
+  log_success("Azimuth done!!!")
 
   .celltype <- .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
 
@@ -459,16 +464,16 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
     .sca <-
       tryCatch(
         expr = {
-          log_warn("fn_cluster_anno:try:Azimuth")
+          log_success("fn_cluster_anno:try:Azimuth")
           fn_azimuth(.sc, .ref, .celllevel)
         },
         error = \(e) {
-          log_error("fn_cluster_anno:error:sctransform")
+          log_fatal("fn_cluster_anno:error:sctransform")
           fn_sctransform(.sc)
         }
       )
   } else {
-    log_warn("fn_cluster_anno:sctransform")
+    log_fatal("fn_cluster_anno:sctransform")
     .sca <- fn_sctransform(.sc)
   }
 
@@ -714,6 +719,7 @@ fn_check_cellref <- function(.refname) {
         SeuratData::InstallData(
           ds = .refname
         )
+        log_success("Azimuth reference ", .refname, " installed")
       },
       warning = \(w) {
         use_azimuth <<- FALSE
@@ -765,7 +771,6 @@ fn_check_cellref(refname)
 # Load 10x ----------------------------------------------------------------
 
 sc <- fn_load_sc_10x(h5file)
-log_success(h5file, " loaded!!!")
 
 # body --------------------------------------------------------------------
 
@@ -777,13 +782,13 @@ sc$cell_stats <- fn_stat_cell(
   .x = sc$sc,
   .y = sc$sc_filter
 )
-log_success("Stats done!!!")
+log_success("Cell stats done!!!")
 
 
 # Azimuth -----------------------------------------------------------------
 
 # message("Notice: fn_cluster_anno is running")
-log_info("Notice: fn_cluster_anno is running")
+log_info("start to run fn_cluster_anno")
 
 sc$sc_azimuth <- fn_cluster_anno(
   .sc = sc$sc_filter,
@@ -791,7 +796,7 @@ sc$sc_azimuth <- fn_cluster_anno(
   .ref = refname,
   .celllevel = celllevel
 )
-log_success("Notice: fn_cluster_anno is done")
+log_success("fn_cluster_anno done!!!")
 
 
 # Cell barcode ------------------------------------------------------------
@@ -811,7 +816,7 @@ sc$sc_azimuth@meta.data |>
   ) |>
   dplyr::select(1, 3, 4) ->
 sc$cellbarcode_cluster
-log_success("barcode")
+log_success("cluster barcode")
 # quit(save = "no")
 
 sc$cellbarcode_bulk <- sc$cellbarcode_cluster |>
