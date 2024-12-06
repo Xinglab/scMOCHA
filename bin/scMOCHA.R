@@ -796,7 +796,7 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
     ) +
     geom_hline(
       yintercept = log2(10),
-      linetype = "dashed",
+      linetype = 21,
       color = "black"
     ) +
     theme(
