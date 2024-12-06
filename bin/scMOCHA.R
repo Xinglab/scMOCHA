@@ -542,39 +542,70 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
   }
 
   .forplot$forplot |>
-    dplyr::filter(af > 0) |>
-    dplyr::filter(variant %in% .cell_anno$variant) |>
     dplyr::left_join(
       .forplot$rank |> dplyr::select(-s_af),
       by = "barcode"
     ) |>
+    dplyr::filter(variant %in% .cell_anno$variant) |>
     dplyr::mutate(
-      depth = log2(depth + 1)
-    ) ->
-  .theforplot
-
-
-
-  .theforplot |>
-    dplyr::group_by(cluster, variant) |>
-    dplyr::summarise(
-      mean_cluster_variant_af = mean(af, na.rm = T),
-      mean_cluster_variant_depth = mean(depth, na.rm = T)
+      af = ifelse(af == 0, NA_real_, af)
     ) |>
-    dplyr::ungroup() ->
-  .cluster_variant_af
+    dplyr::mutate(
+      af = ifelse(depth < 10, NA_real_, af)
+    ) |>
+    dplyr::mutate(
+      depth_log2 = log2(depth + 1)
+    ) ->
+  .forplot_cluster_cell_variant
 
-  # .theforplot |>
-  #   dplyr::group_by(variant) |>
-  #   dplyr::summarise(maf = mean(af, na.rm = T)) |>
-  #   dplyr::arrange(-maf) ->
-  # .sort_variant
+  .forplot_cluster_cell_variant |>
+    dplyr::filter(af > 0) ->
+  .theforplot
 
   .theforplot |>
     dplyr::select(variant, pos) |>
     dplyr::distinct() |>
     dplyr::arrange(pos) ->
   .sort_variant
+
+  .forplot_cluster_cell_variant |>
+    dplyr::group_by(cluster, variant) |>
+    dplyr::summarise(
+      mean_cluster_variant_af = mean(af, na.rm = T),
+      sum_cluster_variant_depth = sum(depth, na.rm = T),
+      max_cluster_variant_depth = max(depth, na.rm = T)
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      sum_cluster_variant_depth_log2 = log2(sum_cluster_variant_depth + 1)
+    ) |>
+    dplyr::filter(variant %in% .sort_variant$variant) ->
+  .cluster_variant_af
+
+  .c <- unique(.cluster_variant_af$cluster)
+  .v <- unique(.cluster_variant_af$variant)
+
+  tibble::tibble(
+    cluster = rep(.c, each = length(.v)),
+    variant = rep(.v, length(.c))
+  ) |>
+    dplyr::left_join(
+      .cluster_variant_af,
+      by = c("cluster", "variant")
+    ) |>
+    dplyr::mutate(
+      rect_type = ifelse(max_cluster_variant_depth >= 10, "white", "grey")
+    ) |>
+    dplyr::mutate(
+      variant = factor(variant, .sort_variant$variant)
+    ) ->
+  .no_depth
+
+  # .theforplot |>
+  #   dplyr::group_by(variant) |>
+  #   dplyr::summarise(maf = mean(af, na.rm = T)) |>
+  #   dplyr::arrange(-maf) ->
+  # .sort_variant
 
   .cell_anno |>
     dplyr::filter(variant %in% .sort_variant$variant) |>
@@ -587,7 +618,7 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
   .haplo_variant
 
   .theforplot |>
-    dplyr::left_join(
+    dplyr::inner_join(
       .cluster_variant_af,
       by = c("cluster", "variant")
     ) |>
@@ -600,22 +631,10 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
 
   library(ggh4x)
   library(ggbeeswarm)
+  library(ggnewscale)
+
   .haplo_forplot |>
-    ggplot(aes(x = cluster, y = af)) +
-    geom_violin(
-      aes(fill = mean_cluster_variant_af),
-      alpha = 0.5,
-      size = 1,
-      color = NA,
-      show.legend = FALSE
-    ) +
-    ggbeeswarm::geom_quasirandom(
-      # shape = 21,
-      aes(color = af),
-      size = 1,
-      dodge.width = .75,
-      alpha = .5,
-    ) +
+    ggplot(aes(x = cluster)) +
     ggh4x::facet_wrap2(
       ~variant,
       ncol = 12,
@@ -630,12 +649,45 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
         by_layer_x = FALSE,
       )
     ) +
+    geom_rect(
+      data = .no_depth,
+      aes(
+        xmin = as.numeric(cluster) - 0.5,
+        xmax = as.numeric(cluster) + 0.5,
+        ymin = -Inf,
+        ymax = Inf,
+        fill = rect_type
+      ),
+      alpha = 0.5,
+      color = NA
+    ) +
+    scale_fill_identity() +
+    new_scale_fill() +
+    geom_violin(
+      aes(
+        y = af,
+        fill = mean_cluster_variant_af
+      ),
+      alpha = 0.5,
+      size = 1,
+      color = NA,
+      show.legend = FALSE
+    ) +
     scale_fill_gradient2(
       name = "AF",
       low = "white",
       mid = "red",
       high = "#3B0049",
       midpoint = 0.5,
+    ) +
+    ggbeeswarm::geom_quasirandom(
+      aes(
+        y = af,
+        color = af
+      ),
+      size = 1,
+      dodge.width = .75,
+      alpha = .5,
     ) +
     scale_color_gradient2(
       name = "AF",
@@ -667,10 +719,19 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
     ) ->
   p_af
 
-  .haplo_forplot |>
-    ggplot(aes(x = cluster, y = depth)) +
+  .forplot_cluster_cell_variant |>
+    dplyr::filter(variant %in% .sort_variant$variant) |>
+    dplyr::left_join(
+      .cluster_variant_af,
+      by = c("cluster", "variant")
+    ) |>
+    dplyr::mutate(
+      variant = factor(variant, .sort_variant$variant)
+    ) |>
+    # .haplo_forplot |>
+    ggplot(aes(x = cluster, y = depth_log2)) +
     geom_violin(
-      aes(fill = mean_cluster_variant_depth),
+      aes(fill = sum_cluster_variant_depth_log2),
       alpha = 0.5,
       size = 1,
       color = NA,
@@ -1016,6 +1077,9 @@ cmd <- "source {conda_root}/etc/profile.d/conda.sh; conda activate {conda_env}; 
 log_debug(cmd)
 system(command = cmd)
 
+
+
+
 if (file.exists("cell_variant_annotation.tsv")) {
   cell_anno <- readr::read_tsv("cell_variant_annotation.tsv") |>
     dplyr::mutate(variant = glue::glue("{Position}{Ref}>{Alt}"))
@@ -1086,8 +1150,6 @@ if (file.exists("cell_variant_annotation.tsv")) {
 } else {
   variant_annotation <- NULL
 }
-
-
 
 # ! raw --------------------------------------------------------------------
 
