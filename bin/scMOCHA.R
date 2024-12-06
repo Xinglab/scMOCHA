@@ -658,8 +658,9 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
         ymax = Inf,
         fill = rect_type
       ),
-      alpha = 0.009,
-      color = NA
+      alpha = 0.2,
+      color = NA,
+      show.legend = FALSE
     ) +
     scale_fill_identity() +
     new_scale_fill() +
@@ -729,21 +730,7 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       variant = factor(variant, .sort_variant$variant)
     ) |>
     # .haplo_forplot |>
-    ggplot(aes(x = cluster, y = depth_log2)) +
-    geom_violin(
-      aes(fill = sum_cluster_variant_depth_log2),
-      alpha = 0.5,
-      size = 1,
-      color = NA,
-      show.legend = FALSE
-    ) +
-    ggbeeswarm::geom_quasirandom(
-      # shape = 21,
-      aes(color = depth),
-      size = 1,
-      dodge.width = .75,
-      alpha = .5,
-    ) +
+    ggplot(aes(x = cluster)) +
     ggh4x::facet_wrap2(
       ~variant,
       ncol = 12,
@@ -758,12 +745,47 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
         by_layer_x = FALSE,
       )
     ) +
+    geom_rect(
+      data = .no_depth,
+      aes(
+        xmin = as.numeric(cluster) - 0.5,
+        xmax = as.numeric(cluster) + 0.5,
+        ymin = -Inf,
+        ymax = Inf,
+        fill = rect_type
+      ),
+      alpha = 0.2,
+      color = NA,
+      show.legend = FALSE
+    ) +
+    scale_fill_identity() +
+    new_scale_fill() +
+    geom_violin(
+      aes(
+        y = depth_log2,
+        fill = sum_cluster_variant_depth_log2
+      ),
+      alpha = 0.5,
+      size = 1,
+      color = NA,
+      show.legend = FALSE
+    ) +
     scale_fill_gradient2(
       name = "log2(Depth+1)",
       low = "white",
       mid = "red",
       high = "#3B0049",
       midpoint = 0.5,
+    ) +
+    ggbeeswarm::geom_quasirandom(
+      # shape = 21,
+      aes(
+        y = depth_log2,
+        color = depth_log2
+      ),
+      size = 1,
+      dodge.width = .75,
+      alpha = .5,
     ) +
     scale_color_gradient2(
       name = "log2(Depth+1)",
