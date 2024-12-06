@@ -658,7 +658,7 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
         ymax = Inf,
         fill = rect_type
       ),
-      alpha = 0.5,
+      alpha = 0.009,
       color = NA
     ) +
     scale_fill_identity() +
