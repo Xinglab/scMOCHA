@@ -1169,10 +1169,11 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
   library(ggbeeswarm)
   library(ggnewscale)
 
+  .cl <- as.character(unique(.haplo_forplot$cluster)[[1]])
   .haplo_forplot |>
     dplyr::select(variant, pos, cluster, mean_cluster_variant_af) |>
     dplyr::distinct() |>
-    dplyr::filter(cluster == "B") ->
+    dplyr::filter(cluster == .cl) ->
   .forlabel
 
   ggplot() +
