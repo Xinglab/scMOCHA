@@ -886,7 +886,422 @@ fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10, .hi
   )
 }
 
+fn_plot_mtdna <- function() {
+  mt_exons_df <- "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
 
+
+  gtf_gene_df <-
+    readr::read_rds(
+      file = mt_exons_df
+    )
+  library(gggenes)
+  ggplot(gtf_gene_df, aes(xmin = start, xmax = end, y = seqnames)) +
+    # geom_gene_arrow() +
+    geom_gene_arrow(
+      aes(
+        fill = gene_biotype
+      ),
+      arrowhead_height = unit(3, "mm"), arrowhead_width = unit(1, "mm")
+    ) +
+    scale_fill_brewer(
+      palette = "Set1",
+      name = "Gene type",
+      labels = c("MT rRNA", "MT tRNA", "Protein coding")
+    ) +
+    ggrepel::geom_text_repel(
+      aes(x = (start + end) / 2, label = gene_name, color = gene_biotype),
+      # fill = "white",
+      # nudge_x =1,
+      # nudge_y = -0.1,
+      size = 3,
+      show.legend = F,
+      max.overlaps = Inf,
+    ) +
+    scale_color_brewer(palette = "Set1") +
+    scale_x_continuous(
+      limits = c(0, 17000),
+      breaks = seq(0, 17000, 1000),
+      expand = expansion(mult = c(0, 0.03)),
+    ) +
+    scale_y_discrete(
+      expand = expansion(mult = c(0, 0), add = c(0, 0))
+    ) +
+    # theme_genes() +
+    theme(
+      legend.position = "bottom",
+      axis.title = element_blank(),
+      axis.text.y = element_blank(),
+      # axis.text.x = element_text(size = 14),
+      # legend.text = element_text(size = 14),
+      panel.background = element_blank(),
+      panel.grid = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.x = element_line(color = "black"),
+      axis.text.x = element_text(
+        vjust = -1,
+      ),
+    ) ->
+  pg
+  pg
+}
+
+fn_plot_coverage <- function(.cluster_coverage) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
+    dplyr::arrange(cancer_types)
+
+  .cluster_coverage |>
+    ggplot(aes(x = pos, y = depth, fill = barcode)) +
+    geom_bar(stat = "identity", show.legend = FALSE) +
+    scale_x_continuous(
+      expand = expansion(mult = c(0.01, 0)),
+      limits = c(1, 17000),
+      breaks = seq(0, 17000, 1000),
+      labels = seq(0, 17000, 1000)
+    ) +
+    scale_y_continuous(
+      expand = c(0.01, 0),
+      # limits = c(0, 520000),
+      label = scales::label_number()
+    ) +
+    scale_fill_manual(
+      name = "Cell type",
+      values = pcc$color
+    ) +
+    ggh4x::facet_wrap2(
+      ~barcode,
+      ncol = 1,
+      strip.position = "right",
+      strip = ggh4x::strip_themed(
+        background_y = elem_list_rect(
+          fill = pcc$color
+        ),
+        text_y = elem_list_text(
+          colour = "white",
+          face = c("bold")
+        ),
+        by_layer_y = FALSE,
+      )
+    ) +
+    theme(
+      plot.margin = margin(t = 0, b = 0, unit = "cm"),
+      panel.background = element_blank(),
+      panel.grid = element_blank(),
+      axis.line.y.left = element_line(color = "black"),
+      # axis.line.x.bottom = element_line(color = "black"),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.line.x = element_blank(),
+      axis.title.x = element_blank(),
+      legend.position = c(0.8, 0.5),
+      legend.key = element_blank(),
+      axis.title.y = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      legend.text = element_text(
+        size = 14,
+        color = "black"
+      ),
+      legend.title = element_text(
+        size = 16,
+        colour = "black"
+      ),
+      strip.background = element_blank(),
+      strip.text = element_text(
+        size = 8,
+        color = "black",
+        face = "bold"
+      )
+    ) +
+    labs(y = "Depth") ->
+  p_mt_depth_celltype
+
+  .cluster_coverage |>
+    dplyr::group_by(pos) |>
+    dplyr::summarise(depth = sum(depth, na.rm = T)) |>
+    ggplot(aes(x = pos, y = depth)) +
+    geom_bar(stat = "identity", show.legend = FALSE) +
+    scale_x_continuous(
+      expand = expansion(mult = c(0.01, 0)),
+      limits = c(1, 17000),
+      breaks = seq(0, 17000, 1000),
+      labels = seq(0, 17000, 1000)
+    ) +
+    scale_y_continuous(
+      expand = c(0.01, 0),
+      # limits = c(0, 520000),
+      label = scales::label_number()
+    ) +
+    theme(
+      plot.margin = margin(t = 0, b = 0, unit = "cm"),
+      panel.background = element_blank(),
+      panel.grid = element_blank(),
+      axis.line.y.left = element_line(color = "black"),
+      # axis.line.x.bottom = element_line(color = "black"),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.line.x = element_blank(),
+      axis.title.x = element_blank(),
+      legend.position = c(0.8, 0.5),
+      legend.key = element_blank(),
+      axis.title.y = element_text(color = "black"),
+      axis.text.y = element_text(color = "black"),
+      legend.text = element_text(
+        size = 14,
+        color = "black"
+      ),
+      legend.title = element_text(
+        size = 16,
+        colour = "black"
+      ),
+      strip.background = element_blank(),
+      strip.text = element_text(
+        size = 8,
+        color = "black",
+        face = "bold"
+      )
+    ) +
+    labs(y = "Depth") ->
+  p_mt_depth_allcell
+
+  list(
+    p_mt_depth_celltype = p_mt_depth_celltype,
+    p_mt_depth_allcell = p_mt_depth_allcell
+  )
+}
+
+fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
+    dplyr::arrange(cancer_types)
+
+  if (!is.null(.sel_variants)) {
+    .cell_anno <- .cell_anno |>
+      dplyr::filter(variant %in% .sel_variants)
+  }
+
+  .forplot$forplot |>
+    dplyr::left_join(
+      .forplot$rank |> dplyr::select(-s_af),
+      by = "barcode"
+    ) |>
+    dplyr::filter(variant %in% .cell_anno$variant) |>
+    dplyr::mutate(
+      af = ifelse(af == 0, NA_real_, af)
+    ) |>
+    dplyr::mutate(
+      af = ifelse(depth < 10, NA_real_, af)
+    ) |>
+    dplyr::mutate(
+      depth_log2 = log2(depth + 1)
+    ) ->
+  .forplot_cluster_cell_variant
+
+  .forplot_cluster_cell_variant |>
+    dplyr::filter(af > 0) ->
+  .theforplot
+
+  .theforplot |>
+    dplyr::select(variant, pos) |>
+    dplyr::distinct() |>
+    dplyr::arrange(pos) ->
+  .sort_variant
+
+  .forplot_cluster_cell_variant |>
+    dplyr::group_by(cluster, variant) |>
+    dplyr::summarise(
+      mean_cluster_variant_af = mean(af, na.rm = T),
+      sum_cluster_variant_depth = sum(depth, na.rm = T),
+      max_cluster_variant_depth = max(depth, na.rm = T)
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      sum_cluster_variant_depth_log2 = log2(sum_cluster_variant_depth + 1)
+    ) |>
+    dplyr::filter(variant %in% .sort_variant$variant) ->
+  .cluster_variant_af
+
+  .c <- unique(.cluster_variant_af$cluster)
+  .v <- unique(.cluster_variant_af$variant)
+
+  tibble::tibble(
+    cluster = rep(.c, each = length(.v)),
+    variant = rep(.v, length(.c))
+  ) |>
+    dplyr::left_join(
+      .cluster_variant_af,
+      by = c("cluster", "variant")
+    ) |>
+    dplyr::mutate(
+      rect_type = ifelse(max_cluster_variant_depth >= 10, "white", "grey")
+    ) |>
+    dplyr::mutate(
+      variant = factor(variant, .sort_variant$variant)
+    ) ->
+  .no_depth
+
+  # .theforplot |>
+  #   dplyr::group_by(variant) |>
+  #   dplyr::summarise(maf = mean(af, na.rm = T)) |>
+  #   dplyr::arrange(-maf) ->
+  # .sort_variant
+
+  .cell_anno |>
+    dplyr::filter(variant %in% .sort_variant$variant) |>
+    dplyr::mutate(fill = ifelse(!is.na(Haplogroup), "#3B0049", "white")) |>
+    dplyr::mutate(color = ifelse(!is.na(Haplogroup), "white", "black")) |>
+    dplyr::mutate(
+      variant = factor(variant, .sort_variant$variant)
+    ) |>
+    dplyr::arrange(variant) ->
+  .haplo_variant
+
+  .theforplot |>
+    dplyr::inner_join(
+      .cluster_variant_af,
+      by = c("cluster", "variant")
+    ) |>
+    dplyr::mutate(
+      variant = factor(variant, .sort_variant$variant |> unique())
+    ) |>
+    dplyr::arrange(variant) ->
+  .haplo_forplot
+
+
+  library(ggh4x)
+  library(ggbeeswarm)
+  library(ggnewscale)
+
+  .haplo_forplot |>
+    dplyr::select(variant, pos, cluster, mean_cluster_variant_af) |>
+    dplyr::distinct() |>
+    dplyr::filter(cluster == "B") ->
+  .forlabel
+
+  ggplot() +
+    ggrepel::geom_text_repel(
+      data = .forlabel,
+      aes(
+        x = pos,
+        y = mean_cluster_variant_af,
+        label = variant,
+      ),
+      size = 3,
+      # direction = "y",
+      # nudge_x = -0.2,
+      direction = "y",
+      # hjust = "right",
+      segment.size = 0,
+    ) +
+    theme(
+      plot.margin = margin(t = 0, b = 0, unit = "cm"),
+      panel.background = element_blank(),
+      panel.grid = element_blank(),
+      # axis.line.y.left = element_line(color = "black"),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.line.x = element_blank(),
+      axis.title.x = element_blank(),
+      legend.position = "right",
+      legend.key = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(), ,
+      axis.line.y = element_blank(),
+    ) ->
+  p_label
+
+  .haplo_forplot |>
+    ggplot() +
+    ggh4x::facet_wrap2(
+      ~cluster,
+      ncol = 1,
+      strip.position = "right",
+      strip = ggh4x::strip_themed(
+        background_y = elem_list_rect(
+          fill = pcc$color
+        ),
+        text_y = elem_list_text(
+          colour = "white",
+          face = c("bold")
+        ),
+        by_layer_y = FALSE,
+      )
+    ) +
+    # geom_violin(
+    #   aes(
+    #     x = pos,
+    #     y = af,
+    #     fill = mean_cluster_variant_af
+    #   ),
+    #   alpha = 0.5,
+    #   size = 1,
+    #   color = NA,
+    #   show.legend = FALSE
+    # ) +
+    # scale_fill_gradient2(
+    #   name = "AF",
+    #   low = "white",
+    #   mid = "red",
+    #   high = "#3B0049",
+    #   midpoint = 0.5,
+    # ) +
+    ggbeeswarm::geom_quasirandom(
+      aes(
+        x = pos,
+        y = af,
+        color = af
+      ),
+      size = 1,
+      dodge.width = .75,
+      alpha = .5,
+    ) +
+    scale_color_gradient2(
+      name = "AF",
+      low = "white",
+      mid = "red",
+      high = "#3B0049",
+      midpoint = 0.5,
+    ) +
+    theme(
+      plot.margin = margin(t = 0, b = 0, unit = "cm"),
+      panel.background = element_blank(),
+      panel.grid = element_blank(),
+      axis.line.y.left = element_line(color = "black"),
+      # axis.line.x.bottom = element_line(color = "black"),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.line.x = element_blank(),
+      axis.title.x = element_blank(),
+      legend.position = "right",
+      legend.key = element_blank(),
+      axis.title.y = element_text(color = "black"),
+      # axis.title.y = element_blank(),
+      axis.text.y = element_text(color = "black"),
+      # legend.text = element_text(
+      #   size = 14,
+      #   color = "black"
+      # ),
+      # legend.title = element_text(
+      #   size = 16,
+      #   colour = "black"
+      # ),
+      # strip.background = element_blank(),
+      # strip.text = element_text(
+      #   # size = 8,
+      #   color = "black",
+      #   face = "bold"
+      # )
+    ) +
+    labs(y = "AF") ->
+  p_af_cell
+
+  wrap_plots(
+    p_label,
+    p_af_cell,
+    ncol = 1,
+    heights = c(1, 8)
+  )
+
+  # p_af_cell
+}
 
 # cell cluster ------------------------------------------------------------
 
@@ -1331,6 +1746,33 @@ parallel::mclapply(
 )
 
 
+
+# ! hotspot --------------------------------------------------------------------
+
+p_mtdna <- fn_plot_mtdna()
+p_depth <- fn_plot_coverage(.cluster_coverage = cluster_coverage)
+
+p_hotspots <- fn_plot_hotspots(
+  .forplot = cell_raw_cluster_forplot,
+  .cell_anno = cell_anno,
+  .sel_variants = .sel_variants
+)
+
+
+
+ggsave(
+  filename = glue::glue("hotspots_final_af_somatic.pdf"),
+  plot = wrap_plots(
+    p_hotspots,
+    p_depth$p_mt_depth_allcell,
+    p_mtdna,
+    ncol = 1,
+    heights = c(1.3, 0.4, 0.1)
+  ),
+  device = "pdf",
+  width = 18,
+  height = 9
+)
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
