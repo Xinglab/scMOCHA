@@ -1755,7 +1755,7 @@ p_depth <- fn_plot_coverage(.cluster_coverage = cluster_coverage)
 p_hotspots <- fn_plot_hotspots(
   .forplot = cell_raw_cluster_forplot,
   .cell_anno = cell_anno,
-  .sel_variants = .sel_variants
+  .sel_variants = somatic_variant$somatic
 )
 
 
