@@ -1516,20 +1516,20 @@ readr::write_delim(
 )
 
 
-cmd <- "source {conda_root}/etc/profile.d/conda.sh; conda activate {conda_env}; perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > cell_variant_annotation.tsv" |> glue::glue()
+cmd <- "source {conda_root}/etc/profile.d/conda.sh; conda activate {conda_env}; perl {perlscript} {file.path(jar_path, 'haplogrep3.jar')} {sqlite_path} cell_snvlist.tsv > variant_annotation.tsv" |> glue::glue()
 log_debug(cmd)
 system(command = cmd)
 
 
 
 
-if (file.exists("cell_variant_annotation.tsv")) {
-  cell_anno <- readr::read_tsv("cell_variant_annotation.tsv") |>
+if (file.exists("variant_annotation.tsv")) {
+  cell_anno <- readr::read_tsv("variant_annotation.tsv") |>
     dplyr::mutate(variant = glue::glue("{Position}{Ref}>{Alt}"))
 
   writexl::write_xlsx(
     x = cell_anno,
-    path = "cell_variant_annotation.xlsx"
+    path = "variant_annotation.xlsx"
   )
 
 
@@ -1707,8 +1707,18 @@ fn_somatic_variant(
 
 readr::write_rds(
   x = somatic_variant,
-  file = "somatic_variant.rds"
+  file = "variant_somatic.rds"
 )
+log_success("save somatic variant_somatic.rds")
+data.table::fwrite(
+  somatic_variant |>
+    tibble::enframe() |>
+    tidyr::unnest(cols = value) |>
+    dplyr::mutate(name = as.character(name)) |>
+    dplyr::rename(group = name, value = name),
+  "variant_somatic.csv"
+)
+log_success("save somatic variant_somatic.csv")
 
 parallel::mclapply(
   X = names(somatic_variant),
