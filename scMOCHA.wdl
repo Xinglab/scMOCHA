@@ -130,12 +130,8 @@ workflow scMOCHA {
       sorted_bam = cellranger_count.sorted_bam,
       sorted_bam_index = cellranger_count.sorted_bam_index,
       barcodes_tsv = cell_cluster_annotation.barcode_cell,
-      mt_bam = cellranger_count.mt_bam,
-      mt_bam_index = cellranger_count.mt_bam_index,
       mt_cluster_bam = cell_cluster_annotation.mt_cluster_bam,
       mt_cluster_bam_index = cell_cluster_annotation.mt_cluster_bam_index,
-      mt_bulk_bam = cell_cluster_annotation.mt_bulk_bam,
-      mt_bulk_bam_index = cell_cluster_annotation.mt_bulk_bam_index,
       chrM = chrM,
       rCRS = rCRS,
       low_coverage_threshold = low_coverage_threshold,
@@ -495,12 +491,9 @@ task call_mt_variants {
   File sorted_bam_index
   File barcodes_tsv
 
-  File mt_bam
-  File mt_bam_index
+
   File mt_cluster_bam
   File mt_cluster_bam_index
-  File mt_bulk_bam
-  File mt_bulk_bam_index
 
   String chrM
   File rCRS
@@ -568,10 +561,18 @@ task call_mt_variants {
 
   }
   output {
+    # cell
     Array[File] cell_level_files = glob("cell/final/*")
     # cluster level
     Array[File] cluster_level_files = glob("cluster/final/*")
     Array[File] ready_bams = glob("cluster/temp/ready_bam/*")
+
+    # input
+    File cell_cell_heteroplasmic_df_tsv_gz = "cell/final/cell_heteroplasmic_df.tsv.gz"
+    File cell_cell_heteroplasmic_df_raw_tsv_gz = "cell/final/cell_heteroplasmic_df_raw.tsv.gz"
+    File cell_coverage_txt_gz = "cell/final/cell_coverage.txt.gz"
+    File cluster_cell_heteroplasmic_df_tsv_gz = "cluster/final/cluster_heteroplasmic_df.tsv.gz"
+    File cluster_coverage_txt_gz = "cluster/final/cluster_coverage.txt.gz"
   }
 
 
