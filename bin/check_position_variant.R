@@ -319,7 +319,7 @@ fn_plot_count_multi <- function(cluster_n_forplot, thepos, group_sel = NA) {
     purrr::map(~ fn_plot_count(cluster_n_forplot, thepos = ., group_sel = NA)) |>
     wrap_plots(ncol = 1) +
     guide_area() +
-    plot_layout(guides = "collect") &
+    plot_layout() &
     theme(
       legend.justification = "left",
       legend.position = "none"
@@ -355,11 +355,27 @@ fn_plot_vaf_featureplot_multi(
 ) -> p_vaf_feature
 p_vaf_feature
 
+ggsave(
+  filename = "selected_variants_vaf_featureplot.pdf",
+  path = "/home/liuc9/github/scMOCHA-data/data/GSE226602/out/plot",
+  plot = p_vaf_feature,
+  width = 15,
+  height = 8,
+)
+
 fn_plot_count_multi(
   cluster_n_forplot,
   thepos = theposes
 ) -> p_count
 p_count
+
+ggsave(
+  filename = "selected_variants_count.pdf",
+  path = "/home/liuc9/github/scMOCHA-data/data/GSE226602/out/plot",
+  plot = p_count,
+  width = 20,
+  height = 30,
+)
 
 # body --------------------------------------------------------------------
 
