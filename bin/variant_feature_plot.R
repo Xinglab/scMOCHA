@@ -105,7 +105,9 @@ fn_load_coverage <- function(.filename) {
     dplyr::mutate(depth = log2(depth + 1))
 }
 
-fn_plot_vaf_featureplot <- function(.thevariant, sc) {
+fn_plot_vaf_featureplot <- function(.thevariant, sc, .cell_annotation = NULL) {
+  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
+    dplyr::arrange(cancer_types)
   sc$cell_hetero_coverage |>
     dplyr::filter(variant == .thevariant) ->
   vhc
@@ -115,23 +117,43 @@ fn_plot_vaf_featureplot <- function(.thevariant, sc) {
     dplyr::left_join(vhc, by = "barcode") ->
   vhc_umap
 
-  vhc_umap |>
-    ggplot(aes(x = UMAP_1, y = UMAP_2)) +
-    geom_point(aes(color = af)) +
-    scale_color_gradient2(
-      low = "grey",
-      mid = "gold",
-      high = "#F02415"
-    ) +
-    theme_bw() +
-    labs(
-      title = .thevariant
-    ) +
-    theme(
-      plot.title = element_text(
-        color = "black", face = "bold", hjust = 0.5
-      )
-    )
+  if (is.null(.cell_annotation)) {
+    vhc_umap |>
+      ggplot(aes(x = UMAP_1, y = UMAP_2)) +
+      geom_point(aes(color = af)) +
+      scale_color_gradient2(
+        name = "AF",
+        low = "grey",
+        mid = "gold",
+        high = "#F02415"
+      ) +
+      theme_bw() +
+      labs(
+        title = .thevariant
+      ) +
+      theme(
+        plot.title = element_text(
+          color = "black", face = "bold", hjust = 0.5
+        )
+      ) ->
+    p_feature
+    return(p_feature)
+  } else {
+    vhc_umap |>
+      ggplot(aes(x = UMAP_1, y = UMAP_2)) +
+      geom_point(aes(color = celltype)) +
+      scale_color_manual(
+        name = "Cell Type",
+        values = pcc$color
+      ) +
+      theme_bw() +
+      labs() +
+      theme(
+        plot.title = element_blank()
+      ) ->
+    p_annotation
+    return(p_annotation)
+  }
 }
 
 
@@ -157,10 +179,19 @@ fn_plot_vaf_featureplot_multi <- function(.thevariants, sc) {
     .thevariants,
     fn_plot_vaf_featureplot,
     sc = sc
-  ) |>
+  ) ->
+  variant_plots
+
+  fn_plot_vaf_featureplot(.thevariants[[1]], sc, .cell_annotation = TRUE) -> p_annotation
+
+  c(variant_plots, list(p_annotation)) |>
     wrap_plots() +
     guide_area() +
-    plot_layout(guides = "collect")
+    plot_layout(guides = "collect") &
+    theme(
+      legend.justification = "left",
+      legend.position = "right"
+    )
 }
 
 
@@ -168,11 +199,13 @@ fn_plot_vaf_featureplot_multi <- function(.thevariants, sc) {
 
 
 # body --------------------------------------------------------------------
-# thepath <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth2/cromwell-executions/scMOCHA/139358d8-df39-4274-b931-9c42b8d9c3bb/call-gather_outputfiles/execution/WT"
-# sc <- fn_load_by_path(thepath)
+thepath <- "/home/liuc9/github/scMOCHA/06-bigdata/GSE226602/cromwell-executions/scMOCHABatch/192a6bdb-b835-4f39-a21d-9423f9c8165d/call-scMOCHA/shard-13/sub.scMOCHA/c3913f7f-efd1-4d72-9615-2463d684f359/call-gather_outputfiles/execution/GSM7080019"
+sc <- fn_load_by_path(thepath)
+variant_list_file <- file.path(thepath, "cell_variant_annotation.tsv")
 # variant_list <- data.table::fread(variant_list_file)
 
-# fn_plot_vaf_featureplot_multi(variant_list$Variant, sc) -> p;p
+fn_plot_vaf_featureplot_multi(c("3173G>A", "3176A>T", "3178T>A"), sc) -> p
+p
 #
 
 # footer ------------------------------------------------------------------
