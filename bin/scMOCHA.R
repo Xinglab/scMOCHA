@@ -1546,8 +1546,14 @@ system(command = cmd)
 
 
 
-if (file.exists("variant_annotation.tsv")) {
-  cell_anno <- readr::read_tsv("variant_annotation.tsv") |>
+if (file.exists("variant_annotation.tsv") | file.exists("cell_variant_annotation.tsv")) {
+  cell_anno <- data.table::fread(
+    ifelse(
+      file.exists(file.path("variant_annotation.tsv")),
+      file.path("variant_annotation.tsv"),
+      file.path("cell_variant_annotation.tsv")
+    )
+  ) |>
     dplyr::mutate(variant = glue::glue("{Position}{Ref}>{Alt}"))
 
   writexl::write_xlsx(
@@ -1733,12 +1739,13 @@ readr::write_rds(
   file = "variant_somatic.rds"
 )
 log_success("save somatic variant_somatic.rds")
+
 data.table::fwrite(
   somatic_variant |>
     tibble::enframe() |>
     tidyr::unnest(cols = value) |>
-    dplyr::mutate(name = as.character(name)) |>
-    dplyr::rename(group = name, value = name),
+    dplyr::mutate(value = as.character(value)) |>
+    dplyr::rename(group = name, variant = value),
   "variant_somatic.csv"
 )
 log_success("save somatic variant_somatic.csv")
