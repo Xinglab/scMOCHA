@@ -639,10 +639,10 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       ~variant,
       ncol = 12,
       strip = ggh4x::strip_themed(
-        background_x = elem_list_rect(
+        background_x = ggh4x::elem_list_rect(
           fill = .haplo_variant$fill
         ),
-        text_x = elem_list_text(
+        text_x = ggh4x::elem_list_text(
           colour = .haplo_variant$color,
           face = c("bold")
         ),
@@ -735,10 +735,10 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       ~variant,
       ncol = 12,
       strip = ggh4x::strip_themed(
-        background_x = elem_list_rect(
+        background_x = ggh4x::elem_list_rect(
           fill = .haplo_variant$fill
         ),
-        text_x = elem_list_text(
+        text_x = ggh4x::elem_list_text(
           colour = .haplo_variant$color,
           face = c("bold")
         ),
@@ -972,10 +972,10 @@ fn_plot_coverage <- function(.cluster_coverage) {
       ncol = 1,
       strip.position = "right",
       strip = ggh4x::strip_themed(
-        background_y = elem_list_rect(
+        background_y = ggh4x::elem_list_rect(
           fill = pcc$color
         ),
-        text_y = elem_list_text(
+        text_y = ggh4x::elem_list_text(
           colour = "white",
           face = c("bold")
         ),
