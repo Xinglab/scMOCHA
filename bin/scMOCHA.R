@@ -1801,11 +1801,12 @@ tryCatch(
         p_depth$p_mt_depth_allcell,
         p_mtdna,
         ncol = 1,
-        heights = c(1.3, 0.4, 0.1)
+        heights = c(1.6, 0.4, 0.1),
+        axes = "collect_x"
       ),
       device = "pdf",
-      width = 18,
-      height = 9
+      width = 24,
+      height = 12
     )
   },
   error = function(e) {
