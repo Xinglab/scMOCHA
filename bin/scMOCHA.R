@@ -921,6 +921,7 @@ fn_plot_mtdna <- function() {
     scale_x_continuous(
       limits = c(0, 17000),
       breaks = seq(0, 17000, 1000),
+      labels = seq(0, 17000, 1000),
       expand = expansion(mult = c(0, 0.03)),
     ) +
     scale_y_discrete(
@@ -1191,6 +1192,12 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       # hjust = "right",
       segment.size = 0,
     ) +
+    scale_x_continuous(
+      limits = c(0, 17000),
+      breaks = seq(0, 17000, 1000),
+      labels = seq(0, 17000, 1000),
+      expand = expansion(mult = c(0, 0.03)),
+    ) +
     theme(
       plot.margin = margin(t = 0, b = 0, unit = "cm"),
       panel.background = element_blank(),
@@ -1253,6 +1260,7 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       size = 1,
       dodge.width = .75,
       alpha = .5,
+      varwidth = TRUE
     ) +
     scale_color_gradient2(
       name = "AF",
@@ -1260,6 +1268,16 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       mid = "red",
       high = "#3B0049",
       midpoint = 0.5,
+    ) +
+    scale_x_continuous(
+      limits = c(0, 17000),
+      breaks = seq(0, 17000, 1000),
+      labels = seq(0, 17000, 1000),
+      expand = expansion(mult = c(0, 0.03)),
+    ) +
+    scale_y_continuous(
+      expand = c(0.01, 0),
+      limits = c(0, 1),
     ) +
     theme(
       plot.margin = margin(t = 0, b = 0, unit = "cm"),
