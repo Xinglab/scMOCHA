@@ -922,7 +922,7 @@ fn_plot_mtdna <- function() {
       limits = c(0, 17000),
       breaks = seq(0, 17000, 1000),
       labels = seq(0, 17000, 1000),
-      expand = expansion(mult = c(0, 0.03)),
+      expand = expansion(mult = c(0, 0.01)),
     ) +
     scale_y_discrete(
       expand = expansion(mult = c(0, 0), add = c(0, 0))
@@ -941,7 +941,8 @@ fn_plot_mtdna <- function() {
       axis.text.x = element_text(
         vjust = -1,
       ),
-    ) ->
+    ) +
+    coord_cartesian(xlim = c(0, 17000)) ->
   pg
   pg
 }
@@ -954,10 +955,10 @@ fn_plot_coverage <- function(.cluster_coverage) {
     ggplot(aes(x = pos, y = depth, fill = barcode)) +
     geom_bar(stat = "identity", show.legend = FALSE) +
     scale_x_continuous(
-      expand = expansion(mult = c(0.01, 0)),
-      limits = c(1, 17000),
+      limits = c(0, 17000),
       breaks = seq(0, 17000, 1000),
-      labels = seq(0, 17000, 1000)
+      labels = seq(0, 17000, 1000),
+      expand = expansion(mult = c(0, 0.01)),
     ) +
     scale_y_continuous(
       expand = c(0.01, 0),
@@ -1012,6 +1013,7 @@ fn_plot_coverage <- function(.cluster_coverage) {
         face = "bold"
       )
     ) +
+    coord_cartesian(xlim = c(0, 17000)) +
     labs(y = "Depth") ->
   p_mt_depth_celltype
 
@@ -1021,10 +1023,10 @@ fn_plot_coverage <- function(.cluster_coverage) {
     ggplot(aes(x = pos, y = depth)) +
     geom_bar(stat = "identity", show.legend = FALSE) +
     scale_x_continuous(
-      expand = expansion(mult = c(0.01, 0)),
-      limits = c(1, 17000),
+      limits = c(0, 17000),
       breaks = seq(0, 17000, 1000),
-      labels = seq(0, 17000, 1000)
+      labels = seq(0, 17000, 1000),
+      expand = expansion(mult = c(0, 0.01)),
     ) +
     scale_y_continuous(
       expand = c(0.01, 0),
@@ -1060,6 +1062,7 @@ fn_plot_coverage <- function(.cluster_coverage) {
         face = "bold"
       )
     ) +
+    coord_cartesian(xlim = c(0, 17000)) +
     labs(y = "Depth") ->
   p_mt_depth_allcell
 
@@ -1196,7 +1199,7 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       limits = c(0, 17000),
       breaks = seq(0, 17000, 1000),
       labels = seq(0, 17000, 1000),
-      expand = expansion(mult = c(0, 0.03)),
+      expand = expansion(mult = c(0, 0.01)),
     ) +
     theme(
       plot.margin = margin(t = 0, b = 0, unit = "cm"),
@@ -1213,7 +1216,8 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       axis.text.y = element_blank(),
       axis.ticks.y = element_blank(), ,
       axis.line.y = element_blank(),
-    ) ->
+    ) +
+    coord_cartesian(xlim = c(0, 17000)) ->
   p_label
 
   .haplo_forplot |>
@@ -1273,7 +1277,7 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       limits = c(0, 17000),
       breaks = seq(0, 17000, 1000),
       labels = seq(0, 17000, 1000),
-      expand = expansion(mult = c(0, 0.03)),
+      expand = expansion(mult = c(0, 0.01)),
     ) +
     scale_y_continuous(
       expand = c(0.01, 0),
@@ -1309,6 +1313,7 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       #   face = "bold"
       # )
     ) +
+    coord_cartesian(xlim = c(0, 17000)) +
     labs(y = "AF") ->
   p_af_cell
 
