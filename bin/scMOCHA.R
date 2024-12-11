@@ -536,6 +536,11 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
 
+  .haplogroup <- .cell_anno$Haplogroup |>
+    unique() |>
+    na.omit() |>
+    (\(x) x[nzchar(x)])()
+
   if (!is.null(.sel_variants)) {
     .cell_anno <- .cell_anno |>
       dplyr::filter(variant %in% .sel_variants)
@@ -601,16 +606,12 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
     ) ->
   .no_depth
 
-  # .theforplot |>
-  #   dplyr::group_by(variant) |>
-  #   dplyr::summarise(maf = mean(af, na.rm = T)) |>
-  #   dplyr::arrange(-maf) ->
-  # .sort_variant
+
 
   .cell_anno |>
     dplyr::filter(variant %in% .sort_variant$variant) |>
-    dplyr::mutate(fill = ifelse(!is.na(Haplogroup), "#3B0049", "white")) |>
-    dplyr::mutate(color = ifelse(!is.na(Haplogroup), "white", "black")) |>
+    dplyr::mutate(fill = ifelse(Haplogroup == .haplogroup, "#3B0049", "white")) |>
+    dplyr::mutate(color = ifelse(Haplogroup == .haplogroup, "white", "black")) |>
     dplyr::mutate(
       variant = factor(variant, .sort_variant$variant)
     ) |>
@@ -834,7 +835,14 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
 fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10, .high_af = 0.95) {
   # .haplo_variant <- srr_out_cell_stats$haplo_variant[[27]]
   # .haplo_violin <- srr_out_cell_stats$haplo_violin[[27]]
-
+  .haplo_variant <- .haplo_variant |>
+    dplyr::mutate(
+      variant = as.character(variant)
+    )
+  .haplo_violin <- .haplo_violin |>
+    dplyr::mutate(
+      variant = as.character(variant)
+    )
   # 1. filter by haplogrep marker variant
   .haplo_variant |>
     dplyr::filter(fill != "white") |>
@@ -1752,7 +1760,7 @@ log_success("save somatic variant_somatic.csv")
 
 parallel::mclapply(
   X = names(somatic_variant),
-  FUN = function(.x) {
+  FUN = purrr::safely(\(.x) {
     .sel_variants <- somatic_variant[[.x]]
     fn_plot_cell_violin(
       .forplot = cell_raw_cluster_forplot,
@@ -1782,7 +1790,7 @@ parallel::mclapply(
       width = width,
       height = height
     )
-  },
+  }),
   mc.cores = length(somatic_variant)
 )
 
@@ -1798,11 +1806,23 @@ tryCatch(
     p_hotspots <- fn_plot_hotspots(
       .forplot = cell_raw_cluster_forplot,
       .cell_anno = cell_anno,
-      .sel_variants = somatic_variant$somatic
+      .sel_variants = as.character(somatic_variant$somatic)
     )
 
     ggsave(
-      filename = glue::glue("hotspots_final_af_somatic.pdf"),
+      filename = "mtdna-depth-celltype.pdf",
+      plot = wrap_plots(
+        p_depth$p_mt_depth_celltype,
+        p_mtdna,
+        ncol = 1,
+        heights = c(0.7, 0.1)
+      ),
+      width = 17,
+      height = 9,
+    )
+
+    ggsave(
+      filename = glue::glue("mtdna-hotspots_final_af_somatic.pdf"),
       plot = wrap_plots(
         p_hotspots,
         p_depth$p_mt_depth_allcell,
