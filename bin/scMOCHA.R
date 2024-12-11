@@ -1760,30 +1760,38 @@ parallel::mclapply(
 
 # ! hotspot --------------------------------------------------------------------
 
-p_mtdna <- fn_plot_mtdna()
-p_depth <- fn_plot_coverage(.cluster_coverage = cluster_coverage)
+tryCatch(
+  expr = {
+    p_mtdna <- fn_plot_mtdna()
+    p_depth <- fn_plot_coverage(.cluster_coverage = cluster_coverage)
 
-p_hotspots <- fn_plot_hotspots(
-  .forplot = cell_raw_cluster_forplot,
-  .cell_anno = cell_anno,
-  .sel_variants = somatic_variant$somatic
+    p_hotspots <- fn_plot_hotspots(
+      .forplot = cell_raw_cluster_forplot,
+      .cell_anno = cell_anno,
+      .sel_variants = somatic_variant$somatic
+    )
+
+    ggsave(
+      filename = glue::glue("hotspots_final_af_somatic.pdf"),
+      plot = wrap_plots(
+        p_hotspots,
+        p_depth$p_mt_depth_allcell,
+        p_mtdna,
+        ncol = 1,
+        heights = c(1.3, 0.4, 0.1)
+      ),
+      device = "pdf",
+      width = 18,
+      height = 9
+    )
+  },
+  error = function(e) {
+    log_error(e)
+    1
+  }
 )
 
 
-
-ggsave(
-  filename = glue::glue("hotspots_final_af_somatic.pdf"),
-  plot = wrap_plots(
-    p_hotspots,
-    p_depth$p_mt_depth_allcell,
-    p_mtdna,
-    ncol = 1,
-    heights = c(1.3, 0.4, 0.1)
-  ),
-  device = "pdf",
-  width = 18,
-  height = 9
-)
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
