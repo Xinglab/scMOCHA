@@ -1216,10 +1216,10 @@ fn_plot_hotspots <- function(.forplot, .cell_anno, .sel_variants = NULL) {
       ncol = 1,
       strip.position = "right",
       strip = ggh4x::strip_themed(
-        background_y = elem_list_rect(
+        background_y = ggh4x::elem_list_rect(
           fill = pcc$color
         ),
-        text_y = elem_list_text(
+        text_y = ggh4x::elem_list_text(
           colour = "white",
           face = c("bold")
         ),
