@@ -1800,7 +1800,7 @@ parallel::mclapply(
         )
       },
       error = function(e) {
-        log_error(e)
+        log_error(1)
       }
     )
   },
