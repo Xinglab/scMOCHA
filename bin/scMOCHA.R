@@ -1758,39 +1758,52 @@ data.table::fwrite(
 )
 log_success("save somatic variant_somatic.csv")
 
+purrr::map(
+  .x = names(somatic_variant),
+  .f = \(.x) {
+    somatic_variant[[.x]]
+  }
+)
+
 parallel::mclapply(
   X = names(somatic_variant),
-  FUN = purrr::safely(\(.x) {
-    .sel_variants <- somatic_variant[[.x]]
-    fn_plot_cell_violin(
-      .forplot = cell_raw_cluster_forplot,
-      .cell_anno = cell_anno,
-      .sel_variants = .sel_variants
-    ) -> .p_violin
+  FUN = \(.x) {
+    tryCatch(
+      expr = {
+        .sel_variants <- somatic_variant[[.x]]
+        fn_plot_cell_violin(
+          .forplot = cell_raw_cluster_forplot,
+          .cell_anno = cell_anno,
+          .sel_variants = .sel_variants
+        ) -> .p_violin
 
-    base_width = 2
-    base_height = 4
+        base_width = 2
+        base_height = 4
 
-    width = base_width * ifelse(length(.sel_variants) > 12, 12, length(.sel_variants))
-    height = base_height * ceiling(length(.sel_variants) / 12)
+        width = base_width * ifelse(length(.sel_variants) > 12, 12, length(.sel_variants))
+        height = base_height * ceiling(length(.sel_variants) / 12)
 
+        ggsave(
+          filename = glue::glue("violin_final_af_{.x}.pdf"),
+          plot = .p_violin$p_af,
+          device = "pdf",
+          width = width,
+          height = height
+        )
 
-    ggsave(
-      filename = glue::glue("violin_final_af_{.x}.pdf"),
-      plot = .p_violin$p_af,
-      device = "pdf",
-      width = width,
-      height = height
+        ggsave(
+          filename = glue::glue("violin_final_depth_{.x}.pdf"),
+          plot = .p_violin$p_depth,
+          device = "pdf",
+          width = width,
+          height = height
+        )
+      },
+      error = function(e) {
+        log_error(e)
+      }
     )
-
-    ggsave(
-      filename = glue::glue("violin_final_depth_{.x}.pdf"),
-      plot = .p_violin$p_depth,
-      device = "pdf",
-      width = width,
-      height = height
-    )
-  }),
+  },
   mc.cores = length(somatic_variant)
 )
 
