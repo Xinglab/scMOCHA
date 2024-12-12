@@ -1868,4 +1868,6 @@ log_success("save hotspot plot")
 # save image --------------------------------------------------------------
 
 save.image(file = "scMOCHA.rda")
+log_success("save scMOCHA.rda")
+1
 # load(file = "/scr1/users/liuc9/tmp/mito/flu2-a/cromwell-executions/SCMTAH/0138fcd0-c384-42c2-8704-6647767610d2/call-plot_scmtah/execution/scmtah.rda")
