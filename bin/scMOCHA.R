@@ -1801,16 +1801,18 @@ parallel::mclapply(
       },
       error = function(e) {
         log_error(1)
+        1
       }
     )
   },
   mc.cores = length(somatic_variant)
 )
 
+log_success("save somatic variant violin plot")
 
 
 # ! hotspot --------------------------------------------------------------------
-
+log_info("start plot hotspot")
 tryCatch(
   expr = {
     p_mtdna <- fn_plot_mtdna()
@@ -1835,7 +1837,7 @@ tryCatch(
     )
 
     ggsave(
-      filename = glue::glue("mtdna-hotspots_final_af_somatic.pdf"),
+      filename = "mtdna-hotspots_final_af_somatic.pdf",
       plot = wrap_plots(
         p_hotspots,
         p_depth$p_mt_depth_allcell,
@@ -1854,7 +1856,7 @@ tryCatch(
     1
   }
 )
-
+log_success("save hotspot plot")
 
 # footer ------------------------------------------------------------------
 
