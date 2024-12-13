@@ -568,11 +568,11 @@ task call_mt_variants {
     Array[File] ready_bams = glob("cluster/temp/ready_bam/*")
 
     # input
-    File cell_cell_heteroplasmic_df_tsv_gz = "cell/final/cell_heteroplasmic_df.tsv.gz"
-    File cell_cell_heteroplasmic_df_raw_tsv_gz = "cell/final/cell_heteroplasmic_df_raw.tsv.gz"
-    File cell_coverage_txt_gz = "cell/final/cell_coverage.txt.gz"
-    File cluster_cell_heteroplasmic_df_tsv_gz = "cluster/final/cluster_heteroplasmic_df.tsv.gz"
-    File cluster_coverage_txt_gz = "cluster/final/cluster_coverage.txt.gz"
+    File cell_cell_heteroplasmic_df_tsv_gz = "cell/final/cell.cell_heteroplasmic_df.tsv.gz"
+    File cell_cell_heteroplasmic_df_raw_tsv_gz = "cell/final/cell.cell_heteroplasmic_df_raw.tsv.gz"
+    File cell_coverage_txt_gz = "cell/final/cell.coverage.txt.gz"
+    File cluster_cell_heteroplasmic_df_tsv_gz = "cluster/final/cluster.cell_heteroplasmic_df.tsv.gz"
+    File cluster_coverage_txt_gz = "cluster/final/cluster.coverage.txt.gz"
   }
 
 
