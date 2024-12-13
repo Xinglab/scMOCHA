@@ -32,16 +32,16 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # %: hash
 # default: default value specified here.
 #
-# cell_meta_data_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/2094856844/cell_meta_data.tsv"
-# barcode_cluster_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/2094856844/barcode_cluster.tsv"
-# cell_hetero_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/1840631900/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/1840631900/cell.coverage.txt.gz"
-# cluster_hetero_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/943205998/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/943205998/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/1840631900/cell.cell_heteroplasmic_df_raw.tsv.gz"
-# perlscript <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/-1164217197/get_variants_info.pl"
-# jar_path <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/-335468948/haplogrep3"
-# sqlite_path <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE149689/cromwell-executions/scMOCHABatch/7e0e3ae8-9fd7-4200-bd6d-8d34aa070f43/call-scMOCHA/shard-10/sub.scMOCHA/3f9d9a4c-a1e4-46f5-a7ed-91ef446a2d04/call-plot_scMOCHA/inputs/758004698/mitomap_sqlite_20230525.sqlite3"
+# cell_meta_data_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1420365624/cell_meta_data.tsv"
+# barcode_cluster_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1420365624/barcode_cluster.tsv"
+# cell_hetero_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1470798592/cell.cell_heteroplasmic_df.tsv.gz"
+# cell_coverage_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1470798592/cell.coverage.txt.gz"
+# cluster_hetero_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-169758390/cluster.cell_heteroplasmic_df.tsv.gz"
+# cluster_coverage_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-169758390/cluster.coverage.txt.gz"
+# cell_hetero_raw_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1470798592/cell.cell_heteroplasmic_df_raw.tsv.gz"
+# perlscript <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-1164217197/get_variants_info.pl"
+# jar_path <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-335468948/haplogrep3"
+# sqlite_path <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/758004698/mitomap_sqlite_20230525.sqlite3"
 
 
 
@@ -376,7 +376,8 @@ fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NU
     .df_right <- .variant_annotation |>
       dplyr::select(Conservation, Ntchange, Locus, Disease)
 
-    .Ntchange <- unique(.df_right$Ntchange)
+    # .Ntchange <- unique(.df_right$Ntchange)
+    .Ntchange <- c("transition", "transversion")
     # .Ntchange_col <- rev(viridis::viridis_pal()(length(.Ntchange)))
     .Ntchange_col <- c("#FDE725FF", "#440154FF")
     names(.Ntchange_col) <- .Ntchange
@@ -1502,7 +1503,6 @@ cell_raw_cluster_forplot <- fn_forplot(
   .meta = metadata
 )
 
-
 # Variant annotation ------------------------------------------------------
 
 
@@ -1631,11 +1631,11 @@ if (file.exists("variant_annotation.tsv") | file.exists("cell_variant_annotation
   variant_annotation <- NULL
 }
 
-# ! raw --------------------------------------------------------------------
 
+# ! raw --------------------------------------------------------------------
+log_info("start raw allele heatmap")
 cell_raw_ch_af_depth <- fn_heatmap(
   .forplot = cell_raw_cluster_forplot,
-  # .cell_variants = cell_cluster_forplot$forplot$variant,
   .cell_variants = unique(cell_hetero$variant),
   .variant_annotation = variant_annotation
 )
@@ -1656,10 +1656,11 @@ cell_raw_ch_af_depth <- fn_heatmap(
   )
   ComplexHeatmap::draw(object = cell_raw_ch_af_depth$ch_depth)
   dev.off()
-  log_success("save cluster cell allele heatmap")
 }
+log_success("save cluster cell allele heatmap")
 
 
+log_fatal("for af color selection")
 fn_for_select_af_color <- function() {
   pals <- c("magma", "inferno", "plasma", "viridis", "cividis", "rocket", "mako", "turbo")
   library(grid)
@@ -1694,7 +1695,7 @@ fn_for_select_af_color <- function() {
 # fn_for_select_af_color()
 # violin plot -------------------------------------------------------------
 
-
+log_info("start violin plot")
 
 fn_plot_cell_violin(
   .forplot = cell_raw_cluster_forplot,
@@ -1732,9 +1733,10 @@ fn_plot_cell_violin(
   log_success("save cluster cell violin data to CSV files")
 }
 
-
+log_success("save violin plot for all the variants")
 
 # ! somatic variant --------------------------------------------------------------------
+
 
 fn_somatic_variant(
   .haplo_variant = p_violin$haplo_variant,
@@ -1798,10 +1800,12 @@ parallel::mclapply(
           width = width,
           height = height
         )
+        log_success(glue::glue("save cluster cell violin plot for {.x}"))
+        .x
       },
       error = function(e) {
-        log_error(1)
-        1
+        log_error(.x)
+        .x
       }
     )
   },
