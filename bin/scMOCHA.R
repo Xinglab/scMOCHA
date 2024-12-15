@@ -880,9 +880,16 @@ fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10, .hi
     dplyr::pull(variant) ->
   .v_high_af
 
+  # 5. exclude sites
+  .excluding_pos <- c(309, 310)
+  .haplo_variant |>
+    dplyr::filter(Position %in% .excluding_pos) |>
+    dplyr::pull(variant) ->
+  .v_excluding
+
   # somatic variant
   .haplo_variant |>
-    dplyr::filter(!variant %in% c(.v_haplo, .v_n_cells, .v_editing, .v_high_af)) |>
+    dplyr::filter(!variant %in% c(.v_haplo, .v_n_cells, .v_editing, .v_high_af, .v_excluding)) |>
     dplyr::pull(variant) ->
   .v_somatic
 
@@ -890,8 +897,9 @@ fn_somatic_variant <- function(.haplo_variant, .haplo_violin, .n_cells = 10, .hi
     haplo = .v_haplo,
     n_cells = .v_n_cells,
     editing = .v_editing,
-    somatic = .v_somatic,
-    high_af = .v_high_af
+    high_af = .v_high_af,
+    excluding_pos = .v_excluding,
+    somatic = .v_somatic
   )
 }
 
