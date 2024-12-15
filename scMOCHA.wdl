@@ -633,8 +633,8 @@ task plot_scMOCHA {
     File scMOCHA_rda = "scMOCHA.rda"
     File venn_cell_cluster = "venn_cell_cluster.pdf"
     Array[File] variant_files = glob("variant_*")
-    Array[File] heatmap_plots = glob("heatmap*.pdf")
-    Array[File] violin_plots = glob("violin*.pdf")
+    Array[File] heatmap_plots = glob("heatmap*")
+    Array[File] violin_plots = glob("violin*")
   }
 
 }
