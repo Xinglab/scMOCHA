@@ -32,16 +32,16 @@ pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu
 # %: hash
 # default: default value specified here.
 #
-# cell_meta_data_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1420365624/cell_meta_data.tsv"
-# barcode_cluster_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1420365624/barcode_cluster.tsv"
-# cell_hetero_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1470798592/cell.cell_heteroplasmic_df.tsv.gz"
-# cell_coverage_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1470798592/cell.coverage.txt.gz"
-# cluster_hetero_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-169758390/cluster.cell_heteroplasmic_df.tsv.gz"
-# cluster_coverage_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-169758390/cluster.coverage.txt.gz"
-# cell_hetero_raw_file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/1470798592/cell.cell_heteroplasmic_df_raw.tsv.gz"
-# perlscript <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-1164217197/get_variants_info.pl"
-# jar_path <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/-335468948/haplogrep3"
-# sqlite_path <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155673/cromwell-executions/scMOCHABatch/fb53aa79-6fb5-48f1-918d-289c624289d6/call-scMOCHA/shard-8/sub.scMOCHA/0decd9d2-dc29-441b-b9a9-88fed11d925e/call-plot_scMOCHA/inputs/758004698/mitomap_sqlite_20230525.sqlite3"
+cell_meta_data_file <- "cell_meta_data.tsv"
+barcode_cluster_file <- "barcode_cluster.tsv"
+cell_hetero_file <- "cell.cell_heteroplasmic_df.tsv.gz"
+cell_coverage_file <- "cell.coverage.txt.gz"
+cluster_hetero_file <- "cluster.cell_heteroplasmic_df.tsv.gz"
+cluster_coverage_file <- "cluster.coverage.txt.gz"
+cell_hetero_raw_file <- "cell.cell_heteroplasmic_df_raw.tsv.gz"
+perlscript <- "/home/liuc9/github/scMOCHA/bin/get_variants_info.pl"
+jar_path <- "/scr1/users/liuc9/tools/haplogrep3"
+sqlite_path <- "/mnt/isilon/xing_lab/liuc9/refdata/mitomaster/mitomap_sqlite_20230525.sqlite3"
 
 
 
@@ -541,6 +541,12 @@ fn_plot_cell_violin <- function(.forplot, .cell_anno, .sel_variants = NULL) {
     unique() |>
     na.omit() |>
     (\(x) x[nzchar(x)])()
+
+  if (length(.haplogroup) == 0) {
+    .haplogroup <- "NO_Haplogroup"
+  }
+
+
 
   if (!is.null(.sel_variants)) {
     .cell_anno <- .cell_anno |>
@@ -1355,6 +1361,7 @@ log_info("load metadata")
 metadata <- fn_load_meta(
   .filename = cell_meta_data_file
 )
+
 # Cell allele -------------------------------------------------------------
 
 cell_hetero <- fn_load_hetero(
@@ -1641,6 +1648,7 @@ if (file.exists("variant_annotation.tsv") | file.exists("cell_variant_annotation
 
 
 # ! raw --------------------------------------------------------------------
+
 log_info("start raw allele heatmap")
 cell_raw_ch_af_depth <- fn_heatmap(
   .forplot = cell_raw_cluster_forplot,
@@ -1812,7 +1820,8 @@ parallel::mclapply(
         .x
       },
       error = function(e) {
-        log_error(.x)
+        # log_error(.x)
+        log_fatal(.x)
         .x
       }
     )
