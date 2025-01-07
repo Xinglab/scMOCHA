@@ -66,7 +66,8 @@ gtf_gene_df <-
     file = mt_exons_df
   )
 
-depthfile <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT/possorted_genome_bam.MT.depth"
+# depthfile <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/5e46ec20-206d-443f-a390-e6507df10373/call-gather_outputfiles/execution/WT/possorted_genome_bam.MT.depth"
+depthfile <- "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth/cromwell-executions/scMOCHA/c2d8cb20-4ac4-43c7-ae53-63e0c4c179b8/call-gather_outputfiles/execution/WT/possorted_genome_bam.MT.depth"
 
 coverage <- data.table::fread(
   input = depthfile,
@@ -157,7 +158,7 @@ wrap_plots(
   p;p
 
 ggplot2::ggsave(
-  filename = "coverage.pdf",
+  filename = "coverage-7418.pdf",
   plot = p,
   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth",
   width = 15,
@@ -435,7 +436,7 @@ wrap_plots(
   pg_merged_p_read_depth;pg_merged_p_read_depth
 
 ggplot2::ggsave(
-  filename = "combined_read_depth.pdf",
+  filename = "combined_read_depth-7418.pdf",
   plot = pg_merged_p_read_depth,
   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth",
   width = 15,
@@ -502,10 +503,10 @@ merged_read_depth |>
     # axis.line.x = element_blank(),
     axis.title.x = element_blank(),
   ) + 
-  labs(y = latex2exp::TeX("$Depth (10^6$)") )  ->
+  labs(y = latex2exp::TeX("Depth") )  ->
   zoomin_merged_p_read_depth;zoomin_merged_p_read_depth
 ggplot2::ggsave(
-  filename = "zoomin_combined_read_depth.pdf",
+  filename = "zoomin_combined_read_depth-7418.pdf",
   plot = zoomin_merged_p_read_depth,
   device = "pdf",
   path = "/home/liuc9/github/scMOCHA/05-Liming/scmocha-mixed-cellline-high-depth",

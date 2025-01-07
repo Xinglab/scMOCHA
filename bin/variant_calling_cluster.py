@@ -1,49 +1,52 @@
 #!/usr/bin/env python
+# -*- conding:utf-8 -*-
+# @AUTHOR: Chun-Jie Liu
+# @CONTACT: chunjie.sam.liu.at.gmail.com
+# @DATE: 2024-11-26 17:32:38
+# @DESCRIPTION:
 
-###################################################
-# Call mito variants
-###################################################
 
-import sys
-import gzip
+import concurrent.futures
 import glob
+import gzip
+import sys
+
 import numpy as np
 import pandas as pd
-
-import matplotlib
 from matplotlib import pyplot as plt
 
 
-def load_mgatk_output(output_dir, mito_length):
+def process_base_file(base_file, mito_length):
+    cur_base_data = pd.read_csv(gzip.open(base_file), header=None)
+
+    # gather coverage for forward strand
+    fwd_base_df = cur_base_data[[0, 1, 2]].pivot_table(index=1, columns=0)
+    fwd_base_df.columns = [x[1] for x in fwd_base_df.columns.values]  # flatten weird multiindex after pivot
+    fwd_base_df.index.name = None
+    all_columns = list(range(1, mito_length + 1))
+    fwd_base_df = fwd_base_df.reindex(columns=all_columns, fill_value=0)
+    fwd_base_df = fwd_base_df.fillna(0).sort_index(axis=1)  # assume all nan are true zeroes
+
+    # gather coverage for reverse strand
+    rev_base_df = cur_base_data[[0, 1, 3]].pivot_table(index=1, columns=0)
+    rev_base_df.columns = [x[1] for x in rev_base_df.columns.values]
+    rev_base_df.index.name = None
+    rev_base_df = rev_base_df.reindex(columns=all_columns, fill_value=0)
+    rev_base_df = rev_base_df.fillna(0).sort_index(axis=1)
+
+    return fwd_base_df, rev_base_df
+
+
+def load_mgatk_output(output_dir, mito_length, sample_prefix):
     # assuming mgatk output naming convention
-    base_files = [glob.glob(output_dir + "*.{}.txt.gz".format(nt))[0] for nt in "ATCG"]
+    base_files = [glob.glob(f"{output_dir}/{sample_prefix}.{nt}.txt.gz")[0] for nt in "ATCG"]
 
-    base_coverage_dict = dict()
-    for i, nt in enumerate("ATCG"):
-        cur_base_data = pd.read_csv(gzip.open(base_files[i]), header=None)
-
-        # gather coverage for forward strand
-        fwd_base_df = cur_base_data[[0, 1, 2]].pivot_table(index=1, columns=0)
-        fwd_base_df.columns = [x[1] for x in fwd_base_df.columns.values]  # flatten weird multiindex after pivot
-        fwd_base_df.index.name = None
-        # missing_pos = [x for x in range(1, mito_length + 1) if x not in fwd_base_df.columns]
-        # fwd_base_df[missing_pos] = 0  # fill in missing positions
-        all_columns = [x for x in range(1, mito_length + 1)]
-        fwd_base_df = fwd_base_df.reindex(columns=all_columns, fill_value=0)
-        fwd_base_df = fwd_base_df.fillna(0).sort_index(axis=1)  # assume all nan are true zeroes
-
-        # gather coverage for forward strand
-        rev_base_df = cur_base_data[[0, 1, 3]].pivot_table(index=1, columns=0)
-        rev_base_df.columns = [x[1] for x in rev_base_df.columns.values]
-        rev_base_df.index.name = None
-        # missing_pos = [x for x in range(1, mito_length + 1) if x not in rev_base_df.columns]
-        # rev_base_df[missing_pos] = 0
-        all_columns = [x for x in range(1, mito_length + 1)]
-        rev_base_df = rev_base_df.reindex(columns=all_columns, fill_value=0)
-        rev_base_df = rev_base_df.fillna(0).sort_index(axis=1)
-
-        # organize base data into a dict
-        base_coverage_dict[nt] = (fwd_base_df, rev_base_df)
+    base_coverage_dict = {}
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = {executor.submit(process_base_file, base_file, mito_length): nt for base_file, nt in zip(base_files, "ATCG")}
+        for future in concurrent.futures.as_completed(futures):
+            nt = futures[future]
+            base_coverage_dict[nt] = future.result()
 
     return base_coverage_dict
 
@@ -66,7 +69,7 @@ def gather_possible_variants(base_coverage_dict, reference_file):
     # make a reference set of tuples (pos, ref_base)
     ref_set = [x.strip().split() for x in open(reference_file, "r").readlines()]
     ref_N_positions = [int(x[0]) for x in ref_set if x[1].upper() not in letters]
-    ref_set = set([(int(x[0]), x[1].upper()) for x in ref_set if x[1].upper() in letters])
+    ref_set = {(int(x[0]), x[1].upper()) for x in ref_set if x[1].upper() in letters}
     ref_dict = dict(ref_set)
 
     # make an observed set of tuples which are nonzero
@@ -74,7 +77,7 @@ def gather_possible_variants(base_coverage_dict, reference_file):
     non_zero_bases = [letters[i] for i in non_zero_idx[0]]
     non_zero_pos = [int(i + 1) for i in non_zero_idx[1]]
     observed_set = list(zip(non_zero_pos, non_zero_bases))
-    observed_set = set([x for x in observed_set if x[0] not in ref_N_positions])  # disregard positions in ref with N
+    observed_set = {x for x in observed_set if x[0] not in ref_N_positions}  # disregard positions in ref with N
 
     # take difference between observed and reference
     variant_set = observed_set - ref_set
@@ -92,7 +95,7 @@ mito_genome = sys.argv[5]  # chrM
 
 letters = list("ATCG")
 
-base_coverage_dict = load_mgatk_output(MGATK_OUT_DIR, mito_length)
+base_coverage_dict = load_mgatk_output(MGATK_OUT_DIR, mito_length, sample_prefix)
 cell_barcodes = base_coverage_dict["A"][0].index
 
 # total coverage per position per cell
@@ -102,13 +105,16 @@ for nt in base_coverage_dict:
     total_coverage += base_coverage_dict[nt][1]
 
 # exclude low coverage cells from variant calling
-cell_barcodes = total_coverage.index[total_coverage.mean(axis=1) > low_coverage_threshold]
+# C.J. This is important for downstream analysis, exclude cells with low coverage less than 4
+# cell_barcodes = total_coverage.index[total_coverage.mean(axis=1) >= 4]
+# cell_barcodes = total_coverage.index[total_coverage.mean(axis=1) >= low_coverage_threshold]
 for nt in base_coverage_dict:
     base_coverage_dict[nt] = (base_coverage_dict[nt][0].loc[cell_barcodes, :], base_coverage_dict[nt][1].loc[cell_barcodes, :])
 total_coverage = total_coverage.loc[cell_barcodes, :]
 
 # call potential variants
-variants = gather_possible_variants(base_coverage_dict, MGATK_OUT_DIR + mito_genome + "_refAllele.txt")
+variants = gather_possible_variants(base_coverage_dict, f"{MGATK_OUT_DIR}/{mito_genome}_refAllele.txt")
+# variants = gather_possible_variants(base_coverage_dict, "/home/liuc9/github/scMOCHA/fasta/MT_refAllele.txt")
 variant_names = ["{}{}>{}".format(x[0], x[1], x[2]) for x in variants]
 
 # build two <cell by variant tables>, one for each strand
@@ -142,7 +148,14 @@ variant_vmr = variant_var / (variant_mean + 0.00000000001)
 # compute other summary stats
 variant_positon = [x[0] for x in variants]
 variant_nucleotide = ["{}>{}".format(x[1], x[2]) for x in variants]
-variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 2) & (rev_cell_variant_df >= 2)).sum()
+
+# C.J. This is important for downstream analysis
+# C.J. This the number of reads supporting the variant, it requires at least 3 reads on both strands
+# C.J. minimum total coverage >=10
+# variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 3) & (rev_cell_variant_df >= 3)).sum()
+variant_n_cells_conf_detected = ((fwd_cell_variant_df >= 3) & (rev_cell_variant_df >= 3) & ((fwd_cell_variant_df + rev_cell_variant_df) >= low_coverage_threshold)).sum()
+
+
 variant_n_cells_over_5 = (heteroplasmic_df >= 0.05).sum()
 variant_n_cells_over_10 = (heteroplasmic_df >= 0.1).sum()
 variant_n_cells_over_20 = (heteroplasmic_df >= 0.2).sum()
@@ -172,7 +185,7 @@ variant_output = pd.DataFrame(
 variant_output.columns = ["position", "nucleotide", "variant", "vmr", "mean", "variance", "n_cells_conf_detected", "n_cells_over_5", "n_cells_over_10", "n_cells_over_20", "n_cells_over_95", "max_heteroplasmy", "strand_correlation", "mean_coverage"]
 variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]] = variant_output[["vmr", "mean", "variance", "strand_correlation", "mean_coverage", "max_heteroplasmy"]].astype(float)
 
-# exclude variants with less than three cells
+# exclude variants with less than one cluster detected
 multi_cell_variants = variant_output[variant_output["n_cells_conf_detected"] >= 1]["variant"]
 heteroplasmic_df = heteroplasmic_df[multi_cell_variants]
 

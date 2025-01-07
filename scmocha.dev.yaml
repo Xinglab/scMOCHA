@@ -28,7 +28,13 @@ dependencies:
   - r-bh
   - r-brms
   - r-gggenes
+  - r-ggh4x
+  - r-ggvenn
+  - r-ggbeeswarm
+  - r-viridis
+  - r-ggnewscale
   - bioconductor-gmoviz
+  - bioconductor-limma
   - samtools==1.17
   - bamtools
   - bcftools

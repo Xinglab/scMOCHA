@@ -3,7 +3,7 @@
 
 # @AUTHOR: Chun-Jie Liu
 # @CONTACT: chunjie.sam.liu.at.gmail.com
-# @DATE: Thu Mar 30 18:05:33 2023
+# @DATE: Tue Jun 25 16:48:35 2024
 # @DESCRIPTION: filename
 
 # Library -----------------------------------------------------------------
@@ -11,173 +11,46 @@
 suppressPackageStartupMessages(library(magrittr))
 library(ggplot2)
 library(patchwork)
-suppressPackageStartupMessages(library(rlang))
-suppressPackageStartupMessages(library(Seurat))
-suppressPackageStartupMessages(library(Azimuth))
+library(prismatic)
+library(paletteer)
+library(data.table)
+#library(rlang)
 library(GetoptLong)
 library(logger)
 
 # args --------------------------------------------------------------------
 
-# args <- commandArgs(TRUE)
-#
-# h5file <- args[1]
-# npcs <- args[2]
-# reso <- args[3]
-# refname <- args[4]
-# celllevel <- args[5]
-
-# h5file <- "/mnt/isilon/u01_project/large-scale/liuc9/raw/GSE155223/cromwell-executions/scMOCHABatch/011fb2a7-d2b7-46e1-9ee4-1817232b966a/call-scMOCHA/shard-12/sub.scMOCHA/a1d73c2a-6ccb-4fe4-9522-b0a8f614dc4c/call-cell_cluster_annotation/inputs/-1218344150/filtered_feature_bc_matrix.h5"
-# npcs <- 10
-# reso <- 0.1
-# refname <- "pbmcref"
-# celllevel <- "celltype.l1"
-# refname_celllevel <- list(
-#   refname = "pbmcref",
-#   celllevel = "celltype.l1"
-# )
-# nFeature_RNA_min <- 500
-# nFeature_RNA_max <- 8000
-# percent_mt_max <- 75
-# percent_ribo_max <- 50
-# percent_Lagest_Gene_max <- 50
-# chemistry_name <- "SC5P-R2"
-
 # s: string, i: integer, f: float, !: boolean
 # @: array
 # %: hash
 # default: default value specified here.
-
 verbose <- FALSE
-npcs <- 10
-reso <- 0.1
-refname_celllevel <- list(
-  refname = NA_character_,
-  celllevel = NA_character_
-)
-nFeature_RNA_min <- 500
-nFeature_RNA_max <- 8000
-percent_mt_max <- 75
-percent_ribo_max <- 50
-percent_Lagest_Gene_max <- 50
-chemistry_name <- "SC3Pv3"
-
-
 spec <- "
-Usage: Rscript azimuth.R [options]
+Usage: Rscript foorbar.R [options]
 
 Options:
-<h5file=s> possorted_genome_bam.MT.depth
-<npcs=f> default 10
-<reso=f> default 0.1
-<refname_celllevel=s%> azimuth reference name cell type level, should be used as -refname_celllevel refname=${refname} celllevel=${celllevel}
-<nFeature_RNA_min=f> default 500
-<nFeature_RNA_max=f> default 8000
-<percent_mt_max=f> default 75
-<percent_ribo_max=f> default 50
-<percent_Lagest_Gene_max=f> default 50
-<chemistry_name=s> default SC3Pv3
 <verbose!> Print messages
 "
 
 GetoptLong.options(help_style = "two-column")
-GetoptLong(spec, template_control = list(opt_width = 50))
+GetoptLong(spec, template_control = list(opt_width = 21))
 
-log_threshold(TRACE)
-log_layout(layout_glue_colors)
-
-setup_10x_version <- tibble::tibble(
-  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
-  "v1" = c(200, 2500),
-  "v2" = c(200, 6000),
-  "v3" = c(400, 8000),
-  "v3.1" = c(500, 8000),
-  "v4" = c(500, 10000)
-)
-
-chemistry_config <- tibble::tibble(
-  "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
-  "SC3Pv1" = c(200, 2500),
-  "SC3Pv2" = c(200, 6000),
-  "SC3Pv3" = c(400, 7000),
-  "SC3Pv3LT" = c(400, 7000),
-  "SC3Pv3HT" = c(400, 7000),
-  "SC3Pv4" = c(500, 10000),
-  "SC5P-PE" = c(400, 8000),
-  "SC5P-PE-v3" = c(400, 8000),
-  "SC5P-R2" = c(400, 8000),
-  "SC5P-R2-v3" = c(400, 8000)
-)
-
-
-# print(celllevel)
-refname <- refname_celllevel$refname
-celllevel <- refname_celllevel$celllevel
-# x10_version <- stringr::str_to_lower(x10_version)
-# nFeature_RNA_min <- setup_10x_version[[x10_version]][[1]]
-# nFeature_RNA_max <- setup_10x_version[[x10_version]][[2]]
-if (chemistry_name != "") {
-  nFeature_RNA_min <- chemistry_config[[chemistry_name]][[1]]
-  nFeature_RNA_max <- chemistry_config[[chemistry_name]][[2]]
-}
-
-use_azimuth <- TRUE
-
-if (!file.exists(h5file)) {
-  # message(
-  #   "Notice: {h5file} does not exist" |> glue::glue()
-  # )
-  log_error(h5file, " does not exists!")
-  quit(save = "no")
-} else {
-  # message(
-  #   "Notice: {h5file} exists" |> glue::glue()
-  # )
-  log_success(h5file, " exists.")
-}
-
-if (is.na(refname) || refname == "") {
-  # message(
-  #   "Notice: refname is not defined \n the cell cluster and annotation will not be using by Azimuth"
-  # )
-  log_warn("refname is not defined the cell cluster and annotation will not be used by Azimuth")
-  use_azimuth <- FALSE
-}
-
-if (is.na(celllevel) || celllevel == "") {
-  # message(
-  #   "Notice: celllevel is not defined \n the cell cluster and annotation will not be using by Azimuth"
-  # )
-  log_warn("celllevel is not defined the cell cluster and annotation will not be used by Azimuth")
-  use_azimuth <- FALSE
-}
-
-if (use_azimuth) {
-  log_info("You will use Azimuth reference cell map by use tissue ", refname, " and the cell level is ", celllevel)
-} else {
-  log_warn("You will not use Azimuth reference cell map for cell annotation")
-}
-
-#
-log_success("h5file ", h5file)
-log_success("npcs ", npcs, " ", class(npcs))
-log_success("reso ", reso, " ", class(reso))
-log_success("refname ", refname, " ", class(refname))
-log_success("celllevel ", celllevel, " ", class(celllevel))
-log_success("nFeature_RNA_min ", nFeature_RNA_min, " ", class(nFeature_RNA_min))
-log_success("nFeature_RNA_max ", nFeature_RNA_max, " ", class(nFeature_RNA_max))
-log_success("10x chemistry_name ", chemistry_name, " ", class(chemistry_name))
-log_success("percent_mt_max ", percent_mt_max, " ", class(percent_mt_max))
-log_success("percent_ribo_max ", percent_ribo_max, " ", class(percent_ribo_max))
-log_success("percent_Lagest_Gene_max ", percent_Lagest_Gene_max, " ", class(percent_Lagest_Gene_max))
-# quit(save="no", status = 0, runLast = F)
 # src ---------------------------------------------------------------------
-
-# pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
-
 
 
 # header ------------------------------------------------------------------
+log_threshold(TRACE)
+log_layout(layout_glue_colors)
+
+# log_info('Starting the script...')
+# log_debug('This is the second log line')
+# log_trace('Note that the 2nd line is being placed right after the 1st one.')
+# log_success('Doing pretty well so far!')
+# log_warn('But beware, as some errors might come :/')
+# log_error('This is a problem')
+# log_debug('Note that getting an error is usually bad')
+# log_error('This is another problem')
+# log_fatal('The last problem')
 
 # future::plan(future::multisession, workers = 10)
 
@@ -186,25 +59,25 @@ log_success("percent_Lagest_Gene_max ", percent_Lagest_Gene_max, " ", class(perc
 fn_metrics_mito <- function(.sc) {
   .sc@meta.data %>%
     dplyr::arrange(percent.mt) ->
-  .df
-
-  ggplot(data = .df) +
+    .df
+  
+  .df |> 
+    ggplot() +
     geom_point(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) +
     scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
     ggtitle("Mito of plotting QC metrics") +
     geom_hline(yintercept = nFeature_RNA_min, color = "red") +
     geom_hline(yintercept = nFeature_RNA_max, color = "red") +
-    # geom_text(aes(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min), vjust = -1) +
-    # geom_text(aes(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max), vjust = -1) +
+    geom_text(x = 0, y = nFeature_RNA_min, label = nFeature_RNA_min, vjust = -1) +
+    geom_text(x = 0, y = nFeature_RNA_max, label = nFeature_RNA_max, vjust = -1) +
     scale_y_continuous(
       labels = scales::label_comma()
-    ) +
+    )+
     scale_x_continuous(
       labels = scales::label_comma()
     ) +
     theme_bw() ->
-  .metrics_mito
-  .metrics_mito
+    .metrics_mito;.metrics_mito
 }
 
 fn_metrics_ribo <- function(.sc) {
@@ -217,7 +90,7 @@ fn_metrics_ribo <- function(.sc) {
     geom_hline(yintercept = nFeature_RNA_min, color = "red") +
     geom_hline(yintercept = nFeature_RNA_max, color = "red") +
     theme_bw() ->
-  .metrics_ribo
+    .metrics_ribo
 }
 
 fn_percent_mt_ribo_lg <- function(.sc) {
@@ -227,24 +100,24 @@ fn_percent_mt_ribo_lg <- function(.sc) {
     ggtitle("Distribution of Percentage Mitochondrion") +
     geom_vline(xintercept = percent_mt_max) +
     theme_bw() ->
-  .percent_mt
-
+    .percent_mt
+  
   .sc@meta.data %>%
     ggplot(aes(percent.ribo)) +
     geom_histogram(binwidth = 0.5, fill = "green") +
     ggtitle("Distribution of Percentage Ribosome") +
     geom_vline(xintercept = percent_ribo_max) +
     theme_bw() ->
-  .percent_ribo
-
+    .percent_ribo
+  
   .sc@meta.data %>%
     ggplot(aes(Percent.Largest.Gene)) +
     geom_histogram(binwidth = 0.7, fill = "blue") +
     ggtitle("Distribution of Percentage Largest Gene") +
     geom_vline(xintercept = percent_Lagest_Gene_max) +
     theme_bw() ->
-  .percent_largest_gene
-
+    .percent_largest_gene
+  
   (.percent_mt | .percent_ribo | .percent_largest_gene)
 }
 
@@ -259,27 +132,27 @@ fn_create_sc <- function(.x, .project = "singlecell") {
     }
   )
   # .counts <- Seurat::Read10X_h5(filename = .x)
-  # options("Seurat.object.assay.version" = "v5")
+  options("Seurat.object.assay.version" = "v3")
   .sc <- Seurat::CreateSeuratObject(
     counts = .counts,
     project = .project,
     # min.cells = 3,
     # min.features = 200
   )
-
+  
   .sc <- Seurat::PercentageFeatureSet(
     object = .sc,
     pattern = "^MT-",
     col.name = "percent.mt"
   )
-
+  
   .sc <- Seurat::PercentageFeatureSet(
     object = .sc,
     pattern = "^RP[SL][[:digit:]]|^RPLP[[:digit:]]|^RPSA",
     # pattern = "^Rp[sl][[:digit:]]|^Rplp[[:digit:]]|^Rpsa",
     col.name = "percent.ribo"
   )
-
+  
   if (packageVersion("Seurat") >= "5") {
     apply(
       # .sc@assays$RNA@counts, # Seurat version 4
@@ -287,7 +160,7 @@ fn_create_sc <- function(.x, .project = "singlecell") {
       2,
       function(x) (100 * max(x)) / sum(x)
     ) ->
-    .sc$Percent.Largest.Gene
+      .sc$Percent.Largest.Gene
   } else {
     apply(
       .sc@assays$RNA@counts, # Seurat version 4
@@ -295,27 +168,27 @@ fn_create_sc <- function(.x, .project = "singlecell") {
       2,
       function(x) (100 * max(x)) / sum(x)
     ) ->
-    .sc$Percent.Largest.Gene
+      .sc$Percent.Largest.Gene
   }
-
+  
   .sc
 }
 
 fn_load_sc_10x <- function(.x, .project = "singlecell") {
   .sc <- fn_create_sc(.x, .project)
-
+  
   .plot_2 <- (fn_metrics_mito(.sc) + fn_metrics_ribo(.sc)) +
     plot_annotation(
       title = glue::glue("Quality control {.project}"),
       tag_levels = "A"
     )
-
+  
   .plot_3 <- fn_percent_mt_ribo_lg(.sc) +
     plot_annotation(
       title = glue::glue("Quality control {.project}"),
       tag_levels = "A"
     )
-
+  
   .sc_sub <- subset(
     x = .sc,
     subset = nFeature_RNA > nFeature_RNA_min &
@@ -324,7 +197,7 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
       percent.ribo < percent_ribo_max &
       Percent.Largest.Gene < percent_Lagest_Gene_max
   )
-  log_success("Load 10x data done!!!")
+  
   list(
     sc = .sc,
     sc_filter = .sc_sub,
@@ -336,15 +209,15 @@ fn_load_sc_10x <- function(.x, .project = "singlecell") {
 fn_stat_cell <- function(.x, .y) {
   # .x <- project_sct$sc[[1]]
   # .y <- project_sct$sct[[1]]
-
+  
   .xd <- .x@meta.data
   .yd <- .y@meta.data
-
+  
   .n_x_cells <- nrow(.xd)
   .median_umicount_per_cell <- median(.xd$nCount_RNA)
   .median_gene_per_cell <- median(.xd$nFeature_RNA)
   .n_y_cells <- nrow(.yd)
-
+  
   tibble::tibble(
     `estimated number of cells` = .n_x_cells,
     # `mean reads per cell` = .mean_reads_per_cell,
@@ -358,125 +231,119 @@ fn_stat_cell <- function(.x, .y) {
 fn_azimuth <- function(.sc, .ref, .celllevel) {
   # .sc <- sc$sc_filter
   # .sc <- sc$sc
-  log_info("Azimuth is running")
-  log_success("Azimuth reference ", .ref, " and cell level ", .celllevel)
-
+  
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
     reference = .ref
   )
-  log_success("Azimuth reference ", .ref, " and cell level ", .celllevel)
-  log_success("Azimuth done!!!")
-
+  
   .celltype <- .sca[[glue::glue("predicted.{.celllevel}")]][, 1] |> factor()
-
+  
   .celltype_collapse <- gsub(
     pattern = "[[:punct:]]| ",
     replacement = "_",
     x = .celltype
   ) |> factor()
-
+  
   .sca[["celltype"]] <- .celltype
   .sca[["celltype_name"]] <- .celltype_collapse
-
+  
   .sca
 }
 
 fn_scnorm <- function(.sc) {
   .sc |> Seurat::NormalizeData() -> .scn
-
+  
   .scn <- Seurat::FindVariableFeatures(
     .scn,
     selection.method = "vst",
     nfeatures = 2000
   )
-
+  
   .allgenes <- rownames(.scn)
   .scn <- Seurat::ScaleData(
     .scn,
     features = .allgenes
   )
-
+  
   .npcs <- as.numeric(npcs)
   .reso <- as.numeric(reso)
-
+  
   .scn |>
     Seurat::RunPCA(features = VariableFeatures(.scn)) |>
     Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |>
     Seurat::FindClusters(resolution = .reso) |>
     Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
     Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
-  .scna
-
+    .scna
+  
   .celltype <- glue::glue("cluster_{.scna[['seurat_clusters']][, 1]}") |> factor()
   .celltype_collapse <- .celltype
-
+  
   .scna[["celltype"]] <- .celltype
   .scna[["celltype_name"]] <- .celltype_collapse
-
+  
   .scna
 }
 
 fn_sctransform <- function(.sc) {
+  
   # nFeature_RNA_min <- 500
   # nFeature_RNA_max <- 10000
   # npcs <- 10
   # reso <- 0.05
-  #
+  # 
   # .sc <- fn_load_sc_10x(h5file)$sc_filter
-
+  
   .sct <- Seurat::SCTransform(
     object = .sc,
     vars.to.regress = c("percent.mt", "percent.ribo")
   )
-
+  
   .npcs <- as.numeric(npcs)
   .reso <- as.numeric(reso)
-
+  
   # .npcs <- 10
   # .reso <- 0.05
-
+  
   .sct |>
     Seurat::RunPCA(dim = .npcs) |>
     Seurat::FindNeighbors(reduction = "pca", dims = 1:(.npcs)) |>
     Seurat::FindClusters(resolution = .reso) |>
     Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs)) |>
     Seurat::RunTSNE(reduction = "pca", dims = 1:(.npcs)) ->
-  .scta
-
+    .scta
+  
   .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
   .celltype_collapse <- .celltype
-
+  
   .scta[["celltype"]] <- .celltype
   .scta[["celltype_name"]] <- .celltype_collapse
-
+  
   # fn_plot_azimuth_umap(.scta)$plot_umap
   # fn_allmarkers_heatmap(.scta)$heatmap
-
+  
   .scta
 }
 
 fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
   # .sc <- sc$sc_filter
   # .sc <- sc$sc
-
+  
   if (.use_azimuth) {
     .sca <-
       tryCatch(
         expr = {
-          log_success("fn_cluster_anno:try:Azimuth")
           fn_azimuth(.sc, .ref, .celllevel)
         },
         error = \(e) {
-          log_fatal("fn_cluster_anno:error:sctransform")
           fn_sctransform(.sc)
         }
       )
   } else {
-    log_fatal("fn_cluster_anno:sctransform")
     .sca <- fn_sctransform(.sc)
   }
-
+  
   .sca
 }
 
@@ -492,22 +359,22 @@ fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
       #   dplyr::pull(data) |>
       #   .[[1]] ->
       #   .m
-
+      
       .m |>
         dplyr::summarise(u1 = mean(UMAP_1), u2 = mean(UMAP_2)) ->
-      .mm
-
+        .mm
+      
       .m |>
         dplyr::mutate(u1 = UMAP_1 > .mm$u1, u2 = UMAP_2 > .mm$u2) ->
-      .mmd
-
+        .mmd
+      
       .mmd |>
         dplyr::group_by(u1, u2) |>
         dplyr::count() |>
         dplyr::ungroup() |>
         dplyr::arrange(-n) ->
-      .mmm
-
+        .mmm
+      
       if (nrow(.mmm) == 1) {
         return(
           .mmd |>
@@ -515,9 +382,9 @@ fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
             dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
         )
       }
-
+      
       .fc <- .mmm$n[[1]] / .mmm$n[[2]] # 1.1
-
+      
       if (.fc > 1.1) {
         .mmd |>
           dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
@@ -531,8 +398,8 @@ fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
     dplyr::select(-data) |>
     tidyr::unnest(cols = u) |>
     dplyr::arrange(celltype) ->
-  .xxx_label
-
+    .xxx_label
+  
   ggplot() +
     geom_point(
       data = .xxx,
@@ -648,7 +515,7 @@ fn_celltype_pie_plot <- function(.xxx_celltype) {
 
 fn_plot_azimuth_umap <- function(.x) {
   .col_names <- c("UMAP_1", "UMAP_2")
-
+  
   if ("ref.umap" %in% names(.x@reductions)) {
     .umap <- .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
     colnames(.umap) <- .col_names
@@ -659,26 +526,26 @@ fn_plot_azimuth_umap <- function(.x) {
     .tsne <- .x@reductions$tsne@cell.embeddings |> data.table::as.data.table()
     colnames(.tsne) <- .col_names
   }
-
+  
   # .umap
   .x@meta.data |>
     dplyr::select(
       celltype
     ) |>
     data.table::as.data.table() ->
-  .xx
-
+    .xx
+  
   .xxx <- dplyr::bind_cols(.umap, .xx)
-
+  
   .xxx |>
     dplyr::group_by(celltype) |>
     dplyr::count() |>
     dplyr::ungroup() |>
     dplyr::mutate(ratio = n / sum(n)) ->
-  .xxx_celltype
-
+    .xxx_celltype
+  
   .plot_pie <- fn_celltype_pie_plot(.xxx_celltype)
-
+  
   .plot_umap <- fn_plot_cluster(.xxx)
   .plot_tsne <- if (is.null(.tsne)) {
     NULL
@@ -686,7 +553,7 @@ fn_plot_azimuth_umap <- function(.x) {
     .xxx <- dplyr::bind_cols(.tsne, .xx)
     fn_plot_cluster(.xxx, .xy_labels = c("tSNE_1", "tSNE_2"))
   }
-
+  
   list(
     plot_umap = .plot_umap,
     plot_tsne = .plot_tsne,
@@ -702,15 +569,15 @@ fn_check_cellref <- function(.refname) {
     use_azimuth <<- TRUE
     return(1)
   }
-
+  
   .sd <- SeuratData::AvailableData() |>
     dplyr::filter(
       grepl("Azimuth Reference", x = Summary)
     )
-
+  
   .ref <- .sd |>
     dplyr::filter(Dataset == .refname)
-
+  
   if (length(.ref$Installed) != 0 && .ref$Installed) {
     message(glue::glue("Azimuth reference {.refname} installed"))
   } else {
@@ -719,7 +586,6 @@ fn_check_cellref <- function(.refname) {
         SeuratData::InstallData(
           ds = .refname
         )
-        log_success("Azimuth reference ", .refname, " installed")
       },
       warning = \(w) {
         use_azimuth <<- FALSE
@@ -732,13 +598,7 @@ fn_check_cellref <- function(.refname) {
 }
 
 fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
-  Seurat::Idents(.sc) <- "celltype_name"
-  if (packageVersion("Seurat") >= "5" && use_azimuth) {
-    log_success("Seurat version 5")
-    .sc[["RNA"]]$data <- .sc[["RNA"]]$counts
-    .sc <- ScaleData(.sc, features = rownames(.sc), assay = "RNA", verbose = FALSE)
-  }
-  # future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
+  future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
     object = .sc,
     # assay = "RNA",
@@ -746,206 +606,80 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
     min.pct = 0.25,
     logfc.threshold = 0.25
   )
-  # future::plan(future::sequential)
-  log_success("Seurat findallmarkers on version 5 done!!!")
-
-
+  future::plan(future::sequential)
+  
+  
+  
   .allmarkers |>
     dplyr::group_by(cluster) |>
     dplyr::top_n(.topn, wt = avg_log2FC) ->
-  .top
-
+    .top
+  
   p <- Seurat::DoHeatmap(.sc, features = .top$gene) + Seurat::NoLegend()
-
+  
   list(
     allmarkers = .allmarkers,
     heatmap = p
   )
 }
 
+
 # load data ---------------------------------------------------------------
-log_warn("Check refname exists")
-fn_check_cellref(refname)
+d <- readr::read_rds("/mnt/isilon/u01_project/PT/PBMC_10K_output/sc_azimuth.rds.gz")
+library(Seurat)
+library(Azimuth)
+library(patchwork)
 
-
-# Load 10x ----------------------------------------------------------------
-
-sc <- fn_load_sc_10x(h5file)
+# source("/home/liuc9/github/scMOCHA/bin/azimuth.R")
 
 # body --------------------------------------------------------------------
 
-
-# Stat --------------------------------------------------------------------
-
-
+# d$plot_qc
+# d$sc_azimuth
+# fn_plot_azimuth_umap(.x = d$sc_azimuth) ->p
+# 
+# p$plot_umap
+# p$plot_celltype_pie
+# 
+# d$sc_azimuth@meta.data
+# 
+# sca <- Azimuth::RunAzimuth(
+#   query = d$sc_filter,
+#   reference = "pbmcref"
+# )
+h5file <- "/mnt/isilon/u01_project/PT/PBMC_10K_output/filtered_feature_bc_matrix.h5"
+options("Seurat.object.assay.version" = "v3")
+sc <- fn_load_sc_10x(h5file)
 sc$cell_stats <- fn_stat_cell(
   .x = sc$sc,
   .y = sc$sc_filter
 )
-log_success("Cell stats done!!!")
 
+use_azimuth <- TRUE
+refname <- "pbmcref"
+celllevel <- "l1"
 
-# Azimuth -----------------------------------------------------------------
+# sc$sc_azimuth <- fn_cluster_anno(
+#   .sc = sc$sc_filter,
+#   .use_azimuth = use_azimuth,
+#   .ref = refname,
+#   .celllevel = celllevel
+# )
+# 
 
-# message("Notice: fn_cluster_anno is running")
-log_info("start to run fn_cluster_anno")
+options("Seurat.object.assay.version" = "v3")
 
-sc$sc_azimuth <- fn_cluster_anno(
-  .sc = sc$sc_filter,
-  .use_azimuth = use_azimuth,
-  .ref = refname,
-  .celllevel = celllevel
+.sca <- Azimuth::RunAzimuth(
+  query = "/mnt/isilon/u01_project/PT/PBMC_10K_output/filtered_feature_bc_matrix.h5",
+  reference = "pbmcref"
 )
-log_success("fn_cluster_anno done!!!")
+# 
+# sc$sc_azimuth@meta.data |> 
+#   tibble::as_tibble()
 
 
-# Cell barcode ------------------------------------------------------------
-
-sc$sc_azimuth@meta.data |>
-  tibble::rownames_to_column(
-    var = "cellbarcode"
-  ) |>
-  data.table::as.data.table() |>
-  dplyr::select(
-    cellbarcode,
-    celltype_name
-  ) |>
-  dplyr::mutate(
-    tag = "CJ",
-    cluster = celltype_name
-  ) |>
-  dplyr::select(1, 3, 4) ->
-sc$cellbarcode_cluster
-log_success("cluster barcode")
-# quit(save = "no")
-
-sc$cellbarcode_bulk <- sc$cellbarcode_cluster |>
-  dplyr::mutate(cluster = "Bulk")
-
-log_success("barcode bulk")
-# Plot umap ---------------------------------------------------------------
-
-sc$plot_umap <- fn_plot_azimuth_umap(.x = sc$sc_azimuth)
-
-log_success("Plot umap!")
-
-sc$markers <- fn_allmarkers_heatmap(sc$sc_azimuth)
-log_success("All marker genes")
-# readr -------------------------------------------------------------------
-log_success("save meta.data")
-readr::write_tsv(
-  x = sc$sc_filter@meta.data |> tibble::rownames_to_column(var = "cellbarcode"),
-  file = "cell_meta_data.tsv"
-)
-# names(sc)
-readr::write_tsv(
-  x = sc$cellbarcode_cluster |> dplyr::select(cellbarcode),
-  file = "barcode_cell.tsv",
-  col_names = F
-)
-
-readr::write_tsv(
-  x = sc$cellbarcode_cluster,
-  file = "barcode_cluster.tsv",
-  col_names = F
-)
-readr::write_tsv(
-  x = sc$cellbarcode_bulk,
-  file = "barcode_bulk.tsv",
-  col_names = F
-)
-readr::write_tsv(
-  x = sc$plot_umap$cell_ratio,
-  file = "celltype_ratio.tsv"
-)
-writexl::write_xlsx(
-  x = sc$cell_stats,
-  path = "qc_cell_stats.xlsx"
-)
-log_success("Write intemediate tsv.")
-
-log_info("marker genes and heatmap")
-readr::write_tsv(
-  x = sc$markers$allmarkers,
-  file = "allmarkers.tsv"
-)
-log_success("Save all marker genes.")
-
-ggsave(
-  filename = "plot-markergenes-heatmap.pdf",
-  plot = sc$markers$heatmap,
-  device = "pdf",
-  width = 8,
-  height = 12
-)
-
-
-log_success("Save heatmap plot.")
-
-# save plot ---------------------------------------------------------------
-
-
-# names(sc)
-ggsave(
-  filename = "plot-metrics.pdf",
-  plot = sc$plot_metrics,
-  device = "pdf",
-  width = 12,
-  height = 5
-)
-
-ggsave(
-  filename = "plot-qc.pdf",
-  plot = sc$plot_qc,
-  device = "pdf",
-  width = 12,
-  height = 5
-)
-
-if (is.null(sc$plot_umap$plot_tsne)) {
-  ggsave(
-    filename = "plot-umap.pdf",
-    plot = sc$plot_umap$plot_umap,
-    device = "pdf",
-    width = 9,
-    height = 7
-  )
-} else {
-  ggsave(
-    filename = "plot-umap.pdf",
-    plot = sc$plot_umap$plot_umap / sc$plot_umap$plot_tsne,
-    device = "pdf",
-    width = 9,
-    height = 12
-  )
-}
-
-
-ggsave(
-  filename = "plot-pie-celltype.pdf",
-  plot = sc$plot_umap$plot_celltype_pie,
-  device = "pdf",
-  width = 8,
-  height = 5
-)
-log_success("Save the plot!")
-
-# save --------------------------------------------------------------------
-
-readr::write_rds(
-  x = sc,
-  file = "sc_azimuth.rds.gz",
-  compress = "none"
-)
-log_success("Save sc_azimuth.rds.gz")
 # footer ------------------------------------------------------------------
 
 # future::plan(future::sequential)
 
-# save image --------------------------------------------------------------
-log_info("Save image.")
-save.image(file = "azimuth.rda")
-log_success("Save image done!")
-# save image --------------------------------------------------------------
-# save image --------------------------------------------------------------
 # save image --------------------------------------------------------------
