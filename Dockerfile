@@ -1,55 +1,85 @@
-FROM chunjiesamliu/jrocker:latest
+FROM continuumio/miniconda3
 
-RUN apt-get update && apt-get install -y \
-  wget \
-  curl \
-  samtools \
-  sqlite3 \
-  libdbd-sqlite3-perl \
-  && rm -rf /var/lib/apt/lists/* \
-  && pip install sinto \
-  && pip install mgatk \
-  && pip install pysam \
-  && pip install matplotlib \
-  && pip install numpy==1.23.5 \
-  && mkdir -p /scMOCHA \
-  && mkdir -p /opt/ \
-  && cd /opt/ \
-  && wget -O cellranger-8.0.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-8.0.0.tar.gz?Expires=1711093229&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=GMkFV-rv2KEMltgT5yMRDKsnGtE5e~w0WS0NvI4axuuCeRV6ufkRYdcX87uAkytqdR7ks4jbJey2Ba8AdEprSFZa2NMXOHbjrKlKVBI6QhbybQewyHKt4uCJmDi9GVDEa4fw909QBhY5TjU36Pg4eWDeQkQ~CTmcS0mKMGT40uGxSGQLh6h~TqedN5zivnibXXoojoG3g-beY~OFCvHVV5dMeyfFeHXRj7m~gF-LNSKXw09vr9O3SC1x0-7CG6ArvM0RZtaiwpW9I-Ypm7vwB4z5MRABAnIjn3XrW7MdTnJgwWMTaTcYMuBy6rXWpY-bAfXMHaCHa-equqdQU9FpSQ__" \
-  && tar -xzvf cellranger-8.0.0.tar.gz \
-  && ln -s /opt/cellranger-8.0.0/bin/cellranger /usr/bin/cellranger \
-  && rm cellranger-8.0.0.tar.gz \
-  && cd /opt/ \
-  && wget -O bamtools-2.5.2.tar.gz https://github.com/pezmaster31/bamtools/archive/refs/tags/v2.5.2.tar.gz \
-  && tar -xzvf bamtools-2.5.2.tar.gz \
-  && cd bamtools-2.5.2/ \
-  && mkdir build \
-  && cd build \
-  && cmake .. \
-  && make \
-  && make install \
-  && cd /opt/ \
-  && rm bamtools-2.5.2.tar.gz \
-  && mkdir haplogrep3 \
-  && cd haplogrep3 \
-  && wget -O haplogrep3-3.2.1-linux.zip https://github.com/genepi/haplogrep3/releases/download/v3.2.1/haplogrep3-3.2.1-linux.zip \
-  && unzip haplogrep3-3.2.1-linux.zip \
-  && rm haplogrep3-3.2.1-linux.zip \
-  && ln -s /usr/bin/python3 /usr/bin/python
+# Set working directory
+WORKDIR /app
+
+# Copy the environment YAML file
+COPY scmocha.prod.v4.yaml /app/scmocha.prod.v4.yaml
+
+# Create the conda environment
+RUN conda env create -f scmocha.prod.v4.yaml
+
+# Activate the environment
+SHELL ["conda", "run", "-n", "scmocha", "/bin/bash", "-c"]
+
+# Install pip dependencies
+RUN pip install \
+  appdirs==1.4.4 \
+  attrs==23.1.0 \
+  biopython==1.81 \
+  certifi==2023.7.22 \
+  charset-normalizer==3.2.0 \
+  click==8.1.6 \
+  configargparse==1.7 \
+  connection-pool==0.0.3 \
+  cython==3.0.0 \
+  datrie==0.8.2 \
+  docutils==0.20.1 \
+  dpath==2.1.6 \
+  fastjsonschema==2.18.0 \
+  future==0.18.3 \
+  gitdb==4.0.10 \
+  gitpython==3.1.32 \
+  humanfriendly==10.0 \
+  idna==3.4 \
+  iniconfig==2.0.0 \
+  jinja2==3.1.2 \
+  jsonschema==4.19.0 \
+  jsonschema-specifications==2023.7.1 \
+  jupyter-core==5.3.1 \
+  markupsafe==2.1.3 \
+  mgatk==0.6.9 \
+  nbformat==5.9.2 \
+  numpy==1.23.5 \
+  optparse-pretty==0.1.1 \
+  pandas==2.0.3 \
+  plac==1.3.5 \
+  platformdirs==3.10.0 \
+  pluggy==1.2.0 \
+  psutil==5.9.5 \
+  pulp==2.7.0 \
+  pybktree==1.1 \
+  pysam==0.21.0 \
+  pytest==7.4.0 \
+  pytz==2023.3 \
+  referencing==0.30.2 \
+  regex==2023.8.8 \
+  requests==2.31.0 \
+  reretry==0.11.8 \
+  rpds-py==0.9.2 \
+  ruamel-yaml==0.17.32 \
+  ruamel-yaml-clib==0.2.7 \
+  scipy==1.11.3 \
+  sinto==0.10.0 \
+  smart-open==6.3.0 \
+  smmap==5.0.0 \
+  snakemake==7.32.2 \
+  stopit==1.1.2 \
+  svgwrite==1.4.3 \
+  tabulate==0.9.0 \
+  throttler==1.2.2 \
+  toposort==1.10 \
+  traitlets==5.9.0 \
+  tree==0.2.4 \
+  umi-tools==1.1.4 \
+  urllib3==2.0.4 \
+  wrapt==1.15.0 \
+  yte==1.5.1
+
+# Set the entrypoint
+ENTRYPOINT ["conda", "run", "-n", "scmocha", "/bin/bash", "-c"]
 
 COPY . /opt/scMOCHA
-RUN R -f /opt/scMOCHA/packages.R
 ENV PATH /opt/scMOCHA/bin:$PATH
 
 WORKDIR /scMOCHA
-
-
-# wget
-# cellranger
-
-# apt-get
-# samtools
-
-# pip
-# sinto
-# mgatk
