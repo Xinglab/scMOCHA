@@ -350,7 +350,7 @@ task cellranger_count {
       samtools index ${output_id}/outs/possorted_genome_bam.MT.bam
 
       # MT depth
-      samtools depth -a -r ${chrM} --threads=${cpu} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
+      samtools depth -a -r ${chrM} ${output_id}/outs/possorted_genome_bam.MT.bam > ${output_id}/outs/possorted_genome_bam.MT.depth
 
       # Depth plot
       ${bindir}/depth.R \
