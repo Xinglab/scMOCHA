@@ -96,6 +96,24 @@ fn_load_hetero <- function(.filename) {
     dplyr::filter(af > 0.05) # filter variants which AF < 0.05
 }
 
+
+fn_load_hetero <- function(.filename) {
+  # .filename <- file.path(
+  #   sc_dir,
+  #   "mgatk_out/final",
+  #   "sc.cell_heteroplasmic_df.tsv.gz"
+  # )
+
+  data.table::fread(input = .filename) -> .d
+
+  data.table::setnames(.d, "V1", "barcode")
+  .d <- data.table::melt(.d, id.vars = "barcode", variable.name = "variant", value.name = "af")
+  .d[, pos := gsub(pattern = ">|[AGCT]", replacement = "", x = variant)]
+  .d[, pos := as.integer(pos)]
+  .d
+}
+
+
 fn_load_coverage <- function(.filename) {
   data.table::fread(
     input = .filename,
