@@ -210,6 +210,68 @@ fn_forplot <- function(.af, .coverage, .meta) {
   )
 }
 
+fn_forplot <- function(.af, .coverage, .meta) {
+  # print(.meta)
+  .af <- as.data.table(.af)
+
+  # Ensure .af is a data.table
+  setDT(.af)
+
+  # Get columns containing ">"
+  variant_cols <- grep(">", names(.af), value = TRUE)
+
+  # Melt data.table to long format and summarize in one chain
+  .rank <- melt(.af,
+    id.vars = c("barcode", "cluster"),
+    measure.vars = variant_cols,
+    variable.name = "variant",
+    value.name = "af"
+  )[, .(s_af = sum(af, na.rm = TRUE)),
+    by = .(barcode, cluster)
+  ]
+
+  # Sort by cluster and -s_af (modifies in place)
+  setorder(.rank, cluster, -s_af)
+
+  # Select barcode and variant columns, then melt to long format
+  variant_cols <- grep(">", names(.af), value = TRUE)
+  .forplot <- melt(.af[, c("barcode", variant_cols), with = FALSE],
+    id.vars = "barcode",
+    measure.vars = variant_cols,
+    variable.name = "variant",
+    value.name = "af"
+  )
+
+  # Extract position from variant
+  .forplot[, pos := as.numeric(gsub(pattern = "([[:digit:]]*).*", "\\1", variant))]
+
+  # Convert coverage to data.table if not already
+  setDT(.coverage)
+
+  # Perform left join with coverage
+  .forplot <- merge(.forplot, .coverage, by = c("barcode", "pos"), all.x = TRUE)
+
+  # Handle NAs and apply conditions on af
+  .forplot[is.na(af), af := 0]
+  .forplot[is.na(depth), af := NA]
+  .forplot[depth < 10, af := -0.1]
+
+  # Sort by position
+  setorder(.forplot, pos)
+
+  .coverage |>
+    dplyr::group_by(barcode) |>
+    dplyr::summarise(sum_depth = sum(depth, na.rm = TRUE)) ->
+  .coverage_cell
+
+  list(
+    rank = .rank,
+    forplot = .forplot,
+    meta = .meta,
+    coverage_cell = .coverage_cell
+  )
+}
+
 fn_heatmap <- function(.forplot, .cell_variants = NULL, .variant_annotation = NULL, col_option = "turbo", show_column_title = FALSE) {
   pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv") |>
     dplyr::arrange(cancer_types)
