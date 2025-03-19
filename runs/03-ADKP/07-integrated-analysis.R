@@ -14,7 +14,7 @@ library(patchwork)
 library(prismatic)
 library(Seurat)
 
-#library(rlang)
+# library(rlang)
 
 # args --------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ supdata1_1 <- readxl::read_xls(
   path = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/output/OlhaEtAl-NatCommu-2020-supdata1.xls",
   sheet = 1,
   n_max = 18
-) |> 
+) |>
   dplyr::mutate(
     `Sample ID` = gsub(
       pattern = " GM",
@@ -59,47 +59,47 @@ supdata1_2 <- readxl::read_xls(
 
 synapse_metadata <- readr::read_tsv(
   file = "/home/liuc9/github/scMOCHA/03-ADKP/SYNAPSE_METADATA_MANIFEST.tsv"
-) 
+)
 
-synapse_metadata |> 
+synapse_metadata |>
   dplyr::glimpse()
 
-synapse_metadata |> 
+synapse_metadata |>
   dplyr::select(
     specimenID,
     sex,
     cellType,
     diagnosis,
     individualID,
-  ) |> 
-  dplyr::distinct() |> 
-  dplyr::arrange(specimenID, individualID) |> 
+  ) |>
+  dplyr::distinct() |>
+  dplyr::arrange(specimenID, individualID) |>
   dplyr::mutate(
     `Sample ID` = gsub(
       pattern = "Microglia_MO_",
       replacement = "",
       x = specimenID
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
     srrid = individualID
   ) ->
-  srarun
+srarun
 
-outfiles |> 
+outfiles |>
   dplyr::left_join(
     srarun,
     by = "srrid"
-  ) |> 
+  ) |>
   dplyr::left_join(
     supdata1_1,
     by = "Sample ID"
-  ) |> 
+  ) |>
   dplyr::left_join(
     supdata1_2,
     by = "Sample ID"
   ) ->
-  outfiles_supdata
+outfiles_supdata
 
 
 
@@ -107,13 +107,15 @@ outfiles |>
 # body --------------------------------------------------------------------
 
 
-outfiles_supdata |> 
+outfiles_supdata |>
   dplyr::mutate(
     a = purrr::map(
       .x = tardir,
       .f = \(.x) {
-        if(is.na(.x)) {return(NA)}
-        
+        if (is.na(.x)) {
+          return(NA)
+        }
+
         readxl::read_excel(
           path = file.path(
             .x, "qc_cell_stats.xlsx"
@@ -121,9 +123,9 @@ outfiles_supdata |>
         )
       }
     )
-  ) |> 
+  ) |>
   tidyr::unnest(cols = a) ->
-  metadata
+metadata
 
 
 readr::write_csv(
@@ -136,62 +138,65 @@ readr::write_csv(
 
 # Load mutation --------------------------------------------------------------
 
-metadata |> 
+metadata |>
   dplyr::mutate(
     anno = purrr::map(
       .x = outfile,
       .f = \(.x) {
-        if (.x == "FALSE") {return(NULL)}
-        
+        if (.x == "FALSE") {
+          return(NULL)
+        }
+
         .uuid <- dirname(dirname(dirname(.x)))
-        
+
         .cva <- file.path(
           .uuid,
           "call-plot_scMOCHA/execution",
           "cell_variant_annotation.tsv"
         )
-        
+
         readr::read_tsv(
           file = .cva,
           show_col_types = FALSE
         )
       }
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
     nmut = purrr::map_int(
       .x = anno,
       .f = \(.x) {
-        if(is.null(.x)) {return(NA_integer_)}
+        if (is.null(.x)) {
+          return(NA_integer_)
+        }
         nrow(.x)
       }
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
     haplogroup = purrr::map2(
       .x = anno,
       .y = srrid,
       .f = \(.x, .y) {
         message(.y)
-        if(is.null(.x)) {
+        if (is.null(.x)) {
           return(
             tibble::tibble(
               Haplogroup = NA_character_,
               Verbose_haplogroup = NA_character_
             )
           )
-          
         }
         .x |>
           dplyr::select(Haplogroup, Verbose_haplogroup) |>
-          dplyr::filter(!is.na(Haplogroup)) |> 
-          dplyr::distinct() |> 
+          dplyr::filter(!is.na(Haplogroup)) |>
+          dplyr::distinct() |>
           dplyr::mutate_all(.funs = as.character)
       }
     )
-  ) |> 
+  ) |>
   tidyr::unnest(cols = haplogroup) ->
-  metadata_anno
+metadata_anno
 
 readr::write_rds(
   x = metadata_anno,
@@ -203,16 +208,16 @@ metadata_anno |> dplyr::glimpse()
 # Select output columns ---------------------------------------------------
 
 
-metadata_anno |> 
+metadata_anno |>
   dplyr::mutate(
     pass = ifelse(
       test = is.na(tardir),
       yes = "Fail",
       no = "Pass"
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
-    ratio = round(`number of cells after filtering`/ `estimated number of cells`,2)
+    ratio = round(`number of cells after filtering` / `estimated number of cells`, 2)
   ) |>
   dplyr::select(
     srrid,
@@ -223,15 +228,15 @@ metadata_anno |>
     study,
     `Median UMI/cell` = `median UMI counts per cell`,
     `Median genes/cell` = `median genes per cell`,
-    `# of cells`=`estimated number of cells`,
+    `# of cells` = `estimated number of cells`,
     `# cells after filter` = `number of cells after filtering`,
     `Cell ratio` = ratio,
     `# of variants` = nmut,
     Haplogroup = Haplogroup,
     Haplogroup_v = Verbose_haplogroup
-  ) |> 
+  ) |>
   dplyr::arrange(`Sample ID`) ->
-  metadata_clean
+metadata_clean
 
 metadata_clean |>
   writexl::write_xlsx(
@@ -242,49 +247,51 @@ metadata_clean |>
 # Single cell consistency -------------------------------------------------
 
 future::plan(future::multisession, workers = 10)
-metadata_anno |> 
+metadata_anno |>
   dplyr::mutate(
     sc_azimuth = furrr::future_map(
       .x = tardir,
       .f = \(.x) {
-        if(is.na(.x)) {return(NULL)}
-        
-        .sc_a <- file.path(.x, "sc_azimuth.rds.gz") |> 
+        if (is.na(.x)) {
+          return(NULL)
+        }
+
+        .sc_a <- file.path(.x, "sc_azimuth.rds.gz") |>
           readr::read_rds()
         .sc_a
       }
     )
   ) ->
-  metadata_anno_azimuth
+metadata_anno_azimuth
 future::plan(future::sequential)
 
 raw_annotations <- readr::read_csv(
   file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/forrefs/annofile.csv"
-) |> 
-  dplyr::mutate(cluster = glue::glue("cluster_{cluster_label}")) |> 
-  dplyr::mutate(cluster = forcats::fct_reorder(cluster, cluster_label)) |> 
+) |>
+  dplyr::mutate(cluster = glue::glue("cluster_{cluster_label}")) |>
+  dplyr::mutate(cluster = forcats::fct_reorder(cluster, cluster_label)) |>
   dplyr::select(cellid = sample_id, cluster)
 
 cell_barcodes <- readr::read_csv(
   file = "/scr1/users/liuc9/mitochondrial/realdata/03-ADKP/forrefs/cell_barcodes.csv"
-) |> 
-  dplyr::select(-1, -batchname) |> 
-  dplyr::left_join(raw_annotations, by = "cellid") |> 
+) |>
+  dplyr::select(-1, -batchname) |>
+  dplyr::left_join(raw_annotations, by = "cellid") |>
   dplyr::mutate(
     donor = gsub(
       pattern = "_GM",
       replacement = "",
       x = donor
     )
-  ) |> 
-  dplyr::rename(`Sample ID` = donor) |> 
-  dplyr::group_by(`Sample ID`) |> 
-  tidyr::nest() |> 
+  ) |>
+  dplyr::rename(`Sample ID` = donor) |>
+  dplyr::group_by(`Sample ID`) |>
+  tidyr::nest() |>
   dplyr::ungroup()
 
-metadata_anno_azimuth |> 
-  dplyr::select(srrid, `Sample ID`, sc_azimuth) |> 
-  dplyr::left_join(cell_barcodes, by = "Sample ID") |> 
+metadata_anno_azimuth |>
+  dplyr::select(srrid, `Sample ID`, sc_azimuth) |>
+  dplyr::left_join(cell_barcodes, by = "Sample ID") |>
   dplyr::mutate(
     a = purrr::map2(
       .x = sc_azimuth,
@@ -292,8 +299,8 @@ metadata_anno_azimuth |>
       .f = \(.x, .y) {
         # .x <- d$sc_azimuth[[2]]
         # .y <- d$data[[2]]
-        
-        if(is.null(.x)) {
+
+        if (is.null(.x)) {
           return(
             tibble::tibble(
               n_raw = NULL,
@@ -303,22 +310,22 @@ metadata_anno_azimuth |>
             )
           )
         }
-        
-        .xx <- .x$cellbarcode_cluster |> 
+
+        .xx <- .x$cellbarcode_cluster |>
           dplyr::select(bc = cellbarcode, azi_cluster = cluster)
-        
+
         n_raw <- nrow(.x$sc@meta.data)
         n_azi <- nrow(.xx)
         n_nc <- nrow(.y)
-        
-        .xx |> 
-          dplyr::left_join(.y, by = "bc") |> 
+
+        .xx |>
+          dplyr::left_join(.y, by = "bc") |>
           dplyr::mutate(
-            azi_cluster = as.character(azi_cluster), 
+            azi_cluster = as.character(azi_cluster),
             cluster = as.character(cluster)
-          ) -> 
-          .xxx
-        
+          ) ->
+        .xxx
+
         tibble::tibble(
           n_raw = n_raw,
           n_azi = n_azi,
@@ -327,26 +334,26 @@ metadata_anno_azimuth |>
         )
       }
     )
-  ) |> 
+  ) |>
   tidyr::unnest(cols = a) ->
-  metadata_anno_azimuth_nc
+metadata_anno_azimuth_nc
 
-metadata_anno_azimuth_nc |> 
-  dplyr::select(-sc_azimuth, -data) |> 
+metadata_anno_azimuth_nc |>
+  dplyr::select(-sc_azimuth, -data) |>
   dplyr::mutate(
     ratio1 = round(n_azi / n_raw, 2),
     ratio2 = round(n_nc / n_raw, 2)
-  ) |>  
+  ) |>
   dplyr::select(
-    ID = srrid, 
-    `Sample ID`, 
-    `# Raw` = n_raw, 
-    `# scMOCHA` = n_azi, 
+    ID = srrid,
+    `Sample ID`,
+    `# Raw` = n_raw,
+    `# scMOCHA` = n_azi,
     `# NC` = n_nc,
-    `Ratio of scMOCHA`= ratio1,
+    `Ratio of scMOCHA` = ratio1,
     `Ratio of NC` = ratio2
-  ) |> 
-  dplyr::arrange(`Sample ID`) |> 
+  ) |>
+  dplyr::arrange(`Sample ID`) |>
   writexl::write_xlsx(
     path = "/home/liuc9/github/scMOCHA/03-ADKP/output/cell_n_consistence.xlsx"
   )
@@ -356,19 +363,19 @@ metadata_anno_azimuth_nc |>
 
 
 
-metadata_anno_azimuth_nc |> 
-  dplyr::select(srrid, `Sample ID`, azi_nc) |> 
-  tidyr::unnest(cols = azi_nc) |> 
+metadata_anno_azimuth_nc |>
+  dplyr::select(srrid, `Sample ID`, azi_nc) |>
+  tidyr::unnest(cols = azi_nc) |>
   dplyr::filter(!is.na(cellid)) ->
-  metadata_anno_azimuth_nc_unnest
+metadata_anno_azimuth_nc_unnest
 
-metadata_anno_azimuth_nc_unnest |> 
+metadata_anno_azimuth_nc_unnest |>
   dplyr::count(azi_cluster, cluster) ->
-  forplot
+forplot
 
 forplot$n |> sum()
 
-forplot |> 
+forplot |>
   ggplot(aes(
     x = azi_cluster,
     y = cluster,
@@ -399,14 +406,14 @@ forplot |>
   geom_segment(
     x = 1,
     y = 0,
-    xend= 13,
+    xend = 13,
     yend = 12,
     color = "grey"
   ) +
   geom_segment(
     x = 0,
     y = 1,
-    xend= 12,
+    xend = 12,
     yend = 13,
     color = "grey"
   ) +
@@ -435,7 +442,7 @@ forplot |>
     y = "Olha et al cell cluster",
     title = "Total number of cells n = {sum(forplot$n)}" |> glue::glue()
   ) ->
-  tileplot
+tileplot
 
 ggsave(
   filename = "cell-consistence-tileplot.pdf",
@@ -473,7 +480,9 @@ metadata_anno |>
     cellratio = purrr::map(
       .x = tardir,
       .f = function(.x) {
-        if(is.na(.x)) {return(NULL)}
+        if (is.na(.x)) {
+          return(NULL)
+        }
         .ratio <- readr::read_tsv(
           file = file.path(
             .x, "celltype_ratio.tsv"
@@ -484,20 +493,20 @@ metadata_anno |>
       }
     )
   ) ->
-  metadata_anno_cellratio
+metadata_anno_cellratio
 
 metadata_anno_cellratio |>
   dplyr::filter(!purrr::map_lgl(.x = cellratio, .f = is.null)) |>
-  dplyr::select(`Sample ID`, dia = `Diagnosis (neurology)`, cellratio) |> 
-  dplyr::arrange(dplyr::desc(`Sample ID`))  ->
-  for_ratio_plot
+  dplyr::select(`Sample ID`, dia = `Diagnosis (neurology)`, cellratio) |>
+  dplyr::arrange(dplyr::desc(`Sample ID`)) ->
+for_ratio_plot
 
 for_ratio_plot |>
-  tidyr::unnest(cellratio) |> 
+  tidyr::unnest(cellratio) |>
   dplyr::mutate(celltype = factor(
     celltype,
     levels = paste("cluster", c(1:11, 13), sep = "_")
-  )) |> 
+  )) |>
   ggplot(aes(
     x = `ratio`,
     y = `Sample ID`,
@@ -533,7 +542,8 @@ for_ratio_plot |>
     legend.position = "right"
   ) +
   labs(x = "Cell ratio") ->
-  p_cellratio;p_cellratio
+p_cellratio
+p_cellratio
 
 ggsave(
   filename = "Cell_ratio.pdf",
@@ -552,14 +562,22 @@ gtf_gene_df <-
     file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
   )
 
-library(ggtranscript)
+# Check if ggtranscript is installed, install if not
+if (!requireNamespace("ggtranscript", quietly = TRUE)) {
+  message("Installing ggtranscript from GitHub...")
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  devtools::install_github("dzhang32/ggtranscript")
+  library(ggtranscript)
+}
 gtf_gene_df %>%
   ggplot(aes(
     xstart = start,
     xend = end,
     y = gene_name
   )) +
-  geom_range( aes(fill = transcript_biotype)) +
+  geom_range(aes(fill = transcript_biotype)) +
   geom_intron(
     data = to_intron(gtf_gene_df, "transcript_name"),
     aes(strand = strand)
@@ -595,43 +613,45 @@ gtf_gene_df %>%
   labs(
     x = "Position"
   ) ->
-  p_mt_chrom;p_mt_chrom
+p_mt_chrom
+p_mt_chrom
 
 metadata_anno_cellratio |>
   dplyr::mutate(
     depth = purrr::map(
       .x = tardir,
       .f = function(.x) {
-        if(is.na(.x)) {return(NULL)}
+        if (is.na(.x)) {
+          return(NULL)
+        }
         data.table::fread(
           input = file.path(
             .x, "possorted_genome_bam.MT.depth"
           ),
-          col.names =  c("chr", "pos", "depth")
+          col.names = c("chr", "pos", "depth")
         )
-        
       }
     )
   ) ->
-  metadata_anno_depth
+metadata_anno_depth
 
 metadata_anno_depth |>
   dplyr::filter(!purrr::map_lgl(.x = depth, .f = is.null)) |>
   # dplyr::select(srrid, source_name, depth) |>
-  dplyr::select(`Sample ID`, dia = `Diagnosis (neurology)`, depth) |> 
-  dplyr::arrange(dplyr::desc(`Sample ID`)) |> 
-  dplyr::mutate(`Sample ID` = factor(`Sample ID`)) |> 
+  dplyr::select(`Sample ID`, dia = `Diagnosis (neurology)`, depth) |>
+  dplyr::arrange(dplyr::desc(`Sample ID`)) |>
+  dplyr::mutate(`Sample ID` = factor(`Sample ID`)) |>
   dplyr::mutate(color = dplyr::case_match(
     dia,
-    "MCI" ~ggsci::pal_jama()(4)[[1]],
+    "MCI" ~ ggsci::pal_jama()(4)[[1]],
     "AD" ~ ggsci::pal_jama()(4)[[2]],
   )) ->
-  for_depth_plot
+for_depth_plot
 
 
 for_depth_plot |>
   tidyr::unnest(cols = depth) |>
-  ggplot(aes(x=pos, y = depth, fill = `color`)) +
+  ggplot(aes(x = pos, y = depth, fill = `color`)) +
   geom_bar(stat = "identity") +
   scale_x_continuous(
     expand = expansion(mult = c(0, 0.03)),
@@ -647,7 +667,7 @@ for_depth_plot |>
   #   name = "Sample",
   #   values = for_depth_plot$color,
   #   guide = guide_legend(nrow = 3)
-  # ) 
+  # )
   theme(
     plot.margin = margin(t = 0, b = 0, unit = "cm"),
     panel.background = element_blank(),
@@ -677,7 +697,8 @@ for_depth_plot |>
     strip.position = "right"
   ) +
   labs(y = "Depth") ->
-  p_mt_depth;p_mt_depth
+p_mt_depth
+p_mt_depth
 
 p_depth <- cowplot::plot_grid(
   plotlist = list(p_mt_depth, p_mt_chrom),
@@ -714,16 +735,16 @@ metadata_anno_depth$nmut
 
 
 
-metadata_anno_depth |> 
-  dplyr::filter(!is.na(nmut)) |> 
+metadata_anno_depth |>
+  dplyr::filter(!is.na(nmut)) |>
   ggplot(aes(
     x = `number of cells after filtering`,
     y = nmut
   )) +
   geom_point()
 
-metadata_anno_depth |> 
-  dplyr::filter(!is.na(nmut)) |> 
+metadata_anno_depth |>
+  dplyr::filter(!is.na(nmut)) |>
   ggplot(aes(
     x = `median UMI counts per cell`,
     y = nmut
@@ -732,21 +753,21 @@ metadata_anno_depth |>
 
 library(plotly)
 plot_ly(
-  data = metadata_anno_depth |> 
-    dplyr::mutate(dia = `Diagnosis (neurology)`) |> 
+  data = metadata_anno_depth |>
+    dplyr::mutate(dia = `Diagnosis (neurology)`) |>
     dplyr::filter(!is.na(nmut)),
-  x = ~ `median UMI counts per cell`,
-  y = ~ `number of cells after filtering`,
-  z = ~ nmut,
+  x = ~`median UMI counts per cell`,
+  y = ~`number of cells after filtering`,
+  z = ~nmut,
   # size = ~nmut,
   color = ~dia,
   colors = ggsci::pal_jama()(4)[c(2, 1)]
-) |> 
+) |>
   layout(
     scene = list(
       xaxis = list(
-        title = 'Median UMI counts per cell',
-        gridcolor = 'rgb(255, 255, 255)',
+        title = "Median UMI counts per cell",
+        gridcolor = "rgb(255, 255, 255)",
         # range = c(2.003297660701705, 5.191505530708712),
         # type = 'log',
         zerolinewidth = 1,
@@ -754,32 +775,33 @@ plot_ly(
         gridwidth = 2
       ),
       yaxis = list(
-        title = 'Number of cells after filtering',
-        gridcolor = 'rgb(255, 255, 255)', 
+        title = "Number of cells after filtering",
+        gridcolor = "rgb(255, 255, 255)",
         # range = c(36.12621671352166, 91.72921793264332),
         zerolinewidth = 1,
         ticklen = 5,
         gridwith = 2
       ),
       zaxis = list(
-        title = 'Number of Mutations',
-        gridcolor = 'rgb(255, 255, 255)',
+        title = "Number of Mutations",
+        gridcolor = "rgb(255, 255, 255)",
         # type = 'log',
         zerolinewidth = 1,
         ticklen = 5,
         gridwith = 2
       )
     ),
-    paper_bgcolor = 'rgb(243, 243, 243)',
-    plot_bgcolor = 'rgb(243, 243, 243)'
-  ) |> 
+    paper_bgcolor = "rgb(243, 243, 243)",
+    plot_bgcolor = "rgb(243, 243, 243)"
+  ) |>
   plotly::config(
     displayModeBar = TRUE,
     showEditInChartStudio = TRUE,
-    plotlyServerURL = 'https://chart-studio.plotly.com',
-    displaylogo= FALSE
+    plotlyServerURL = "https://chart-studio.plotly.com",
+    displaylogo = FALSE
   ) ->
-  p3d;p3d
+p3d
+p3d
 
 # reticulate::py_run_string("import sys")
 
@@ -810,24 +832,24 @@ readr::write_rds(
   file = "/home/liuc9/github/scMOCHA/03-ADKP/output/rda/metadata_anno_depth.rds"
 )
 
-metadata_anno_depth |> 
-  dplyr::mutate(dia = `Diagnosis (neurology)`) |> 
+metadata_anno_depth |>
+  dplyr::mutate(dia = `Diagnosis (neurology)`) |>
   dplyr::select(
     srrid,
     dia,
     Age,
     Sex,
-    nmut, 
+    nmut,
     `median UMI counts per cell`,
     `number of cells after filtering`,
     depth
-  ) |> 
-  dplyr::filter(!is.na(nmut)) |> 
+  ) |>
+  dplyr::filter(!is.na(nmut)) |>
   dplyr::mutate(
     n_na = purrr::map(
       .x = depth,
       .f = \(.d) {
-        .d |> 
+        .d |>
           dplyr::summarise(
             dep_s = sum(depth),
             dep_mea = mean(depth),
@@ -835,14 +857,14 @@ metadata_anno_depth |>
           )
       }
     )
-  ) |> 
-  dplyr::select(-depth) |> 
-  tidyr::unnest(cols = n_na) |> 
+  ) |>
+  dplyr::select(-depth) |>
+  tidyr::unnest(cols = n_na) |>
   dplyr::mutate(
     Sex = factor(Sex),
     dia = factor(dia)
   ) ->
-  metadata_anno_depth_dep
+metadata_anno_depth_dep
 
 
 
@@ -854,27 +876,27 @@ t.test(nmut ~ Sex, data = metadata_anno_depth_dep) |> report::report()
 glm(
   nmut ~ dia + dep_med,
   data = metadata_anno_depth_dep
-) |> 
+) |>
   report::report()
 
 correlation::correlation(
-  metadata_anno_depth_dep |> 
+  metadata_anno_depth_dep |>
     dplyr::select(-dep_s, -dep_mea),
   p_adjust = "none"
-  )  |> 
+) |>
   summary(redundant = TRUE) ->
-  cor_summr
+cor_summr
 
 plot(cor_summr)
 
-cor_summr |> 
-  as.data.frame() |> 
+cor_summr |>
+  as.data.frame() |>
   tidyr::pivot_longer(
     cols = -Parameter,
     names_to = "var2",
     values_to = "pval"
-  ) |> 
-  dplyr::filter(!is.na(pval)) |> 
+  ) |>
+  dplyr::filter(!is.na(pval)) |>
   dplyr::filter(Parameter != var2) |>
   ggplot(aes(
     x = Parameter,
@@ -895,12 +917,12 @@ cor_summr |>
     # aesthetics = "colour"
   ) +
   scale_x_discrete(
-    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age" ),
-    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age" ) |> stringr::str_to_sentence()
+    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age"),
+    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age") |> stringr::str_to_sentence()
   ) +
   scale_y_discrete(
-    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age" ) |> rev(),
-    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age" ) |> rev() |>  stringr::str_to_sentence()
+    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age") |> rev(),
+    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age") |> rev() |> stringr::str_to_sentence()
   ) +
   theme(
     panel.background = element_blank(),
@@ -912,7 +934,7 @@ cor_summr |>
       size = 14
     )
   ) ->
-  p_cor
+p_cor
 ggsave(
   filename = "All-factor-correlations.pdf",
   plo = p_cor,
@@ -927,14 +949,14 @@ cor.test(
   formula = ~ nmut + dep_med,
   data = metadata_anno_depth_dep
 ) ->
-  ct
+ct
 
 
-metadata_anno_depth_dep |> 
-  # dplyr::filter(dep_med > 1000) |> 
+metadata_anno_depth_dep |>
+  # dplyr::filter(dep_med > 1000) |>
   dplyr::mutate(
     dia = factor(dia, levels = c("MCI", "AD"))
-  ) |> 
+  ) |>
   ggplot(aes(
     x = dep_med,
     y = nmut,
@@ -973,7 +995,8 @@ metadata_anno_depth_dep |>
     y = "# of variants",
     title = "Olah et al, Nat Commun, 2020"
   ) ->
-  p_nmut_median_depth;p_nmut_median_depth
+p_nmut_median_depth
+p_nmut_median_depth
 
 ggsave(
   filename = "All-factor-correlations-linear-depth-nvariant.pdf",
@@ -991,35 +1014,35 @@ cor.test(
   formula = ~ nmut + Age,
   data = metadata_anno_depth_dep
 ) ->
-  cta
+cta
 
 cor.test(
   formula = ~ nmut + Age,
-  data = metadata_anno_depth_dep |> 
+  data = metadata_anno_depth_dep |>
     dplyr::filter(dia == "MCI")
 ) ->
-  cta_mci
+cta_mci
 
 cor.test(
   formula = ~ nmut + Age,
-  data = metadata_anno_depth_dep |> 
+  data = metadata_anno_depth_dep |>
     dplyr::filter(dia == "AD")
 ) ->
-  cta_ad
+cta_ad
 
 yhight <- 32
 xwidth <- 78
 
-metadata_anno_depth_dep |> 
-  # dplyr::filter(nmut >10) |> 
+metadata_anno_depth_dep |>
+  # dplyr::filter(nmut >10) |>
   dplyr::mutate(
     label = glue::glue(
       "N variants = {nmut}\n Median depth = {dep_med}\n Gender = {Sex}"
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
     dia = factor(dia, levels = c("MCI", "AD"))
-  ) |> 
+  ) |>
   ggplot(aes(
     x = Age,
     y = nmut
@@ -1029,12 +1052,12 @@ metadata_anno_depth_dep |>
   geom_smooth(aes(color = dia), method = "glm", se = FALSE) +
   ggrepel::geom_text_repel(
     aes(label = label),
-    # box.padding = 0.5, 
+    # box.padding = 0.5,
     max.overlaps = 10,
     # max.overlaps = Inf
     size = 3,
-    min.segment.length = 0, 
-    seed = 42, 
+    min.segment.length = 0,
+    seed = 42,
     box.padding = 0.5
   ) +
   ggsci::scale_color_jama(
@@ -1107,7 +1130,8 @@ metadata_anno_depth_dep |>
     x = "Age",
     y = "# of variants"
   ) ->
-  p_linear_1;p_linear_1
+p_linear_1
+p_linear_1
 
 ggsave(
   filename = "All-factor-correlations-linear-age-nvariant.pdf",
@@ -1122,41 +1146,41 @@ ggsave(
 
 cor.test(
   formula = ~ nmut + Age,
-  data = metadata_anno_depth_dep |> 
-    dplyr::filter(dep_med >1000) 
+  data = metadata_anno_depth_dep |>
+    dplyr::filter(dep_med > 1000)
 ) ->
-  cta
-
-cor.test(
-  formula = ~ nmut + Age,
-  data = metadata_anno_depth_dep |> 
-    dplyr::filter(dep_med >1000) |> 
-    dplyr::filter(dia == "MCI")
-) ->
-  cta_mci
+cta
 
 cor.test(
   formula = ~ nmut + Age,
   data = metadata_anno_depth_dep |>
-    dplyr::filter(dep_med >1000) |> 
+    dplyr::filter(dep_med > 1000) |>
+    dplyr::filter(dia == "MCI")
+) ->
+cta_mci
+
+cor.test(
+  formula = ~ nmut + Age,
+  data = metadata_anno_depth_dep |>
+    dplyr::filter(dep_med > 1000) |>
     dplyr::filter(dia == "AD")
 ) ->
-  cta_ad
+cta_ad
 
 yhight <- 32
 xwidth <- 78
 
 
-metadata_anno_depth_dep |> 
-  dplyr::filter(dep_med >1000) |> 
+metadata_anno_depth_dep |>
+  dplyr::filter(dep_med > 1000) |>
   dplyr::mutate(
     label = glue::glue(
       "N variants = {nmut}\n Median depth = {dep_med}\n Gender = {Sex}"
     )
-  ) |> 
+  ) |>
   dplyr::mutate(
     dia = factor(dia, levels = c("MCI", "AD"))
-  ) |> 
+  ) |>
   ggplot(aes(
     x = Age,
     y = nmut
@@ -1166,12 +1190,12 @@ metadata_anno_depth_dep |>
   geom_smooth(aes(color = dia), method = "glm", se = FALSE) +
   ggrepel::geom_text_repel(
     aes(label = label),
-    # box.padding = 0.5, 
+    # box.padding = 0.5,
     max.overlaps = 10,
     # max.overlaps = Inf
     size = 3,
-    min.segment.length = 0, 
-    seed = 42, 
+    min.segment.length = 0,
+    seed = 42,
     box.padding = 0.5
   ) +
   ggsci::scale_color_jama(
@@ -1244,7 +1268,8 @@ metadata_anno_depth_dep |>
     x = "Age",
     y = "# of variants"
   ) ->
-  p_linear_2;p_linear_2
+p_linear_2
+p_linear_2
 
 ggsave(
   filename = "All-factor-correlations-linear-age-nvariant2.pdf",

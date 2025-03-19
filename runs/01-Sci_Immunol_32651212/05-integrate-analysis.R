@@ -46,7 +46,7 @@ outfiles |>
     srarun,
     by = "srrid"
   ) ->
-  outfiles_sra
+outfiles_sra
 
 
 outfiles_sra |>
@@ -62,7 +62,9 @@ outfiles_sra |>
     a = purrr::map(
       .x = tardir,
       .f = function(.x) {
-        if(is.na(.x)) {return(NA)}
+        if (is.na(.x)) {
+          return(NA)
+        }
 
         readxl::read_excel(
           path = file.path(
@@ -79,7 +81,9 @@ outfiles_sra |>
       .x = source_name,
       .y = subject_status,
       .f = function(.x, .y) {
-        if(is.na(.y)) {return(.x)}
+        if (is.na(.y)) {
+          return(.x)
+        }
         .y <- ifelse(
           .y == "Asymptomatic case of COVID-19 patient",
           yes = "mild COVID-19 patient",
@@ -94,7 +98,7 @@ outfiles_sra |>
       }
     )
   ) ->
-  metadata
+metadata
 
 metadata |>
   readr::write_csv(
@@ -109,7 +113,9 @@ metadata |>
     anno = purrr::map(
       .x = outfile,
       .f = function(.x) {
-        if(.x == "FALSE") {return(NA)}
+        if (.x == "FALSE") {
+          return(NA)
+        }
 
         .uuid <- dirname(dirname(dirname(.x)))
 
@@ -127,7 +133,9 @@ metadata |>
     nmut = purrr::map_int(
       .x = anno,
       .f = function(.x) {
-        if(all(is.na(.x))) {return(NA_integer_)}
+        if (all(is.na(.x))) {
+          return(NA_integer_)
+        }
         nrow(.x)
       }
     )
@@ -136,14 +144,13 @@ metadata |>
     haplogroup = purrr::map(
       .x = anno,
       .f = function(.x) {
-        if(all(is.na(.x))) {
+        if (all(is.na(.x))) {
           return(
             tibble::tibble(
               haplogroup = NA_character_,
               verbose_haplogroup = NA_character_
             )
           )
-
         }
         .x |>
           dplyr::select(haplogroup, verbose_haplogroup) |>
@@ -152,7 +159,7 @@ metadata |>
     )
   ) |>
   tidyr::unnest(cols = haplogroup) ->
-  metadata_anno
+metadata_anno
 
 
 metadata_anno |>
@@ -162,7 +169,7 @@ metadata_anno |>
       yes = "Fail",
       no = "Pass"
     )
-  )|>
+  ) |>
   dplyr::select(srrid, Age, gender, source_name, subject_status, pass, `estimated number of cells`, `median UMI counts per cell`, `median genes per cell`, `number of cells after filtering`, haplogroup, verbose_haplogroup, nmut) |>
   dplyr::arrange(
     source_name,
@@ -171,7 +178,7 @@ metadata_anno |>
     Age
   ) |>
   dplyr::mutate(
-    ratio = round(`number of cells after filtering`/ `estimated number of cells`,2)
+    ratio = round(`number of cells after filtering` / `estimated number of cells`, 2)
   ) |>
   dplyr::select(-pass) |>
   dplyr::select(
@@ -182,7 +189,7 @@ metadata_anno |>
     Status = subject_status,
     `Median UMI/cell` = `median UMI counts per cell`,
     `Median genes/cell` = `median genes per cell`,
-    `# of cells`=`estimated number of cells`,
+    `# of cells` = `estimated number of cells`,
     `# cells after filter` = `number of cells after filtering`,
     `Cell ratio` = ratio,
     `# of variants` = nmut,
@@ -195,11 +202,11 @@ metadata_anno |>
       replacement = "",
       x = Status
     )
-  )  |>
+  ) |>
   dplyr::slice(
     6:9, 1:5, 10:20
   ) ->
-  metadata_clean
+metadata_clean
 
 metadata_clean |>
   writexl::write_xlsx(
@@ -253,7 +260,8 @@ metadata_anno |>
     x = "Age",
     y = "# of variants"
   ) ->
-  age_cor_plot;age_cor_plot
+age_cor_plot
+age_cor_plot
 
 ggsave(
   filename = "Age_nmut_cor.pdf",
@@ -287,7 +295,7 @@ metadata_anno |>
     x = "# of cells",
     y = "# of variants"
   ) ->
-  ncells_cor_plot
+ncells_cor_plot
 
 ggsave(
   filename = "Ncells_nmut_cor.pdf",
@@ -312,14 +320,14 @@ cor.test(
 
 
 wilcox.test(
-  formula = nmut ~ gender ,
+  formula = nmut ~ gender,
   data = metadata_anno |>
     dplyr::filter(!is.na(linkfile)) |>
     dplyr::mutate(gender = factor(gender))
 )
 
 t.test(
-  formula = nmut ~ gender ,
+  formula = nmut ~ gender,
   data = metadata_anno |>
     dplyr::filter(!is.na(linkfile)) |>
     dplyr::mutate(gender = factor(gender))
@@ -353,7 +361,7 @@ metadata_anno |>
     x = "Gender",
     y = "# of variants"
   ) ->
-  gender_cor_plot
+gender_cor_plot
 
 
 (age_cor_plot / ncells_cor_plot | gender_cor_plot) +
@@ -365,7 +373,8 @@ metadata_anno |>
     tag_levels = "A"
   ) &
   theme(legend.position = "bottom") ->
-  age_ncells_p;age_ncells_p
+age_ncells_p
+age_ncells_p
 
 ggsave(
   filename = "Ncells_age_nmut_cor.pdf",
@@ -385,7 +394,9 @@ metadata_anno |>
     cellratio = purrr::map(
       .x = tardir,
       .f = function(.x) {
-        if(is.na(.x)) {return(NULL)}
+        if (is.na(.x)) {
+          return(NULL)
+        }
         .ratio <- readr::read_tsv(
           file = file.path(
             .x, "celltype_ratio.tsv"
@@ -396,7 +407,7 @@ metadata_anno |>
       }
     )
   ) ->
-  metadata_anno_cellratio
+metadata_anno_cellratio
 
 
 metadata_anno_cellratio |>
@@ -404,7 +415,7 @@ metadata_anno_cellratio |>
   dplyr::select(srrid, source_name, cellratio) |>
   dplyr::mutate(color = dplyr::case_match(
     source_name,
-    "Flu_PBMC" ~ggsci::pal_jama()(4)[[1]],
+    "Flu_PBMC" ~ ggsci::pal_jama()(4)[[1]],
     "Normal_PBMC" ~ ggsci::pal_jama()(4)[[2]],
     "nCoV_PBMC(mild)" ~ ggsci::pal_jama()(4)[[3]],
     "nCoV_PBMC(severe)" ~ ggsci::pal_jama()(4)[[4]]
@@ -413,7 +424,7 @@ metadata_anno_cellratio |>
     5:8, 1:4, 9:19
   ) |>
   dplyr::arrange(dplyr::desc(dplyr::row_number())) ->
-  for_ratio_plot
+for_ratio_plot
 
 for_ratio_plot |>
   tidyr::unnest(cellratio) |>
@@ -445,7 +456,7 @@ for_ratio_plot |>
     legend.position = "right"
   ) +
   labs(x = "Cell ratio") ->
-  p_cellratio
+p_cellratio
 
 
 ggsave(
@@ -465,14 +476,22 @@ gtf_gene_df <-
     file = "/home/liuc9/github/scMOCHA/fasta/mt_exons.df.rds.gz"
   )
 
-library(ggtranscript)
+# Check if ggtranscript is installed, install if not
+if (!requireNamespace("ggtranscript", quietly = TRUE)) {
+  message("Installing ggtranscript from GitHub...")
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  devtools::install_github("dzhang32/ggtranscript")
+  library(ggtranscript)
+}
 gtf_gene_df %>%
   ggplot(aes(
     xstart = start,
     xend = end,
     y = gene_name
   )) +
-  geom_range( aes(fill = transcript_biotype)) +
+  geom_range(aes(fill = transcript_biotype)) +
   geom_intron(
     data = to_intron(gtf_gene_df, "transcript_name"),
     aes(strand = strand)
@@ -508,32 +527,33 @@ gtf_gene_df %>%
   labs(
     x = "Position"
   ) ->
-  p_mt_chrom
+p_mt_chrom
 
 metadata_anno_cellratio |>
   dplyr::mutate(
     depth = purrr::map(
       .x = tardir,
       .f = function(.x) {
-        if(is.na(.x)) {return(NULL)}
+        if (is.na(.x)) {
+          return(NULL)
+        }
         data.table::fread(
           input = file.path(
             .x, "possorted_genome_bam.MT.depth"
           ),
-          col.names =  c("chr", "pos", "depth")
+          col.names = c("chr", "pos", "depth")
         )
-
       }
     )
   ) ->
-  metadata_anno_depth
+metadata_anno_depth
 
 metadata_anno_depth |>
   dplyr::filter(!purrr::map_lgl(.x = depth, .f = is.null)) |>
   dplyr::select(srrid, source_name, depth) |>
   dplyr::mutate(color = dplyr::case_match(
     source_name,
-    "Flu_PBMC" ~ggsci::pal_jama()(4)[[1]],
+    "Flu_PBMC" ~ ggsci::pal_jama()(4)[[1]],
     "Normal_PBMC" ~ ggsci::pal_jama()(4)[[2]],
     "nCoV_PBMC(mild)" ~ ggsci::pal_jama()(4)[[3]],
     "nCoV_PBMC(severe)" ~ ggsci::pal_jama()(4)[[4]]
@@ -542,11 +562,11 @@ metadata_anno_depth |>
     5:8, 1:4, 9:19
   ) |>
   dplyr::mutate(srrid = factor(srrid, levels = srrid)) ->
-  for_depth_plot
+for_depth_plot
 
 for_depth_plot |>
   tidyr::unnest(cols = depth) |>
-  ggplot(aes(x=pos, y = depth, fill = srrid)) +
+  ggplot(aes(x = pos, y = depth, fill = srrid)) +
   geom_bar(stat = "identity") +
   scale_x_continuous(
     expand = expansion(mult = c(0, 0.03)),
@@ -590,7 +610,7 @@ for_depth_plot |>
     strip.position = "right"
   ) +
   labs(y = "Depth") ->
-  p_mt_depth
+p_mt_depth
 
 ggsave(
   filename = "Sample_depth.pdf",
@@ -622,23 +642,23 @@ ggsave(
 metadata_anno_depth |> colnames()
 
 
-metadata_anno_depth |> 
+metadata_anno_depth |>
   dplyr::select(
     srrid,
     dia = source_name,
     Age,
     Sex = gender,
-    nmut, 
+    nmut,
     `median UMI counts per cell`,
     `number of cells after filtering`,
     depth
-  ) |> 
-  dplyr::filter(!is.na(nmut)) |> 
+  ) |>
+  dplyr::filter(!is.na(nmut)) |>
   dplyr::mutate(
     n_na = purrr::map(
       .x = depth,
       .f = \(.d) {
-        .d |> 
+        .d |>
           dplyr::summarise(
             dep_s = sum(depth),
             dep_mea = mean(depth),
@@ -646,34 +666,34 @@ metadata_anno_depth |>
           )
       }
     )
-  ) |> 
-  dplyr::select(-depth) |> 
-  tidyr::unnest(cols = n_na) |> 
+  ) |>
+  dplyr::select(-depth) |>
+  tidyr::unnest(cols = n_na) |>
   dplyr::mutate(
     Sex = factor(Sex),
     dia = factor(dia)
   ) ->
-  metadata_anno_depth_dep
+metadata_anno_depth_dep
 
 correlation::correlation(
-  metadata_anno_depth_dep |> 
+  metadata_anno_depth_dep |>
     dplyr::select(-dep_s, -dep_mea),
   p_adjust = "none"
-)  |> 
+) |>
   summary(redundant = TRUE) ->
-  cor_summr
+cor_summr
 
 plot(cor_summr)
 
 
-cor_summr |> 
-  as.data.frame() |> 
+cor_summr |>
+  as.data.frame() |>
   tidyr::pivot_longer(
     cols = -Parameter,
     names_to = "var2",
     values_to = "pval"
-  ) |> 
-  dplyr::filter(!is.na(pval)) |> 
+  ) |>
+  dplyr::filter(!is.na(pval)) |>
   dplyr::filter(Parameter != var2) |>
   ggplot(aes(
     x = Parameter,
@@ -694,12 +714,12 @@ cor_summr |>
     # aesthetics = "colour"
   ) +
   scale_x_discrete(
-    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age" ),
-    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age" ) |> stringr::str_to_sentence()
+    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age"),
+    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age") |> stringr::str_to_sentence()
   ) +
   scale_y_discrete(
-    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age" ) |> rev(),
-    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age" ) |> rev() |>  stringr::str_to_sentence()
+    limits = c("nmut", "dep_med", "number of cells after filtering", "median UMI counts per cell", "Age") |> rev(),
+    labels = c("# variants", "median depth", "# cells", "median UMI/cell", "Age") |> rev() |> stringr::str_to_sentence()
   ) +
   theme(
     panel.background = element_blank(),
@@ -711,7 +731,8 @@ cor_summr |>
       size = 14
     )
   ) ->
-  p_cor;p_cor
+p_cor
+p_cor
 
 ggsave(
   filename = "All-factor-correlations-immune.pdf",
@@ -727,14 +748,14 @@ cor.test(
   formula = ~ nmut + dep_med,
   data = metadata_anno_depth_dep
 ) ->
-  ct
+ct
 
 
-metadata_anno_depth_dep |> 
-  # dplyr::filter(dep_med > 1000) |> 
+metadata_anno_depth_dep |>
+  # dplyr::filter(dep_med > 1000) |>
   # dplyr::mutate(
   #   dia = factor(dia, levels = c("MCI", "AD"))
-  # ) |> 
+  # ) |>
   ggplot(aes(
     x = dep_med,
     y = nmut,
@@ -773,7 +794,8 @@ metadata_anno_depth_dep |>
     y = "# of variants",
     title = "Lee et al, Sci Immunol, 2020"
   ) ->
-  p_nmut_median_depth;p_nmut_median_depth
+p_nmut_median_depth
+p_nmut_median_depth
 
 ggsave(
   filename = "All-factor-correlations-linear-depth-nvariant-immune.pdf",
@@ -785,16 +807,16 @@ ggsave(
 )
 
 
-metadata_anno_depth_dep |> 
-  # dplyr::filter(nmut >10) |> 
+metadata_anno_depth_dep |>
+  # dplyr::filter(nmut >10) |>
   dplyr::mutate(
     label = glue::glue(
       "N variants = {nmut}\n Median depth = {dep_med}\n Gender = {Sex}"
     )
-  ) |> 
+  ) |>
   # dplyr::mutate(
   #   dia = factor(dia, levels = c("MCI", "AD"))
-  # ) |> 
+  # ) |>
   ggplot(aes(
     x = Age,
     y = nmut
@@ -804,12 +826,12 @@ metadata_anno_depth_dep |>
   geom_smooth(aes(color = dia), method = "glm", se = FALSE) +
   ggrepel::geom_text_repel(
     aes(label = label),
-    # box.padding = 0.5, 
+    # box.padding = 0.5,
     max.overlaps = 10,
     # max.overlaps = Inf
     size = 3,
-    min.segment.length = 0, 
-    seed = 42, 
+    min.segment.length = 0,
+    seed = 42,
     box.padding = 0.5
   ) +
   ggsci::scale_color_jama(
@@ -826,7 +848,8 @@ metadata_anno_depth_dep |>
     x = "Age",
     y = "# of variants"
   ) ->
-  p_linear_1;p_linear_1
+p_linear_1
+p_linear_1
 
 ggsave(
   filename = "All-factor-correlations-linear-age-nvariant-immune.pdf",

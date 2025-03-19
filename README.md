@@ -79,11 +79,27 @@ The `scmocha` conda environment can be created by [scmocha.prod.yaml](./scmocha.
 ```R
 # install R packages
 install.packages("BiocManager")
-the_packages <- c("Seurat", "SeuratData", "patchwork", "rlang", "ggplot2", "magrittr", "gggenes", "gmoviz", "ComplexHeatmap", "devtools", "httr", "logger", "GetoptLong")
+the_packages <- c(
+  "Seurat",
+  "SeuratData",
+  "patchwork",
+  "rlang",
+  "ggplot2",
+  "magrittr",
+  "gggenes",
+  "gmoviz",
+  "ComplexHeatmap",
+  "devtools",
+  "httr",
+  "logger",
+  "GetoptLong",
+  "ggh4x",
+  "ggbeeswarm",
+  "ggvenn"
+)
 BiocManager::install(the_packages)
 
 devtools::install_github("dzhang32/ggtranscript")
-devtools::install_github('satijalab/azimuth', ref = 'master')
 ```
 
 

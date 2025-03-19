@@ -12,7 +12,15 @@ library(ggplot2)
 library(patchwork)
 library(rlang)
 library(gmoviz)
-library(ggtranscript)
+# Check if ggtranscript is installed, install if not
+if (!requireNamespace("ggtranscript", quietly = TRUE)) {
+  message("Installing ggtranscript from GitHub...")
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  devtools::install_github("dzhang32/ggtranscript")
+  library(ggtranscript)
+}
 
 # args --------------------------------------------------------------------
 
@@ -130,7 +138,7 @@ celltype_bams |>
       .f = fn_plot_coverage
     )
   ) ->
-  celltype_bams_cov
+celltype_bams_cov
 
 
 
@@ -145,13 +153,14 @@ celltype_bams_cov |>
   dplyr::mutate(celltype = factor(celltype)) |>
   tidyr::unnest(cols = coverage) |>
   dplyr::select(
-    celltype, pos = end, depth = coverage
+    celltype,
+    pos = end, depth = coverage
   ) ->
-  coverage
+coverage
 
 
 coverage %>%
-  ggplot(aes(x=pos, y = depth, fill = celltype)) +
+  ggplot(aes(x = pos, y = depth, fill = celltype)) +
   geom_bar(stat = "identity") +
   scale_x_continuous(
     expand = expansion(mult = c(0, 0.03)),
@@ -191,8 +200,8 @@ coverage %>%
     ncol = 1,
     strip.position = "top"
   ) +
-  labs(y = "Depth")  ->
-  p1
+  labs(y = "Depth") ->
+p1
 
 
 gtf_gene_df <-
@@ -207,7 +216,7 @@ gtf_gene_df %>%
     xend = end,
     y = gene_name
   )) +
-  geom_range( aes(fill = transcript_biotype)) +
+  geom_range(aes(fill = transcript_biotype)) +
   geom_intron(
     data = to_intron(gtf_gene_df, "transcript_name"),
     aes(strand = strand)
@@ -243,7 +252,7 @@ gtf_gene_df %>%
   labs(
     x = "Position"
   ) ->
-  p2
+p2
 
 p <- cowplot::plot_grid(
   plotlist = list(p1, p2),

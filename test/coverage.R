@@ -24,10 +24,10 @@ library(rlang)
 
 # load data ---------------------------------------------------------------
 # library(ggcoverage)
-# 
+#
 # meta.file <- system.file("extdata", "RNA-seq", "meta_info.csv", package = "ggcoverage")
 # sample.meta = read.csv(meta.file)
-# 
+#
 # # track folder
 # track.folder = system.file("extdata", "RNA-seq", package = "ggcoverage")
 # # load bigwig file
@@ -45,18 +45,26 @@ coverage <- readr::read_tsv(
 gtf107 <- readr::read_rds(file = "~/tmp/Homo_sapiens.GRCh38.107.gtf.plyranges.rds")
 
 
-library(ggtranscript)
+# Check if ggtranscript is installed, install if not
+if (!requireNamespace("ggtranscript", quietly = TRUE)) {
+  message("Installing ggtranscript from GitHub...")
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  devtools::install_github("dzhang32/ggtranscript")
+  library(ggtranscript)
+}
 
-gtf_gene <- gtf107 %>% 
-  plyranges::filter(seqnames == "MT") %>% 
+gtf_gene <- gtf107 %>%
+  plyranges::filter(seqnames == "MT") %>%
   plyranges::filter(type == "exon")
 
-gtf_gene %>% 
+gtf_gene %>%
   as.data.frame() ->
-  gtf_gene_df
+gtf_gene_df
 
 coverage %>%
-  ggplot(aes(x=pos, y = depth)) +
+  ggplot(aes(x = pos, y = depth)) +
   # geom_line()
   geom_bar(stat = "identity") +
   scale_x_continuous(
@@ -77,15 +85,16 @@ coverage %>%
     axis.title.x = element_blank()
   ) +
   labs(y = "Depth") ->
-  p1;p1
+p1
+p1
 
-gtf_gene_df %>% 
+gtf_gene_df %>%
   ggplot(aes(
     xstart = start,
     xend = end,
     y = gene_name
   )) +
-  geom_range( aes(fill = transcript_biotype)) +
+  geom_range(aes(fill = transcript_biotype)) +
   geom_intron(
     data = to_intron(gtf_gene_df, "transcript_name"),
     aes(strand = strand)
@@ -112,11 +121,12 @@ gtf_gene_df %>%
     axis.text.y = element_text(size = 12, color = "black"),
     axis.title.y = element_blank(),
     legend.position = "bottom"
-    ) +
+  ) +
   labs(
     x = "Position",
   ) ->
-  p2;p2
+p2
+p2
 
 p <- cowplot::plot_grid(
   plotlist = list(p1, p2),
@@ -144,31 +154,35 @@ meta.file <- system.file("extdata", "RNA-seq", "meta_info.csv", package = "ggcov
 sample.meta = read.csv(meta.file)
 
 track.folder = system.file("extdata", "RNA-seq", package = "ggcoverage")
-track.df = LoadTrackFile(track.folder = track.folder, format = "bw",meta.info = sample.meta)
+track.df = LoadTrackFile(track.folder = track.folder, format = "bw", meta.info = sample.meta)
 
-mark.region=data.frame(start=c(21678900,21732001,21737590),
-                       end=c(21679900,21732400,21737650),
-                       label=c("M1", "M2", "M3"))
+mark.region = data.frame(
+  start = c(21678900, 21732001, 21737590),
+  end = c(21679900, 21732400, 21737650),
+  label = c("M1", "M2", "M3")
+)
 # check data
 mark.region
 
 gtf.file = system.file("extdata", "used_hg19.gtf", package = "ggcoverage")
-gtf.gr = rtracklayer::import.gff(con = gtf.file, format = 'gtf')
+gtf.gr = rtracklayer::import.gff(con = gtf.file, format = "gtf")
 
-basic.coverage = ggcoverage(data = track.df, color = "auto", 
-                            mark.region = mark.region, range.position = "out")
+basic.coverage = ggcoverage(
+  data = track.df, color = "auto",
+  mark.region = mark.region, range.position = "out"
+)
 basic.coverage
 
 
-basic.coverage + 
-  geom_gene(gtf.gr=gtf.gr)
-
-basic.coverage + 
-  geom_transcript(gtf.gr=gtf.gr,label.vjust = 1.5)
+basic.coverage +
+  geom_gene(gtf.gr = gtf.gr)
 
 basic.coverage +
-  geom_gene(gtf.gr=gtf.gr) +
-  geom_ideogram(genome = "hg19",plot.space = 0)
+  geom_transcript(gtf.gr = gtf.gr, label.vjust = 1.5)
+
+basic.coverage +
+  geom_gene(gtf.gr = gtf.gr) +
+  geom_ideogram(genome = "hg19", plot.space = 0)
 
 # footer ------------------------------------------------------------------
 
