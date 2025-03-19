@@ -15,12 +15,12 @@ cd "$SCRIPT_DIR" || exit 1
 echo "Current directory: $(pwd)"
 
 # Export the conda environment to a YAML file
-echo "Exporting 'scmocha' environment to scmocha.prod.yaml..."
-mamba env export -n scmocha >scmocha.prod.yaml
+echo "Exporting 'scmocha' environment to env.prod.yaml..."
+mamba env export -n scmocha >env.prod.yaml
 
 # Confirm the export was successful
 if [ $? -eq 0 ]; then
-  echo "Environment successfully exported to: $SCRIPT_DIR/scmocha.prod.yaml"
+  echo "Environment successfully exported to: $SCRIPT_DIR/env.prod.yaml"
 else
   echo "Failed to export environment"
   exit 1
