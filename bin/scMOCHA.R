@@ -17,6 +17,7 @@ suppressPackageStartupMessages(library(ComplexHeatmap))
 library(httr)
 library(GetoptLong)
 library(logger)
+library(data.table)
 ht_opt$message <- FALSE
 
 # src ---------------------------------------------------------------------
