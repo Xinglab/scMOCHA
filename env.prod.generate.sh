@@ -16,7 +16,7 @@ echo "Current directory: $(pwd)"
 
 # Export the conda environment to a YAML file
 echo "Exporting 'scmocha' environment to env.prod.yaml..."
-mamba env export -n scmocha >env.prod.yaml
+mamba env export -n scmocha --no-builds | grep -v "prefix:" >env.prod.yaml
 
 # Confirm the export was successful
 if [ $? -eq 0 ]; then
