@@ -15,12 +15,9 @@ library(rlang)
 # Check if ggtranscript is installed, install if not
 if (!requireNamespace("ggtranscript", quietly = TRUE)) {
   message("Installing ggtranscript from GitHub...")
-  if (!requireNamespace("devtools", quietly = TRUE)) {
-    install.packages("devtools")
-  }
   devtools::install_github("dzhang32/ggtranscript")
-  library(ggtranscript)
 }
+library(ggtranscript)
 library(GetoptLong)
 library(logger)
 library(gggenes)

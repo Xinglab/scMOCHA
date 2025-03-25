@@ -565,12 +565,9 @@ gtf_gene_df <-
 # Check if ggtranscript is installed, install if not
 if (!requireNamespace("ggtranscript", quietly = TRUE)) {
   message("Installing ggtranscript from GitHub...")
-  if (!requireNamespace("devtools", quietly = TRUE)) {
-    install.packages("devtools")
-  }
   devtools::install_github("dzhang32/ggtranscript")
-  library(ggtranscript)
 }
+library(ggtranscript)
 gtf_gene_df %>%
   ggplot(aes(
     xstart = start,

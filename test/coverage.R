@@ -48,12 +48,9 @@ gtf107 <- readr::read_rds(file = "~/tmp/Homo_sapiens.GRCh38.107.gtf.plyranges.rd
 # Check if ggtranscript is installed, install if not
 if (!requireNamespace("ggtranscript", quietly = TRUE)) {
   message("Installing ggtranscript from GitHub...")
-  if (!requireNamespace("devtools", quietly = TRUE)) {
-    install.packages("devtools")
-  }
   devtools::install_github("dzhang32/ggtranscript")
-  library(ggtranscript)
 }
+library(ggtranscript)
 
 gtf_gene <- gtf107 %>%
   plyranges::filter(seqnames == "MT") %>%
