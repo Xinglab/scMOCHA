@@ -109,9 +109,9 @@ fn_load_hetero <- function(.filename) {
 
   data.table::setnames(.d, "V1", "barcode")
   .d <- data.table::melt(.d, id.vars = "barcode", variable.name = "variant", value.name = "af")
-  .d[, pos := gsub(pattern = ">|[AGCT]", replacement = "", x = variant)]
-  .d[, pos := as.integer(pos)]
-  .d
+  # .d[, pos := gsub(pattern = ">|[AGCT]", replacement = "", x = variant)]
+  # .d[, pos := as.integer(pos)]
+  .d |> dplyr::filter(af > 0.05)
 }
 
 
@@ -1444,6 +1444,16 @@ metadata <- fn_load_meta(
 )
 
 # Cell allele -------------------------------------------------------------
+
+log_execution_time <- function(f) {
+  function(...) {
+    start_time <- Sys.time()
+    result <- f(...)
+    end_time <- Sys.time()
+    cat(sprintf("Function '%s' executed in %.4f seconds\n", deparse(substitute(f)), as.numeric(difftime(end_time, start_time, units = "secs"))))
+    return(result)
+  }
+}
 
 cell_hetero <- fn_load_hetero(
   .filename = cell_hetero_file
