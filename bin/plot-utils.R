@@ -49,3 +49,32 @@ fn_plot_mt_genome <- function() {
   pg
   pg
 }
+
+
+# gtf_gene_df |>
+#   dplyr::select(
+#     seqnames,
+#     start,
+#     end,
+#     strand,
+#     gene_name,
+#     gene_id,
+#     gene_biotype
+#   ) |>
+#   dplyr::mutate(
+#     TYPE = dplyr::case_when(
+#       gene_biotype == "protein_coding" ~ "Protein",
+#       gene_biotype == "Mt_tRNA" ~ "tRNA",
+#       gene_biotype == "Mt_rRNA" ~ "rRNA",
+#       TRUE ~ NA_character_
+#     ),
+#   ) |>
+#   dplyr::select(
+#     gene_name, start, end, strand, TYPE
+#   ) |>
+#   dplyr::mutate(
+#     LENGTH = (end - start) + 1
+#   )
+
+
+# mitomap <- data.table::fread("/home/liuc9/github/scMOCHA/fasta/GenomeLoci  MITOMAP  Foswiki.csv", sep = ",", header = T)
