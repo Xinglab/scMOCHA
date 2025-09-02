@@ -140,7 +140,9 @@ if (is.na(refname) || refname == "") {
   # message(
   #   "Notice: refname is not defined \n the cell cluster and annotation will not be using by Azimuth"
   # )
-  log_warn("refname is not defined the cell cluster and annotation will not be used by Azimuth")
+  log_warn(
+    "refname is not defined the cell cluster and annotation will not be used by Azimuth"
+  )
   use_azimuth <- FALSE
 }
 
@@ -148,12 +150,19 @@ if (is.na(celllevel) || celllevel == "") {
   # message(
   #   "Notice: celllevel is not defined \n the cell cluster and annotation will not be using by Azimuth"
   # )
-  log_warn("celllevel is not defined the cell cluster and annotation will not be used by Azimuth")
+  log_warn(
+    "celllevel is not defined the cell cluster and annotation will not be used by Azimuth"
+  )
   use_azimuth <- FALSE
 }
 
 if (use_azimuth) {
-  log_info("You will use Azimuth reference cell map by use tissue ", refname, " and the cell level is ", celllevel)
+  log_info(
+    "You will use Azimuth reference cell map by use tissue ",
+    refname,
+    " and the cell level is ",
+    celllevel
+  )
 } else {
   log_warn("You will not use Azimuth reference cell map for cell annotation")
 }
@@ -169,13 +178,16 @@ log_success("nFeature_RNA_max ", nFeature_RNA_max, " ", class(nFeature_RNA_max))
 log_success("10x chemistry_name ", chemistry_name, " ", class(chemistry_name))
 log_success("percent_mt_max ", percent_mt_max, " ", class(percent_mt_max))
 log_success("percent_ribo_max ", percent_ribo_max, " ", class(percent_ribo_max))
-log_success("percent_Lagest_Gene_max ", percent_Lagest_Gene_max, " ", class(percent_Lagest_Gene_max))
+log_success(
+  "percent_Lagest_Gene_max ",
+  percent_Lagest_Gene_max,
+  " ",
+  class(percent_Lagest_Gene_max)
+)
 # quit(save="no", status = 0, runLast = F)
 # src ---------------------------------------------------------------------
 
 # pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
-
-
 
 # header ------------------------------------------------------------------
 
@@ -185,12 +197,13 @@ log_success("percent_Lagest_Gene_max ", percent_Lagest_Gene_max, " ", class(perc
 
 fn_metrics_mito <- function(.sc) {
   .sc@meta.data %>%
-    dplyr::arrange(percent.mt) ->
-  .df
+    dplyr::arrange(percent.mt) -> .df
 
   ggplot(data = .df) +
     geom_point(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) +
-    scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
+    scale_color_gradientn(
+      colors = c("black", "blue", "green2", "red", "yellow")
+    ) +
     ggtitle("Mito of plotting QC metrics") +
     geom_hline(yintercept = nFeature_RNA_min, color = "red") +
     geom_hline(yintercept = nFeature_RNA_max, color = "red") +
@@ -202,8 +215,7 @@ fn_metrics_mito <- function(.sc) {
     scale_x_continuous(
       labels = scales::label_comma()
     ) +
-    theme_bw() ->
-  .metrics_mito
+    theme_bw() -> .metrics_mito
   .metrics_mito
 }
 
@@ -212,12 +224,13 @@ fn_metrics_ribo <- function(.sc) {
     dplyr::arrange(percent.ribo) %>%
     ggplot(aes(nCount_RNA, nFeature_RNA, color = percent.ribo)) +
     geom_point() +
-    scale_color_gradientn(colors = c("black", "blue", "green2", "red", "yellow")) +
+    scale_color_gradientn(
+      colors = c("black", "blue", "green2", "red", "yellow")
+    ) +
     ggtitle("Ribo of plotting QC metrics") +
     geom_hline(yintercept = nFeature_RNA_min, color = "red") +
     geom_hline(yintercept = nFeature_RNA_max, color = "red") +
-    theme_bw() ->
-  .metrics_ribo
+    theme_bw() -> .metrics_ribo
 }
 
 fn_percent_mt_ribo_lg <- function(.sc) {
@@ -226,24 +239,21 @@ fn_percent_mt_ribo_lg <- function(.sc) {
     geom_histogram(binwidth = 0.5, fill = "red") +
     ggtitle("Distribution of Percentage Mitochondrion") +
     geom_vline(xintercept = percent_mt_max) +
-    theme_bw() ->
-  .percent_mt
+    theme_bw() -> .percent_mt
 
   .sc@meta.data %>%
     ggplot(aes(percent.ribo)) +
     geom_histogram(binwidth = 0.5, fill = "green") +
     ggtitle("Distribution of Percentage Ribosome") +
     geom_vline(xintercept = percent_ribo_max) +
-    theme_bw() ->
-  .percent_ribo
+    theme_bw() -> .percent_ribo
 
   .sc@meta.data %>%
     ggplot(aes(Percent.Largest.Gene)) +
     geom_histogram(binwidth = 0.7, fill = "blue") +
     ggtitle("Distribution of Percentage Largest Gene") +
     geom_vline(xintercept = percent_Lagest_Gene_max) +
-    theme_bw() ->
-  .percent_largest_gene
+    theme_bw() -> .percent_largest_gene
 
   (.percent_mt | .percent_ribo | .percent_largest_gene)
 }
@@ -286,16 +296,14 @@ fn_create_sc <- function(.x, .project = "singlecell") {
       .sc@assays$RNA@layers$counts, # Seurat version 5
       2,
       function(x) (100 * max(x)) / sum(x)
-    ) ->
-    .sc$Percent.Largest.Gene
+    ) -> .sc$Percent.Largest.Gene
   } else {
     apply(
       .sc@assays$RNA@counts, # Seurat version 4
       # .sc@assays$RNA@layers$counts, # Seurat version 5
       2,
       function(x) (100 * max(x)) / sum(x)
-    ) ->
-    .sc$Percent.Largest.Gene
+    ) -> .sc$Percent.Largest.Gene
   }
 
   .sc
@@ -374,7 +382,8 @@ fn_azimuth <- function(.sc, .ref, .celllevel) {
     pattern = "[[:punct:]]| ",
     replacement = "_",
     x = .celltype
-  ) |> factor()
+  ) |>
+    factor()
 
   .sca[["celltype"]] <- .celltype
   .sca[["celltype_name"]] <- .celltype_collapse
@@ -405,10 +414,10 @@ fn_scnorm <- function(.sc) {
     Seurat::FindNeighbors(reduction = "pca", dims = .npcs) |>
     Seurat::FindClusters(resolution = .reso) |>
     Seurat::RunUMAP(reduction = "pca", dims = 1:.npcs) |>
-    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) ->
-  .scna
+    Seurat::RunTSNE(reduction = "pca", dims = 1:.npcs) -> .scna
 
-  .celltype <- glue::glue("cluster_{.scna[['seurat_clusters']][, 1]}") |> factor()
+  .celltype <- glue::glue("cluster_{.scna[['seurat_clusters']][, 1]}") |>
+    factor()
   .celltype_collapse <- .celltype
 
   .scna[["celltype"]] <- .celltype
@@ -441,10 +450,10 @@ fn_sctransform <- function(.sc) {
     Seurat::FindNeighbors(reduction = "pca", dims = 1:(.npcs)) |>
     Seurat::FindClusters(resolution = .reso) |>
     Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs)) |>
-    Seurat::RunTSNE(reduction = "pca", dims = 1:(.npcs)) ->
-  .scta
+    Seurat::RunTSNE(reduction = "pca", dims = 1:(.npcs)) -> .scta
 
-  .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |> factor()
+  .celltype <- glue::glue("cluster_{.scta[['seurat_clusters']][, 1]}") |>
+    factor()
   .celltype_collapse <- .celltype
 
   .scta[["celltype"]] <- .celltype
@@ -481,57 +490,57 @@ fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
 }
 
 fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
-  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
+  pcc <- readr::read_tsv(
+    file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv"
+  )
   .xxx |>
     dplyr::group_by(celltype) |>
     tidyr::nest() |>
     dplyr::ungroup() |>
-    dplyr::mutate(u = purrr::map(.x = data, .f = function(.m) {
-      # d |>
-      #   dplyr::filter(cluster == 14) |>
-      #   dplyr::pull(data) |>
-      #   .[[1]] ->
-      #   .m
+    dplyr::mutate(
+      u = purrr::map(.x = data, .f = function(.m) {
+        # d |>
+        #   dplyr::filter(cluster == 14) |>
+        #   dplyr::pull(data) |>
+        #   .[[1]] ->
+        #   .m
 
-      .m |>
-        dplyr::summarise(u1 = mean(UMAP_1), u2 = mean(UMAP_2)) ->
-      .mm
+        .m |>
+          dplyr::summarise(u1 = mean(UMAP_1), u2 = mean(UMAP_2)) -> .mm
 
-      .m |>
-        dplyr::mutate(u1 = UMAP_1 > .mm$u1, u2 = UMAP_2 > .mm$u2) ->
-      .mmd
+        .m |>
+          dplyr::mutate(u1 = UMAP_1 > .mm$u1, u2 = UMAP_2 > .mm$u2) -> .mmd
 
-      .mmd |>
-        dplyr::group_by(u1, u2) |>
-        dplyr::count() |>
-        dplyr::ungroup() |>
-        dplyr::arrange(-n) ->
-      .mmm
+        .mmd |>
+          dplyr::group_by(u1, u2) |>
+          dplyr::count() |>
+          dplyr::ungroup() |>
+          dplyr::arrange(-n) -> .mmm
 
-      if (nrow(.mmm) == 1) {
-        return(
+        if (nrow(.mmm) == 1) {
+          return(
+            .mmd |>
+              # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
+              dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
+          )
+        }
+
+        .fc <- .mmm$n[[1]] / .mmm$n[[2]] # 1.1
+
+        if (.fc > 1.1) {
+          .mmd |>
+            dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
+            dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
+        } else {
           .mmd |>
             # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
             dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
-        )
-      }
-
-      .fc <- .mmm$n[[1]] / .mmm$n[[2]] # 1.1
-
-      if (.fc > 1.1) {
-        .mmd |>
-          dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
-          dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
-      } else {
-        .mmd |>
-          # dplyr::filter(u1 == .mmm$u1[[1]], u2 == .mmm$u2[[1]]) |>
-          dplyr::summarise(UMAP_1 = mean(UMAP_1), UMAP_2 = mean(UMAP_2))
-      }
-    })) |>
+        }
+      })
+    ) |>
     dplyr::select(-data) |>
     tidyr::unnest(cols = u) |>
-    dplyr::arrange(celltype) ->
-  .xxx_label
+    dplyr::arrange(celltype) -> .xxx_label
 
   ggplot() +
     geom_point(
@@ -604,7 +613,9 @@ fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
 }
 
 fn_celltype_pie_plot <- function(.xxx_celltype) {
-  pcc <- readr::read_tsv(file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv")
+  pcc <- readr::read_tsv(
+    file = "https://raw.githubusercontent.com/chunjie-sam-liu/chunjie-sam-liu.life/master/public/data/pcc.tsv"
+  )
   .xxx_celltype |>
     dplyr::ungroup() %>%
     dplyr::mutate(csum = rev(cumsum(rev(n)))) %>%
@@ -650,7 +661,8 @@ fn_plot_azimuth_umap <- function(.x) {
   .col_names <- c("UMAP_1", "UMAP_2")
 
   if ("ref.umap" %in% names(.x@reductions)) {
-    .umap <- .x@reductions$ref.umap@cell.embeddings |> data.table::as.data.table()
+    .umap <- .x@reductions$ref.umap@cell.embeddings |>
+      data.table::as.data.table()
     colnames(.umap) <- .col_names
     .tsne <- NULL
   } else {
@@ -665,8 +677,7 @@ fn_plot_azimuth_umap <- function(.x) {
     dplyr::select(
       celltype
     ) |>
-    data.table::as.data.table() ->
-  .xx
+    data.table::as.data.table() -> .xx
 
   .xxx <- dplyr::bind_cols(.umap, .xx)
 
@@ -674,8 +685,7 @@ fn_plot_azimuth_umap <- function(.x) {
     dplyr::group_by(celltype) |>
     dplyr::count() |>
     dplyr::ungroup() |>
-    dplyr::mutate(ratio = n / sum(n)) ->
-  .xxx_celltype
+    dplyr::mutate(ratio = n / sum(n)) -> .xxx_celltype
 
   .plot_pie <- fn_celltype_pie_plot(.xxx_celltype)
 
@@ -736,7 +746,12 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
   if (packageVersion("Seurat") >= "5" && use_azimuth) {
     log_success("Seurat version 5")
     .sc[["RNA"]]$data <- .sc[["RNA"]]$counts
-    .sc <- ScaleData(.sc, features = rownames(.sc), assay = "RNA", verbose = FALSE)
+    .sc <- NormalizeData(
+      .sc,
+      # features = rownames(.sc),
+      assay = "RNA",
+      verbose = FALSE
+    )
   }
   # future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
@@ -749,11 +764,9 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
   # future::plan(future::sequential)
   log_success("Seurat findallmarkers on version 5 done!!!")
 
-
   .allmarkers |>
     dplyr::group_by(cluster) |>
-    dplyr::top_n(.topn, wt = avg_log2FC) ->
-  .top
+    dplyr::top_n(.topn, wt = avg_log2FC) -> .top
 
   p <- Seurat::DoHeatmap(.sc, features = .top$gene) + Seurat::NoLegend()
 
@@ -774,9 +787,7 @@ sc <- fn_load_sc_10x(h5file)
 
 # body --------------------------------------------------------------------
 
-
 # Stat --------------------------------------------------------------------
-
 
 sc$cell_stats <- fn_stat_cell(
   .x = sc$sc,
@@ -814,8 +825,7 @@ sc$sc_azimuth@meta.data |>
     tag = "CJ",
     cluster = celltype_name
   ) |>
-  dplyr::select(1, 3, 4) ->
-sc$cellbarcode_cluster
+  dplyr::select(1, 3, 4) -> sc$cellbarcode_cluster
 log_success("cluster barcode")
 # quit(save = "no")
 
@@ -883,7 +893,6 @@ ggsave(
 log_success("Save heatmap plot.")
 
 # save plot ---------------------------------------------------------------
-
 
 # names(sc)
 ggsave(
