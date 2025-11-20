@@ -41,7 +41,7 @@ library(logger)
 # percent_mt_max <- 75
 # percent_ribo_max <- 50
 # percent_Lagest_Gene_max <- 50
-# chemistry_name <- "SC5P-R2"
+# chemistry_name <- "SC3Pv2"
 
 # s: string, i: integer, f: float, !: boolean
 # @: array
@@ -85,6 +85,7 @@ GetoptLong(spec, template_control = list(opt_width = 50))
 
 log_threshold(TRACE)
 log_layout(layout_glue_colors)
+
 
 setup_10x_version <- tibble::tibble(
   "nfr" = c("nFeature_RNA_min", "nFeature_RNA_max"),
@@ -368,7 +369,7 @@ fn_azimuth <- function(.sc, .ref, .celllevel) {
   # .sc <- sc$sc
   log_info("Azimuth is running")
   log_success("Azimuth reference ", .ref, " and cell level ", .celllevel)
-
+  library(Seurat)
   .sca <- Azimuth::RunAzimuth(
     query = .sc,
     reference = .ref
@@ -446,7 +447,7 @@ fn_sctransform <- function(.sc) {
   # .reso <- 0.05
 
   .sct |>
-    Seurat::RunPCA(dim = .npcs) |>
+    Seurat::RunPCA(npcs = .npcs) |>
     Seurat::FindNeighbors(reduction = "pca", dims = 1:(.npcs)) |>
     Seurat::FindClusters(resolution = .reso) |>
     Seurat::RunUMAP(reduction = "pca", dims = 1:(.npcs)) |>
@@ -465,25 +466,48 @@ fn_sctransform <- function(.sc) {
   .scta
 }
 
+# fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
+#   # .sc <- sc$sc_filter
+#   # .sc <- sc$sc
+
+#   if (.use_azimuth) {
+#     .sca <-
+#       tryCatch(
+#         expr = {
+#           log_success("fn_cluster_anno:try:Azimuth")
+#           fn_azimuth(.sc, .ref, .celllevel)
+#         },
+#         error = \(e) {
+#           log_fatal("fn_cluster_anno:error:sctransform")
+#           fn_sctransform(.sc)
+#         }
+#       )
+#   } else {
+#     log_fatal("fn_cluster_anno:sctransform")
+#     .sca <- fn_sctransform(.sc)
+#   }
+
+#   .sca
+# }
+
 fn_cluster_anno <- function(.sc, .use_azimuth, .ref, .celllevel) {
   # .sc <- sc$sc_filter
   # .sc <- sc$sc
+  log_info("fn_cluster_anno: sctransform: start to process sctransform")
+  .sca <- fn_sctransform(.sc)
 
   if (.use_azimuth) {
     .sca <-
       tryCatch(
         expr = {
           log_success("fn_cluster_anno:try:Azimuth")
-          fn_azimuth(.sc, .ref, .celllevel)
+          fn_azimuth(.sca, .ref, .celllevel)
         },
         error = \(e) {
           log_fatal("fn_cluster_anno:error:sctransform")
-          fn_sctransform(.sc)
+          .sca
         }
       )
-  } else {
-    log_fatal("fn_cluster_anno:sctransform")
-    .sca <- fn_sctransform(.sc)
   }
 
   .sca
@@ -579,7 +603,7 @@ fn_plot_cluster <- function(.xxx, .xy_labels = c("UMAP_1", "UMAP_2")) {
         linewidth = 0.5,
         arrow = grid::arrow(
           angle = 5,
-          length = unit(5, "npc"),
+          length = grid::unit(5, "npc"),
           type = "closed"
         )
       ),
@@ -707,6 +731,13 @@ fn_plot_azimuth_umap <- function(.x) {
 
 fn_check_cellref <- function(.refname) {
   # SeuratData::InstalledData() |> dplyr::glimpse()
+
+  if (is.na(.refname) || .refname == "") {
+    log_warn("refname is not defined")
+    use_azimuth <<- FALSE
+    return(1)
+  }
+
   if (dir.exists(.refname)) {
     message(glue::glue("Azimuth reference {.refname} installed"))
     use_azimuth <<- TRUE
@@ -742,23 +773,16 @@ fn_check_cellref <- function(.refname) {
 }
 
 fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
+  log_info("Start fn_allmarkers_heatmap() ...")
+  Seurat::DefaultAssay(.sc) <- "SCT"
   Seurat::Idents(.sc) <- "celltype_name"
-  if (packageVersion("Seurat") >= "5" && use_azimuth) {
-    log_success("Seurat version 5")
-    .sc[["RNA"]]$data <- .sc[["RNA"]]$counts
-    .sc <- NormalizeData(
-      .sc,
-      # features = rownames(.sc),
-      assay = "RNA",
-      verbose = FALSE
-    )
-  }
+
   # future::plan(future::multisession, workers = ceiling(parallel::detectCores() / 5))
   .allmarkers <- Seurat::FindAllMarkers(
     object = .sc,
-    # assay = "RNA",
+    slot = "data",
     only.pos = TRUE,
-    min.pct = 0.25,
+    min.pct = 0.1,
     logfc.threshold = 0.25
   )
   # future::plan(future::sequential)
@@ -766,9 +790,17 @@ fn_allmarkers_heatmap <- function(.sc, .topn = 20) {
 
   .allmarkers |>
     dplyr::group_by(cluster) |>
-    dplyr::top_n(.topn, wt = avg_log2FC) -> .top
+    dplyr::top_n(.topn, wt = avg_log2FC) |>
+    dplyr::ungroup() -> .top
+  log_info("Drawing heatmap using {length(unique(.top$gene))} genes")
 
-  p <- Seurat::DoHeatmap(.sc, features = .top$gene) + Seurat::NoLegend()
+  p <- Seurat::DoHeatmap(
+    object = .sc,
+    features = .top$gene,
+    assay = "SCT",
+    slot = "scale.data"
+  ) +
+    Seurat::NoLegend()
 
   list(
     allmarkers = .allmarkers,
