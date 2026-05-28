@@ -2,27 +2,29 @@
 
 ## Table of Contents
 
-- [1. About scMOCHA](#1-about-scmocha)
-- [2. Installation](#2-installation)
-  - [2.1 Prerequisites](#21-prerequisites)
-  - [2.2 Prepare reference for Cell Ranger](#22-prepare-reference-for-cell-ranger)
-  - [2.3 Variant annotation requirements](#23-variant-annotation-requirements)
-  - [2.4 Install latest scMOCHA](#24-install-latest-scmocha)
-  - [2.5 R package installation](#25-r-package-installation)
-  - [2.6 Docker image](#26-docker-image)
-- [3. Run scMOCHA](#3-run-scmocha)
-  - [3.1 scMOCHA.inputs.json](#31-scmochainputsjson)
-  - [3.2 Example data](#32-example-data)
-  - [3.3 Outputs](#33-outputs)
-    - [3.3.1 Cell Ranger summary](#331-cell-ranger-summary)
-    - [3.3.2 Cell QC and clustering](#332-cell-qc-and-clustering)
-    - [3.3.3 Cell level heteroplasmy](#333-cell-level-heteroplasmy)
+- [scMOCHA: Single-Cell Mitochondrial Omics for Cellular Heteroplasmy Analysis](#scmocha-single-cell-mitochondrial-omics-for-cellular-heteroplasmy-analysis)
+  - [Table of Contents](#table-of-contents)
+  - [1. About scMOCHA](#1-about-scmocha)
+  - [2. Installation](#2-installation)
+    - [2.1 Prerequisites](#21-prerequisites)
+    - [2.2 Prepare reference for Cell Ranger](#22-prepare-reference-for-cell-ranger)
+    - [2.3 Variant annotation requirements](#23-variant-annotation-requirements)
+    - [2.4 Install latest scMOCHA](#24-install-latest-scmocha)
+    - [2.5 R package installation](#25-r-package-installation)
+    - [2.6 Docker image](#26-docker-image)
+  - [3. Run scMOCHA](#3-run-scmocha)
+    - [3.1 scMOCHA.inputs.json](#31-scmochainputsjson)
+    - [3.2 Example data](#32-example-data)
+    - [3.3 Outputs](#33-outputs)
+      - [3.3.1 Cell Ranger summary](#331-cell-ranger-summary)
+      - [3.3.2 Cell QC and clustering](#332-cell-qc-and-clustering)
+      - [3.3.3 Cell level heteroplasmy](#333-cell-level-heteroplasmy)
 
 ## 1. About scMOCHA
 
 scMOCHA is an end-to-end pipeline for calling mitochondrial mutations from single-cell RNA-seq data. The pipeline is designed to work with multi-version 10x Genomics data, and includes quality control, alignment, cell clustering, and variant calling on single cell and cluster level, variant annotation steps. The pipeline is implemented in [Workflow Description Language (WDL)](https://github.com/openwdl/wdl), and can be run on a local machine, a high-performance computing cluster and a computing cloud.
 
-![](img/scMOCHA-workflow.png)
+![](img/scMOCHA.png)
 
 ## 2. Installation
 
