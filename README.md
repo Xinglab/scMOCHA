@@ -38,12 +38,13 @@ The scMOCHA workflow is implemented in WDL, and can be run with Cromwell. The pi
 - [Cell Ranger](https://www.10xgenomics.com/support/software/cell-ranger/latest) for processing 10x Genomics data.
 - [HyperSQL](https://hsqldb.org) for rezuming the scMOCHA pipeline (Optional).
 
-### 2.2 Prepare reference for Cell Ranger
+### 2.2 Prepare the Cell Ranger Reference
 
-The reference data for Cell Ranger can be downloaded from the 10x Genomics website. The reference data is required for the alignment step in the scMOCHA pipeline. The reference data can be downloaded from the 10x Genomics website using the following command.
+The reference package required for Cell Ranger can be downloaded from the 10X Genomics website. The reference data is required for the alignment step in the scMOCHA pipeline. 
 
-The [Revised Cambridge Reference Sequence (rCRS)](https://www.mitomap.org/foswiki/bin/view/MITOMAP/HumanMitoSeq) is the reference genome for human mitochondrial DNA. **Users need to replace mitochondrial reference with the rCRS reference data for the Cell Ranger reference index.**
+Since the default Cell Ranger reference uses the mitochondrial sequence included in the human reference genome, we recommend replacing it with the [Revised Cambridge Reference Sequence (rCRS)](https://www.mitomap.org/foswiki/bin/view/MITOMAP/HumanMitoSeq) which is the standard reference genome for human mitochondrial DNA. **To do this, prepare a custom Cell Ranger reference using the human genome with the mitochondrial FASTA replaced by the rCRS sequence and a corresponding mitochondrial GTF annotation.**
 
+The custom reference can be generated using the following command:
 ```shell
 cellranger mkref \
   --genome=rCRS_cellranger \
