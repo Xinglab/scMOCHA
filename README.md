@@ -22,7 +22,7 @@
 
 ## 1. About scMOCHA
 
-scMOCHA is an end-to-end pipeline for calling mitochondrial mutations from single-cell RNA-seq data. The pipeline is designed to work with multi-version 10x Genomics data, and includes quality control, alignment, cell clustering, and variant calling on single cell and cluster level, variant annotation steps. The pipeline is implemented in [Workflow Description Language (WDL)](https://github.com/openwdl/wdl), and can be run on a local machine, a high-performance computing cluster and a computing cloud.
+scMOCHA is an end-to-end pipeline for calling mitochondrial mutations from single-cell RNA-seq data. The pipeline is designed to work with multi-version 10X Genomics data, and includes quality control, alignment, cell clustering, and variant calling on single cell and cluster level, variant annotation steps. The pipeline is implemented in [Workflow Description Language (WDL)](https://github.com/openwdl/wdl), and can be run on a local machine, a high-performance computing cluster and a computing cloud.
 
 ![](img/FigS1.png)
 
@@ -35,7 +35,7 @@ The scMOCHA workflow is implemented in WDL, and can be run with Cromwell. The pi
 - [Conda](https://docs.conda.io/en/latest/miniconda.html) for managing software dependencies.
 - [Cromwell](https://cromwell.readthedocs.io/en/latest/) for running scMOCHA WDL workflows.
 - [Java](https://www.java.com/en/download/) for running Cromwell and halpogrep3.
-- [Cell Ranger](https://www.10xgenomics.com/support/software/cell-ranger/latest) for processing 10x Genomics data.
+- [Cell Ranger](https://www.10xgenomics.com/support/software/cell-ranger/latest) for processing 10X Genomics data.
 - [HyperSQL](https://hsqldb.org) for rezuming the scMOCHA pipeline (Optional).
 
 ### 2.2 Prepare the Cell Ranger Reference
