@@ -1,9 +1,0 @@
-#!/bin/sh
-#SBATCH --signal=USR2
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=20
-#SBATCH --mem=80G
-#SBATCH --time=720:00:00
-#SBATCH --output=/home/liuc9/scratch/mitochondrial/PBMC_10k_v3_10x/MTbam/mgatk.job.%j
-
-bash /home/liuc9/github/scMOCHA/test/05-mgatk.sh

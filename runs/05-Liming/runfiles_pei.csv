@@ -1,9 +1,0 @@
-path,name,srrid,srrdir,scmocha_sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-1,Pei-1,Pei-1,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-1/runwdl_Pei-1.sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-2,Pei-2,Pei-2,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-2,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-2/runwdl_Pei-2.sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-3,Pei-3,Pei-3,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-3,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-3/runwdl_Pei-3.sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-4,Pei-4,Pei-4,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-4,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-4/runwdl_Pei-4.sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-5,Pei-5,Pei-5,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-5,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-5/runwdl_Pei-5.sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-6,Pei-6,Pei-6,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-6,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-6/runwdl_Pei-6.sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-7,Pei-7,Pei-7,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-7,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-7/runwdl_Pei-7.sh
-/home/liuc9/github/scMOCHA/05-Liming/cellline/fastq/Pei-8,Pei-8,Pei-8,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-8,/home/liuc9/github/scMOCHA/05-Liming/cellline/torun/Pei-8/runwdl_Pei-8.sh
